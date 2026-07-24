@@ -15,7 +15,7 @@
   ::-webkit-scrollbar-track{background:transparent;}
   .panel{background:#fff;border:1px solid #e2e2e9;border-radius:4px;padding:10px 12px;}
   .ttl{font-size:11px;font-weight:700;letter-spacing:.05em;color:#6c6c7a;text-transform:uppercase;}
-  .col{display:flex;flex-direction:column;gap:12px;min-width:0;}
+  .col{display:flex;flex-direction:column;gap:12px;min-width:0;}.dashrow1>.col{height:450px;overflow:hidden;}.dashrow1 .panel{flex:0 0 auto;}.dashrow1 .panel.flexcard{flex:1 1 0;min-height:0;overflow-y:auto;}
 </style>
 </head>
 <body>
@@ -41,7 +41,7 @@
   // ---- field mapping: internal key -> exact Vantage export column ----
   var COLMAP={projectId:'ProjectID',status:'Status',comp:'CompType',phase:'PhaseCategory',
     roc:'ROCStep',area:'Area',module:'UDF2',shop:'ShopField',wp:'WorkPackage',
-    desc:'Description',tag:'TagNO',line:'LineNumber',dwg:'DwgNO',size:'PipeSize1',uom:'UOM'};
+    desc:'Description',tag:'TagNO',line:'LineNumber',dwg:'DwgNO',size:'PipeSize1',uom:'UOM',phaseCode:'PhaseCode',schedActNo:'SchedActNO',aux1:'Aux1',aux2:'Aux2',aux3:'Aux3'};
   var NUMMAP={budgetMH:'BudgetMHs',earnMH:'EarnMHsCalc',qty:'Quantity',
     clientBudget:'ClientBudget',percentEntry:'PercentEntry',pct:'PercentCompleteCalc'};
   var DATEMAP={planStart:'PlanStart',planFin:'PlanFin',actStart:'ActStart',actFin:'ActFin'};
@@ -109,7 +109,7 @@
 
   // ---- filter rail ----
   function railHTML(){
-    var dims=[['projectId','Project ID'],['status','Status'],['area','Area'],['phase','Phase'],['shop','Shop / Field'],['comp','Component Type'],['wp','Work Package']];
+    var dims=[['area','Area'],['aux1','Aux1'],['aux2','Aux2'],['aux3','Aux3'],['comp','Component Type'],['dwg','Drawing'],['phase','Phase Category'],['phaseCode','Phase Code'],['projectId','Project ID'],['roc','ROC Step'],['schedActNo','Sched ActNO'],['shop','Shop / Field'],['status','Status'],['wp','Work Package']];
     var basisOpts=[['budgetMH','BudgetMHs'],['qty','Quantity'],['percentEntry','PercentEntry'],['clientBudget','ClientBudget']];
     var h='<aside class="panel" style="position:sticky;top:70px;padding:12px 12px 14px;">';
     h+='<div style="font-size:11px;font-weight:800;letter-spacing:.06em;color:#3a3a48;text-transform:uppercase;">Filters</div>';
@@ -128,7 +128,7 @@
     });
     var chips=Object.keys(filters).filter(function(k){return filters[k]!=null;});
     if(chips.length){
-      var lab={projectId:'Project ID',status:'Status',area:'Area',phase:'Phase',shop:'Shop/Field',comp:'Component Type',wp:'Work Pkg'};
+      var lab={projectId:'Project ID',status:'Status',area:'Area',phase:'Phase Category',phaseCode:'Phase Code',shop:'Shop/Field',comp:'Component Type',wp:'Work Pkg',dwg:'Drawing',roc:'ROC Step',schedActNo:'Sched ActNO',aux1:'Aux1',aux2:'Aux2',aux3:'Aux3'};
       h+='<div style="margin-top:8px;border-top:1px solid #ececf1;padding-top:9px;">';
       h+='<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:10px;font-weight:700;color:#5a5a68;text-transform:uppercase;">Active</span><span data-clear style="font-size:10.5px;color:#3a9fd6;cursor:pointer;font-weight:600;">Clear all</span></div>';
       h+='<div style="display:flex;flex-wrap:wrap;gap:5px;">';
@@ -144,18 +144,27 @@
     var C=2*Math.PI*76, len=Math.min(A.pct,100)/100*C;
     var comp=rows.filter(function(r){return r.roc==='4.CON'&&r.status==='Complete';}).length;
     var tot=rows.filter(function(r){return r.roc==='4.CON';}).length;
+    var cpct=tot>0?comp/tot*100:0;
+    var C2=2*Math.PI*50, len2=Math.min(cpct,100)/100*C2;
     return '<div class="col">'
       +'<div class="panel" style="align-items:center;display:flex;flex-direction:column;">'
-        +'<div class="ttl">Progress</div>'
+        +'<div class="ttl">Overall Progress</div>'
         +'<div style="position:relative;width:180px;height:180px;margin:6px 0 4px;">'
           +'<svg viewBox="0 0 180 180" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="90" cy="90" r="76" fill="none" stroke="#e6e6ee" stroke-width="22"></circle><circle cx="90" cy="90" r="76" fill="none" stroke="'+NAVY+'" stroke-width="22" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'"></circle></svg>'
           +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;color:#20202c;">'+A.pct.toFixed(1)+'%</div>'
         +'</div>'
       +'</div>'
-      +'<div class="panel" style="display:flex;gap:8px;">'
-        +'<div style="flex:1;text-align:center;"><div style="font-size:26px;font-weight:800;color:#20202c;line-height:1;">'+fmt(comp)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Connections<br>Complete</div></div>'
-        +'<div style="width:1px;background:#ececf1;"></div>'
-        +'<div style="flex:1;text-align:center;"><div style="font-size:26px;font-weight:800;color:#20202c;line-height:1;">'+fmt(tot)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Total<br>Connections</div></div>'
+      +'<div class="panel flexcard" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">'
+        +'<div class="ttl">Summit Connections</div>'
+        +'<div style="position:relative;width:108px;height:108px;margin:6px 0 8px;">'
+          +'<svg viewBox="0 0 120 120" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="60" cy="60" r="50" fill="none" stroke="#e6e6ee" stroke-width="16"></circle><circle cx="60" cy="60" r="50" fill="none" stroke="'+NAVY+'" stroke-width="16" stroke-dasharray="'+len2.toFixed(2)+' '+(C2-len2).toFixed(2)+'"></circle></svg>'
+          +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:800;color:#20202c;">'+cpct.toFixed(0)+'%</div>'
+        +'</div>'
+        +'<div style="display:flex;gap:8px;width:100%;">'
+          +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(comp)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Connections<br>Complete</div></div>'
+          +'<div style="width:1px;background:#ececf1;"></div>'
+          +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(tot)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Total<br>Connections</div></div>'
+        +'</div>'
       +'</div>'
     +'</div>';
   }
@@ -181,7 +190,7 @@
   // ---- earn vs budget table (component type / area) ----
   function evbTable(rows,key,colHead){
     var groups=groupPct(rows,key).sort(function(a,b){return b.budget-a.budget;});
-    var h='<div class="panel"><div class="ttl" style="margin-bottom:5px;">'+colHead+'</div><table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">'+colHead.toUpperCase()+'</th><th style="font-weight:600;padding:3px 4px;">%</th><th style="font-weight:600;padding:3px 4px;">EARN</th><th style="font-weight:600;padding:3px 4px;">BUDGET</th></tr></thead><tbody>';
+    var h='<div class="panel flexcard"><div class="ttl" style="margin-bottom:5px;">'+colHead+'</div><table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">'+colHead.toUpperCase()+'</th><th style="font-weight:600;padding:3px 4px;">%</th><th style="font-weight:600;padding:3px 4px;">EARN</th><th style="font-weight:600;padding:3px 4px;">BUDGET</th></tr></thead><tbody>';
     var tb=0,te=0;
     groups.forEach(function(g){ var a=agg(rows.filter(function(r){return r[key]===g.label;})); tb+=a.budget; te+=a.earn;
       h+='<tr data-toggle-key="'+key+'" data-toggle-val="'+esc(g.label)+'" style="cursor:pointer;border-top:1px solid #f0f0f4;background:'+(String(filters[key])===g.label?'#eef0fb':'transparent')+';">'
@@ -203,14 +212,27 @@
     return '<div class="panel"><div class="ttl" style="text-align:center;">Components by Status</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px;">'+donut(parts,74)+'<div style="flex:1;display:flex;flex-direction:column;gap:3px;">'+legend+'</div></div></div>';
   }
   function phasePanel(rows){
-    var phs=distinct('phase'), arr=[];
-    phs.forEach(function(p){ var a=agg(rows.filter(function(r){return r.phase===p;})); if(a.budget>0) arr.push({label:p,value:a.budget}); });
-    arr.sort(function(a,b){return b.value-a.value;});
-    var tot=0; arr.forEach(function(x){tot+=x.value;}); if(!tot)tot=1;
-    var parts=arr.map(function(x,i){ return {value:x.value,color:PHCOL[x.label]||PHPAL[i%PHPAL.length]}; });
-    var legend='';
-    arr.forEach(function(x,i){ legend+='<div data-toggle-key="phase" data-toggle-val="'+esc(x.label)+'" style="display:flex;align-items:center;gap:6px;font-size:10px;cursor:pointer;"><span style="width:9px;height:9px;border-radius:2px;background:'+(PHCOL[x.label]||PHPAL[i%PHPAL.length])+';"></span><span style="flex:1;color:#44444f;">'+esc(x.label)+'</span><span style="font-weight:700;color:#22222c;">'+(x.value/tot*100).toFixed(1)+'%</span></div>'; });
-    return '<div class="panel"><div class="ttl" style="text-align:center;">Budget '+unitLabel()+' by Phase</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px;">'+donut(parts,74)+'<div style="flex:1;display:flex;flex-direction:column;gap:2px;">'+legend+'</div></div></div>';
+    var groups=groupPct(rows,'phase').sort(function(a,b){return b.budget-a.budget;});
+    var parts=[],tb=0,te=0,body='';
+    groups.forEach(function(g,i){
+      var a=agg(rows.filter(function(r){return r.phase===g.label;}));
+      tb+=a.budget; te+=a.earn;
+      var col=PHCOL[g.label]||PHPAL[i%PHPAL.length];
+      if(a.budget>0) parts.push({value:a.budget,color:col});
+      body+='<tr data-toggle-key="phase" data-toggle-val="'+esc(g.label)+'" style="cursor:pointer;border-top:1px solid #f0f0f4;background:'+(String(filters.phase)===g.label?'#eef0fb':'transparent')+';">'
+        +'<td style="text-align:left;padding:4px;font-weight:600;color:#2b2b36;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+col+';margin-right:6px;vertical-align:middle;"></span>'+esc(g.label)+'</td>'
+        +'<td style="text-align:right;padding:4px;font-weight:700;color:'+pctColor(a.pct)+';">'+a.pct.toFixed(0)+'%</td>'
+        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(a.earn)+'</td>'
+        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(a.budget)+'</td></tr>';
+    });
+    var totPct=tb?(te/tb*100):0;
+    var h='<div class="panel flexcard"><div class="ttl" style="text-align:center;margin-bottom:4px;">Progress by Phase</div>';
+    h+='<div style="display:flex;justify-content:center;margin:2px 0 10px;"><div style="position:relative;width:118px;height:118px;">'+donut(parts,118)+'<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:23px;font-weight:800;color:#1b1b22;line-height:1;">'+totPct.toFixed(0)+'%</div><div style="font-size:9px;font-weight:700;letter-spacing:.05em;color:#8a8a96;">COMPLETE</div></div></div></div>';
+    h+='<table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">PHASE</th><th style="font-weight:600;padding:3px 4px;">%</th><th style="font-weight:600;padding:3px 4px;">EARN</th><th style="font-weight:600;padding:3px 4px;">BUDGET</th></tr></thead><tbody>';
+    h+=body;
+    h+='<tr style="border-top:2px solid #d6d6de;font-weight:800;"><td style="text-align:left;padding:4px;">Total</td><td style="text-align:right;padding:4px;color:'+pctColor(totPct)+';">'+totPct.toFixed(0)+'%</td><td style="text-align:right;padding:4px;">'+fmt(te)+'</td><td style="text-align:right;padding:4px;">'+fmt(tb)+'</td></tr>';
+    h+='</tbody></table></div>';
+    return h;
   }
   function unitLabel(){ return {budgetMH:'MH',qty:'Qty',percentEntry:'%Ent',clientBudget:'Client'}[basis]; }
 
@@ -284,11 +306,11 @@
     if(!loaded){ app.innerHTML='<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#faf9f5;color:#9a9aa6;font-size:16px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">Loading dashboard…</div>'; return; }
     if(!ROWS.length){ app.innerHTML=headerHTML(); return; }
     var rows=filtered(), A=agg(rows);
-    var top='<div style="display:grid;grid-template-columns:minmax(200px,1fr) minmax(0,0.9fr) minmax(232px,1.15fr) minmax(0,1.3fr);gap:12px;align-items:start;">'
+    var top='<div class="dashrow1" style="display:grid;grid-template-columns:minmax(200px,1fr) minmax(0,0.9fr) minmax(232px,1.15fr) minmax(0,1.3fr);gap:12px;align-items:start;">'
       +progressHTML(rows,A)
-      +'<div class="col"><div class="panel"><div class="ttl">Shop / Field Progress</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">'+barRows(groupPct(rows,'shop').sort(function(a,b){return b.budget-a.budget;}),BLUE)+'</div></div>'+phasePanel(rows)+'</div>'
+      +'<div class="col">'+phasePanel(rows)+'</div>'
       +'<div class="col">'+evbTable(rows,'comp','Component Type')+evbTable(rows,'area','Area')+'</div>'
-      +'<div class="col"><div class="panel"><div class="ttl">ROC Step Progress</div><div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;">'+barRows(groupPct(rows,'roc').sort(function(a,b){return a.label<b.label?-1:1;}),NAVY)+'</div></div></div>'
+      +'<div class="col"><div class="panel flexcard"><div class="ttl">ROC Step Progress</div><div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;">'+barRows(groupPct(rows,'roc').sort(function(a,b){return a.label<b.label?-1:1;}),NAVY)+'</div></div>'+'<div class="panel"><div class="ttl">Shop / Field Progress</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">'+barRows(groupPct(rows,'shop').sort(function(a,b){return b.budget-a.budget;}),NAVY)+'</div></div>'+'</div>'
       +'</div>';
     app.innerHTML=headerHTML()
       +'<div style="display:grid;grid-template-columns:214px 1fr;gap:12px;padding:12px 16px 0;align-items:start;">'

@@ -6,6 +6,17 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 24, 2026 (Project Dashboard — report tweaks)
+
+**On-report refinements to the Project Dashboard** (all in `Dashboards/vantage-dashboard.html`, plus 5 new projection fields in `ProjectDashboardWindow`).
+
+- **Filter rail expanded 7 → 14 filters, alphabetized:** added Aux1, Aux2, Aux3, Drawing (DwgNO), Phase Code, ROC Step, Sched ActNO. The last five needed new `ActivityDto` fields + JS `COLMAP` entries; DwgNO/ROCStep were already in the feed. The old "Phase" filter was relabeled "Phase Category" to disambiguate from the new Phase Code.
+- **"Budget MHs by Phase" → "PROGRESS BY PHASE":** the old panel mislabeled budget-share as completion. Rebuilt to mirror the Component-Type/Area panels — a budget-sized donut with overall **% Complete** in the center, over a **PHASE | % | EARN | BUDGET** table (true percent-complete, not budget share) with a Total row.
+- **Row-1 layout:** each of the 4 columns is a fixed height (2× the Overall Progress card, via a scoped `.dashrow1` rule); the tall "filler" card in each column scrolls internally rather than overrunning. Max two visuals per column.
+- **First panel renamed "Overall Progress."**
+- **New "SUMMIT CONNECTIONS" card** (column 1, under Overall Progress): a completed/total-connections progress pie with the Connections Complete / Total counts kept below it.
+- **Shop/Field Progress moved to column 4** under ROC Step; its bars recolored from light blue to navy (`#1e1b6b`) to match the rest of the report.
+
 ### July 24, 2026 (Project Dashboard — initial integration)
 
 **New Tools → Project Dashboard — a live progress report hosted in-app.** A self-contained, theme-neutral HTML/JS dashboard (donut progress, connections-complete tiles, Shop/Field + Component-Type + ROC-Step breakdowns, Budget-MH-by-phase, Area rollup, an Area/Module-by-phase heatmap, and a week-over-week cumulative chart) now opens from the Tools menu in its own window, fed live from the local activities database.

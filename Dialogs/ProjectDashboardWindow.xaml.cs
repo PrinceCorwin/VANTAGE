@@ -193,11 +193,16 @@ namespace VANTAGE.Dialogs
                     Status = a.Status,
                     CompType = a.CompType,
                     PhaseCategory = a.PhaseCategory,
+                    PhaseCode = a.PhaseCode,
                     ROCStep = a.ROCStep,
+                    SchedActNO = a.SchedActNO,
                     Area = a.Area,
                     UDF2 = a.UDF2,
                     ShopField = a.ShopField,
                     WorkPackage = a.WorkPackage,
+                    Aux1 = a.Aux1,
+                    Aux2 = a.Aux2,
+                    Aux3 = a.Aux3,
                     Description = a.Description,
                     TagNO = a.TagNO,
                     LineNumber = a.LineNumber,
@@ -290,11 +295,16 @@ namespace VANTAGE.Dialogs
             public string? Status { get; set; }
             public string? CompType { get; set; }
             public string? PhaseCategory { get; set; }
+            public string? PhaseCode { get; set; }
             public string? ROCStep { get; set; }
+            public string? SchedActNO { get; set; }
             public string? Area { get; set; }
             public string? UDF2 { get; set; }
             public string? ShopField { get; set; }
             public string? WorkPackage { get; set; }
+            public string? Aux1 { get; set; }
+            public string? Aux2 { get; set; }
+            public string? Aux3 { get; set; }
             public string? Description { get; set; }
             public string? TagNO { get; set; }
             public string? LineNumber { get; set; }
