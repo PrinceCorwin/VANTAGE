@@ -309,6 +309,17 @@
                                         HorizontalContentAlignment="Left"
                                         Click="MenuHelpSidebar_Click"
                                         Cursor="Hand"/>
+                                <Button x:Name="btnTutorials"
+                                        Content="Tutorials"
+                                        Visibility="Collapsed"
+                                        Background="Transparent"
+                                        Foreground="{DynamicResource ForegroundColor}"
+                                        BorderThickness="0"
+                                        Padding="12,8"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuTutorials_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Watch VANTAGE tutorial videos"/>
                                 <Button Content="Feedback Board"
                                         Background="Transparent"
                                         Foreground="{DynamicResource ForegroundColor}"

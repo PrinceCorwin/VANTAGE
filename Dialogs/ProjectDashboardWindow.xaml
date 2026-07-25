@@ -52,6 +52,39 @@
 
                 <!-- Right-aligned actions -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="Layout:"
+                               VerticalAlignment="Center"
+                               Margin="0,0,6,0"
+                               FontSize="12"
+                               Foreground="{DynamicResource ForegroundColor}"/>
+                    <ComboBox x:Name="cboLayout"
+                              Width="180"
+                              Height="30"
+                              Margin="0,0,6,0"
+                              VerticalContentAlignment="Center"
+                              SelectionChanged="CboLayout_SelectionChanged"
+                              ToolTip="Switch to a saved report layout"/>
+                    <Button x:Name="btnDeleteLayout"
+                            Content="Delete"
+                            Width="70"
+                            Height="30"
+                            Margin="0,0,10,0"
+                            IsEnabled="False"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource ControlBorder}"
+                            Click="BtnDeleteLayout_Click"
+                            ToolTip="Delete the selected saved layout (the Default can't be deleted)"/>
+                    <Button x:Name="btnCustomize"
+                            Content="Customize"
+                            Width="100"
+                            Height="30"
+                            Margin="0,0,10,0"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource ControlBorder}"
+                            Click="BtnCustomize_Click"
+                            ToolTip="Customize this report — add, remove, and rearrange visuals, then save as a named layout"/>
                     <Button x:Name="btnRefresh"
                             Content="Refresh"
                             Width="90"

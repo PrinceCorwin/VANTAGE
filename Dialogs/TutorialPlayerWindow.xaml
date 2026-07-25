@@ -1,0 +1,41 @@
+<Window x:Class="VANTAGE.Dialogs.TutorialPlayerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
+        Title="Tutorial"
+        Height="720"
+        Width="1280"
+        MinHeight="360"
+        MinWidth="640"
+        WindowStartupLocation="CenterOwner"
+        Background="Black"
+        WindowStyle="SingleBorderWindow"
+        ResizeMode="CanResize">
+
+    <!-- In-app tutorial player. The video streams from a short-lived pre-signed S3
+         URL loaded inside this WebView2, so the link is never exposed to an external
+         browser. The WebView2 stays hidden until first paint; a spinner covers the
+         black backdrop until playback is ready. -->
+    <Grid Background="Black">
+        <wv2:WebView2 x:Name="webView" Visibility="Hidden"/>
+
+        <Border x:Name="loadingOverlay" Background="Black">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <syncfusion:SfBusyIndicator x:Name="busyIndicator"
+                                            IsBusy="True"
+                                            AnimationType="DualRing"
+                                            ViewboxWidth="48"
+                                            ViewboxHeight="48"
+                                            Foreground="{DynamicResource AccentColor}"/>
+                <TextBlock x:Name="txtLoading"
+                           Text="Loading tutorial…"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="#DDDDDD"
+                           HorizontalAlignment="Center"
+                           Margin="0,18,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

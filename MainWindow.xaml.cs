@@ -26,6 +26,12 @@ namespace VANTAGE
         private Button? _activeNavButton;
         private PluginLoaderService? _pluginLoader;
 
+        // Allowlist of usernames who see the Tutorials menu item while the tutorial
+        // videos are still being produced and uploaded. Case-insensitive. Widen (or
+        // remove the gate) once the full set of videos is published.
+        private static readonly System.Collections.Generic.HashSet<string> TutorialAllowedUsers =
+            new(StringComparer.OrdinalIgnoreCase) { "steve", "steve.amalfitano" };
+
         // Modeless snapshot dialogs — tracked so repeat menu clicks just focus the existing window.
         private Dialogs.ManageSnapshotsDialog? _manageSnapshotsDialog;
         private Dialogs.AdminSnapshotsDialog? _adminSnapshotsDialog;
@@ -198,6 +204,26 @@ namespace VANTAGE
         {
             popupSettings.IsOpen = false;
             _sidePanelViewModel.ShowHelp();
+        }
+
+        // Opens a tutorial video in the in-app player. A short-lived pre-signed S3
+        // URL is generated on demand so the link is never exposed to an external
+        // browser and expires quickly. The private bucket ensures playback only
+        // works through the app, not from a copied link.
+        private void MenuTutorials_Click(object sender, RoutedEventArgs e)
+        {
+            popupSettings.IsOpen = false;
+            try
+            {
+                var dialog = new TutorialsDialog { Owner = this };
+                dialog.Show();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuTutorials_Click");
+                AppMessageBox.Show("Could not open Tutorials — see log.",
+                    "Tutorials", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void MenuProjectDashboard_Click(object sender, RoutedEventArgs e)
@@ -518,6 +544,13 @@ namespace VANTAGE
             if (App.CurrentUser == null || !App.CurrentUser.IsEstimator)
             {
                 btnTakeoff.Visibility = Visibility.Collapsed;
+            }
+
+            // Show TUTORIALS menu item only for the allowlisted users for now.
+            if (!string.IsNullOrEmpty(App.CurrentUser?.Username)
+                && TutorialAllowedUsers.Contains(App.CurrentUser!.Username))
+            {
+                btnTutorials.Visibility = Visibility.Visible;
             }
 
             // Restore last visited view (default to Progress)

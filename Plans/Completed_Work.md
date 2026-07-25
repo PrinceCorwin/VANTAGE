@@ -6,6 +6,28 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 25, 2026 (Project Dashboard — Customize UI: layout manager, in-page visual editors, layout persistence)
+
+**Built the Project Dashboard customization UI** (§10 step 3 of `Plans/PRD_ProjectDashboard_Customization.md`) on top of the data-driven engine — users can edit the report's visuals, save named layouts, and switch between them. All customize interactions are page-side (`Dashboards/vantage-dashboard.html`); C# (`ProjectDashboardWindow`, `SettingsManager`) owns the toolbar + persistence.
+
+- **Customize toggle + edit mode.** A WPF **Customize** button posts a `setCustomize` message; the page enters an in-WebView2 edit mode: manager toolbar (Save / Save as / Revert to default / Publish to Cloud / Import from Cloud / Export PDF / Done — Cloud + PDF are stubs for later blocks), per-visual ✎ edit / ✕ delete overlays, filtering suppressed while editing, and a "Default is read-only — Save creates a new layout" warning. The Default is edited on a clone (never mutated); Save on it routes to Save as.
+- **In-page visual editors** (decided in-page HTML, not native WPF, so live preview is trivial). Each opens a docked side panel with **Preview** (on-demand render, no per-keystroke re-render), **Revert to default**, Cancel, and Save. Built 6 of 7 — Progress ring, Composition donut, Summary table, Bar list, Heatmap, Trend — each exposing its locked config (group-by, measure, sort, per-type toggles, colors via native swatch + hex). Stat tiles pending (needs the filter builder).
+- **Layout persistence + picker.** User layouts stored in UserSettings via new `SettingsManager` methods (`ReportLayouts.Index` / `ReportLayout.<id>.Data` / `ReportLayouts.LastUsed`). A native **Layout** combo lists Default + saved layouts and switches between them; a **Delete** button removes the selected one (confirm). **Last-used is global** — the layout you were viewing reopens next session.
+- **Drag-to-resize row-1 column widths** — drag the dividers between the four row-1 columns in Customize; weights save per layout (`row1Widths`, `minmax(0,fr)` so a content-heavy column can be dragged narrower and scrolls internally — fixes wide-value overflow).
+- **Per-column %/Earned/Budget show-hide** on the summary table + donut table (hide hours for client-facing reports; group column + Total always shown).
+- **Edit-mode preview fidelity:** row-1 columns keep their real fixed height + internal scroll while editing, so a long visual scrolls in-panel instead of stretching the preview full-length.
+
+### July 25, 2026 (Tutorials — in-app tutorial video player, private S3 hosting)
+
+**New ⋮ menu → Tutorials — a library of how-to videos that play inside the app.** Videos are hosted privately on AWS S3 and stream through an in-app player, so the video only plays through VANTAGE — a copied link won't work from an outside browser. Currently gated to an allowlist (`steve`, `steve.amalfitano`) while the video series is still being produced; the intro video is up, the rest are pending.
+
+- **Private hosting, no public link.** New S3 bucket `summit-vantage-tutorials` (us-east-1) with Block Public Access ON — anonymous requests 403. The app generates a short-lived (5-minute) pre-signed URL on demand using the existing AI-Takeoff credential (`vantage-takeoff-user`, whose `TakeoffAppAccess` policy gained a scoped `s3:GetObject` on the tutorials bucket). Playback happens in-app so the signed URL is never exposed to an external browser; if it lapses mid-view the player shows a "session expired — reopen to watch again" notice rather than a broken frame.
+- **`Dialogs/TutorialPlayerWindow` (WebView2)** — plays the video with autoplay, real fullscreen (drives the host window off the HTML Fullscreen API), context-menu/dev-tools disabled, and disposes the WebView2 on close so audio stops immediately (no lingering playback after closing).
+- **`Dialogs/TutorialsDialog`** — the picker: lists the available videos from a `tutorials.json` manifest in the bucket (`{key, description}` per entry), showing the **filename (without extension) as the name with the description underneath**, sorted alphabetically by filename. Filenames are number-prefixed (`1 - …`, `2 - …`) so they self-order; adding a video needs no app release — upload the MP4 and add a manifest line.
+- **`Services/TutorialService`** reads the manifest and signs playback URLs; **`Models/TutorialItem`** is the manifest row. The ⋮ **Tutorials** button (in `MainWindow`) is collapsed unless the current user is on the allowlist.
+- **Intro video uploaded** (`1 - Vantage-Intro.mp4`), converted from the DaVinci Resolve `.mov` export to browser-friendly MP4 (H.264 copy + AAC audio + faststart). Going forward Steve exports MP4 directly from DR.
+- **Remaining:** Steve to export and hand over the rest of the tutorial videos (from DaVinci Resolve); each gets uploaded with a number-prefixed filename + a description he provides. Manual (`Help/manual.html`) documentation deferred until the feature goes GA (allowlist removed).
+
 ### July 25, 2026 (Project Dashboard — data-driven render engine + click-to-filter on bars/trends)
 
 **Refactored the Project Dashboard report to a data-driven render engine** (`Dashboards/vantage-dashboard.html`) — the groundwork for the upcoming customization feature (`Plans/PRD_ProjectDashboard_Customization.md` §10 step 2). No user-visible change to the report's appearance; verified byte-identical to the prior hand-coded output.

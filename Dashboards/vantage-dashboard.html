@@ -213,11 +213,10 @@
         prog=def.colorProgress||NAVY, rem=def.colorRemaining||'#e6e6ee',
         C=2*Math.PI*76, len=Math.min(A.pct,100)/100*C, tiles='';
     if(def.showTiles){
-      var u=unitLabel();
       tiles='<div style="display:flex;gap:8px;width:100%;margin-top:8px;">'
-        +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(A.earn)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Earned '+u+'</div></div>'
+        +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(A.earn)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Earned</div></div>'
         +'<div style="width:1px;background:#ececf1;"></div>'
-        +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(A.budget)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Total '+u+'</div></div>'
+        +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(A.budget)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Total</div></div>'
       +'</div>';
     }
     return '<div class="panel" style="align-items:center;display:flex;flex-direction:column;">'
@@ -286,6 +285,12 @@
   }
 
   // ---- engine: composition donut renderer (port of phasePanel) ----
+  // Summary-table column visibility (shared by the donut's table and the summary table).
+  // showPct / showEarn / showBudget default to true; clients-facing layouts can hide hours.
+  function colFlags(def){ return [def.showPct!==false, def.showEarn!==false, def.showBudget!==false]; }
+  function colHeads(def){ var f=colFlags(def), h=''; if(f[0]) h+='<th style="font-weight:600;padding:3px 4px;">%</th>'; if(f[1]) h+='<th style="font-weight:600;padding:3px 4px;">EARN</th>'; if(f[2]) h+='<th style="font-weight:600;padding:3px 4px;">BUDGET</th>'; return h; }
+  function colCells(def,pctTd,earnTd,budgetTd){ var f=colFlags(def); return (f[0]?pctTd:'')+(f[1]?earnTd:'')+(f[2]?budgetTd:''); }
+
   RENDERERS.donut=function(def,rows){
     var groups=sortGroups(groupAgg(rows,def.groupBy,def.measure),def.sort),
         cols=sliceColors(def,groups.map(function(g){return g.label;})),
@@ -295,9 +300,11 @@
       if(g.budget>0) parts.push({value:g.budget,color:col});
       body+='<tr data-toggle-key="'+def.groupBy+'" data-toggle-val="'+esc(g.label)+'" style="cursor:pointer;border-top:1px solid #f0f0f4;background:'+(String(filters[def.groupBy])===g.label?'#eef0fb':'transparent')+';">'
         +'<td style="text-align:left;padding:4px;font-weight:600;color:#2b2b36;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+col+';margin-right:6px;vertical-align:middle;"></span>'+esc(g.label)+'</td>'
-        +'<td style="text-align:right;padding:4px;font-weight:700;color:'+pctColor(g.pct)+';">'+g.pct.toFixed(0)+'%</td>'
-        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.earn)+'</td>'
-        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.budget)+'</td></tr>';
+        +colCells(def,
+          '<td style="text-align:right;padding:4px;font-weight:700;color:'+pctColor(g.pct)+';">'+g.pct.toFixed(0)+'%</td>',
+          '<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.earn)+'</td>',
+          '<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.budget)+'</td>')
+        +'</tr>';
     });
     var totPct=tb?(te/tb*100):0, center='';
     if(def.showCenter!==false){
@@ -306,9 +313,12 @@
     var h='<div class="panel"><div class="ttl" style="text-align:center;margin-bottom:4px;">'+esc(def.title||'')+'</div>';
     h+='<div style="display:flex;justify-content:center;margin:2px 0 10px;"><div style="position:relative;width:118px;height:118px;">'+donut(parts,118)+center+'</div></div>';
     if(def.showTable!==false){
-      h+='<table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">'+colDisplay(def.groupBy).toUpperCase()+'</th><th style="font-weight:600;padding:3px 4px;">%</th><th style="font-weight:600;padding:3px 4px;">EARN</th><th style="font-weight:600;padding:3px 4px;">BUDGET</th></tr></thead><tbody>';
+      h+='<table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">'+colDisplay(def.groupBy).toUpperCase()+'</th>'+colHeads(def)+'</tr></thead><tbody>';
       h+=body;
-      h+='<tr style="border-top:2px solid #d6d6de;font-weight:800;"><td style="text-align:left;padding:4px;">Total</td><td style="text-align:right;padding:4px;color:'+pctColor(totPct)+';">'+totPct.toFixed(0)+'%</td><td style="text-align:right;padding:4px;">'+fmt(te)+'</td><td style="text-align:right;padding:4px;">'+fmt(tb)+'</td></tr>';
+      h+='<tr style="border-top:2px solid #d6d6de;font-weight:800;"><td style="text-align:left;padding:4px;">Total</td>'+colCells(def,
+        '<td style="text-align:right;padding:4px;color:'+pctColor(totPct)+';">'+totPct.toFixed(0)+'%</td>',
+        '<td style="text-align:right;padding:4px;">'+fmt(te)+'</td>',
+        '<td style="text-align:right;padding:4px;">'+fmt(tb)+'</td>')+'</tr>';
       h+='</tbody></table>';
     }
     h+='</div>';
@@ -329,14 +339,19 @@
       tb+=g.budget; te+=g.earn;
       body+='<tr data-toggle-key="'+def.groupBy+'" data-toggle-val="'+esc(g.label)+'" style="cursor:pointer;border-top:1px solid #f0f0f4;background:'+(String(filters[def.groupBy])===g.label?'#eef0fb':'transparent')+';">'
         +'<td style="text-align:left;padding:4px;font-weight:600;color:#2b2b36;">'+esc(g.label)+'</td>'
-        +'<td style="text-align:right;padding:4px;font-weight:700;color:'+pctColorFor(g.pct,def)+';">'+g.pct.toFixed(0)+'%</td>'
-        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.earn)+'</td>'
-        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.budget)+'</td></tr>';
+        +colCells(def,
+          '<td style="text-align:right;padding:4px;font-weight:700;color:'+pctColorFor(g.pct,def)+';">'+g.pct.toFixed(0)+'%</td>',
+          '<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.earn)+'</td>',
+          '<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.budget)+'</td>')
+        +'</tr>';
     });
-    return '<div class="panel"><div class="ttl" style="margin-bottom:5px;">'+head+'</div><table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">'+esc((def.title||'').toUpperCase())+'</th><th style="font-weight:600;padding:3px 4px;">%</th><th style="font-weight:600;padding:3px 4px;">EARN</th><th style="font-weight:600;padding:3px 4px;">BUDGET</th></tr></thead><tbody>'
+    return '<div class="panel"><div class="ttl" style="margin-bottom:5px;">'+head+'</div><table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">'+esc((def.title||'').toUpperCase())+'</th>'+colHeads(def)+'</tr></thead><tbody>'
       +body
-      +'<tr style="border-top:2px solid #d6d6de;font-weight:800;"><td style="text-align:left;padding:4px;">Total</td><td style="text-align:right;padding:4px;">'+(tb?(te/tb*100).toFixed(0):0)+'%</td><td style="text-align:right;padding:4px;">'+fmt(te)+'</td><td style="text-align:right;padding:4px;">'+fmt(tb)+'</td></tr>'
-      +'</tbody></table></div>';
+      +'<tr style="border-top:2px solid #d6d6de;font-weight:800;"><td style="text-align:left;padding:4px;">Total</td>'+colCells(def,
+        '<td style="text-align:right;padding:4px;">'+(tb?(te/tb*100).toFixed(0):0)+'%</td>',
+        '<td style="text-align:right;padding:4px;">'+fmt(te)+'</td>',
+        '<td style="text-align:right;padding:4px;">'+fmt(tb)+'</td>')
+      +'</tr></tbody></table></div>';
   };
 
   // ---- engine: bar list renderer (port of barRows + its panel wrapper) ----
@@ -438,20 +453,322 @@
   // ---- engine: layout composer (replaces the hardcoded render() body) ----
   // Builds the report body: row-1 four-column band, then the added rows (each
   // 1..N equal-width visuals; a single stretched visual fills its row), then footer.
-  function renderLayout(layout,rows){
-    var row1='<div class="dashrow1" style="display:grid;grid-template-columns:minmax(200px,1fr) minmax(0,0.9fr) minmax(232px,1.15fr) minmax(0,1.3fr);gap:12px;align-items:start;">';
-    layout.row1.forEach(function(col){
+  // Edit-mode overlay: wraps a visual with a relative container + ✎/✕ controls.
+  function editWrap(h,def){
+    // The wrapper must carry the panel's flex role so row-1 columns keep their fixed
+    // height and the "filler" panel scrolls internally — i.e. the preview matches the
+    // real report (no full-length overflow while editing).
+    var ws=def.flex ? 'position:relative;flex:1 1 0;min-height:0;display:flex;flex-direction:column;' : 'position:relative;flex:0 0 auto;';
+    return '<div style="'+ws+'">'+h
+      +'<div style="position:absolute;top:6px;right:8px;display:flex;gap:5px;z-index:6;">'
+        +'<span data-edit-vid="'+esc(def.id)+'" title="Edit visual" style="cursor:pointer;background:#fff;border:1px solid #cfcfda;border-radius:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5a5a68;box-shadow:0 1px 3px rgba(16,24,40,.18);">&#9998;</span>'
+        +'<span data-del-vid="'+esc(def.id)+'" title="Delete visual" style="cursor:pointer;background:#fff;border:1px solid #e6c2c2;border-radius:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:13px;color:#c05a5a;box-shadow:0 1px 3px rgba(16,24,40,.18);">&#10005;</span>'
+      +'</div></div>';
+  }
+  // Row-1 column-width template. Custom per-column fr weights (layout.row1Widths) when set,
+  // else the shipped Default proportions. In edit mode, 12px drag-handle tracks are interleaved
+  // (with grid gap:0) so the handles sit exactly where the 12px gaps are in view mode.
+  function row1Template(layout,edit){
+    var n=layout.row1.length, w=layout.row1Widths, cols;
+    if(w&&w.length===n){ cols=w.map(function(x){return 'minmax(0,'+x+'fr)';}); }
+    else if(n===4){ cols=['minmax(200px,1fr)','minmax(0,0.9fr)','minmax(232px,1.15fr)','minmax(0,1.3fr)']; }
+    else { cols=[]; for(var k=0;k<n;k++) cols.push('minmax(0,1fr)'); }
+    if(!edit) return cols.join(' ');
+    var t=[]; cols.forEach(function(c,i){ t.push(c); if(i<cols.length-1) t.push('12px'); });
+    return t.join(' ');
+  }
+  function renderLayout(layout,rows,edit){
+    function wrap(def){ var h=renderVisual(def,rows); if(def.flex) h=h.replace('class="panel"','class="panel flexcard"'); return edit?editWrap(h,def):h; }
+    var row1='<div class="dashrow1" style="display:grid;grid-template-columns:'+row1Template(layout,edit)+';gap:'+(edit?'0':'12px')+';align-items:start;">';
+    layout.row1.forEach(function(col,ci){
       row1+='<div class="col">';
-      col.forEach(function(def){ var h=renderVisual(def,rows); if(def.flex) h=h.replace('class="panel"','class="panel flexcard"'); row1+=h; });
+      col.forEach(function(def){ row1+=wrap(def); });
       row1+='</div>';
+      if(edit && ci<layout.row1.length-1){ row1+='<div data-colresize="'+ci+'" title="Drag to resize columns" style="cursor:col-resize;display:flex;align-items:center;justify-content:center;">'
+        +'<div style="width:4px;height:56px;background:#c7c7d2;border-radius:2px;"></div></div>'; }
     });
     row1+='</div>';
     var below='';
     (layout.rows||[]).forEach(function(r){
-      if(r.visuals.length===1){ below+=renderVisual(r.visuals[0],rows); }
-      else { below+='<div style="display:grid;grid-template-columns:repeat('+r.visuals.length+',minmax(0,1fr));gap:12px;">'+r.visuals.map(function(def){return renderVisual(def,rows);}).join('')+'</div>'; }
+      if(r.visuals.length===1){ below+=wrap(r.visuals[0]); }
+      else { below+='<div style="display:grid;grid-template-columns:repeat('+r.visuals.length+',minmax(0,1fr));gap:12px;">'+r.visuals.map(wrap).join('')+'</div>'; }
     });
     return row1+below+footerHTML();
+  }
+
+  // ---- customize: row-1 column drag-resize ----
+  var _dragCol=null;
+  function beginColResize(e,i){
+    e.preventDefault();
+    var grid=document.querySelector('.dashrow1'); if(!grid) return;
+    var cols=grid.querySelectorAll(':scope > .col');
+    if(cols.length<2) return;
+    // Seed per-column fr weights from the current rendered widths the first time.
+    if(!activeLayout.row1Widths || activeLayout.row1Widths.length!==cols.length){
+      var tot=0, ws=[]; cols.forEach(function(c){ var w=c.getBoundingClientRect().width; ws.push(w); tot+=w; });
+      activeLayout.row1Widths=ws.map(function(w){ return +((w/tot)*cols.length).toFixed(3); });
+    }
+    _dragCol={ i:i, startX:e.clientX, wi:activeLayout.row1Widths[i], wj:activeLayout.row1Widths[i+1],
+      pxi:cols[i].getBoundingClientRect().width, pxj:cols[i+1].getBoundingClientRect().width, grid:grid };
+    document.body.style.userSelect='none';
+    document.addEventListener('mousemove',onColResize);
+    document.addEventListener('mouseup',endColResize);
+  }
+  function onColResize(e){
+    if(!_dragCol) return;
+    var d=e.clientX-_dragCol.startX, MIN=120, pxi=_dragCol.pxi+d, pxj=_dragCol.pxj-d;
+    if(pxi<MIN){ pxi=MIN; pxj=_dragCol.pxi+_dragCol.pxj-MIN; }
+    if(pxj<MIN){ pxj=MIN; pxi=_dragCol.pxi+_dragCol.pxj-MIN; }
+    var pairFr=_dragCol.wi+_dragCol.wj, pairPx=_dragCol.pxi+_dragCol.pxj, fri=pairFr*(pxi/pairPx);
+    activeLayout.row1Widths[_dragCol.i]=+fri.toFixed(3);
+    activeLayout.row1Widths[_dragCol.i+1]=+(pairFr-fri).toFixed(3);
+    _dragCol.grid.style.gridTemplateColumns=row1Template(activeLayout,true);
+  }
+  function endColResize(){ _dragCol=null; document.body.style.userSelect=''; document.removeEventListener('mousemove',onColResize); document.removeEventListener('mouseup',endColResize); }
+  document.addEventListener('mousedown',function(e){ if(!customize) return; var el=e.target.closest?e.target.closest('[data-colresize]'):null; if(el) beginColResize(e,+el.getAttribute('data-colresize')); });
+
+  // ---- customize (edit mode) ----
+  var customize=false;
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function postToHost(m){ if(window.chrome&&window.chrome.webview){ try{ window.chrome.webview.postMessage(m); }catch(e){} } }
+  // Toggled by the WPF CUSTOMIZE button (setCustomize message) or window.setCustomizeMode.
+  // Entering edit clones the active layout so the locked DEFAULT_LAYOUT is never mutated.
+  function setCustomizeMode(on){ on=!!on; if(on&&!customize) activeLayout=clone(activeLayout); customize=on; if(!on) closeVisualEditor(); render(); }
+  window.setCustomizeMode=setCustomizeMode;
+  // Remove a visual by id from row 1 or the added rows; drop rows left empty.
+  function deleteVisual(id){
+    activeLayout.row1.forEach(function(col){ for(var i=col.length-1;i>=0;i--){ if(col[i].id===id) col.splice(i,1); } });
+    (activeLayout.rows||[]).forEach(function(r){ for(var i=r.visuals.length-1;i>=0;i--){ if(r.visuals[i].id===id) r.visuals.splice(i,1); } });
+    activeLayout.rows=(activeLayout.rows||[]).filter(function(r){ return r.visuals.length>0; });
+    render();
+  }
+  function czBtn(act,label,primary){ return '<button data-cz="'+act+'" style="font-size:11px;'+(primary?'font-weight:600;color:#fff;background:#1e1b6b;border:none;':'color:#2b2b36;background:#fff;border:1px solid #cfcfda;')+'border-radius:5px;padding:6px 11px;cursor:pointer;margin-left:6px;">'+label+'</button>'; }
+  function managerToolbar(){
+    return '<div style="display:flex;align-items:center;gap:8px;background:#fff;padding:8px 16px;border-bottom:1px solid #dedee5;position:sticky;top:0;z-index:45;flex-wrap:wrap;">'
+      +'<span style="font-size:10px;font-weight:700;letter-spacing:.05em;color:#fff;background:#1e1b6b;padding:3px 9px;border-radius:4px;">CUSTOMIZE</span>'
+      +'<span style="font-size:11.5px;color:#6a6a78;">Editing: <b style="color:#1e1b6b;">'+esc(activeLayout.name||'Default')+'</b></span>'
+      +'<span style="font-size:10.5px;color:#8a5a00;background:#faf0da;border:1px solid #f0dfb0;border-radius:4px;padding:3px 9px;">'
+        +(isDefaultLayout()?'<b>Default is read-only</b> — Save creates a new layout. ':'')
+        +'Changes aren’t saved until you click Save.</span>'
+      +'<span style="flex:1;"></span>'
+      +czBtn('save','Save',true)+czBtn('saveas','Save as…')+czBtn('revert','Revert to default')
+      +(isDefaultLayout()?'':czBtn('delete','Delete layout'))
+      +'<span style="width:1px;height:20px;background:#e0e0e8;margin-left:6px;"></span>'
+      +czBtn('publish','Publish to Cloud')+czBtn('import','Import from Cloud')+czBtn('pdf','Export PDF')
+      +'<span style="width:1px;height:20px;background:#e0e0e8;margin-left:6px;"></span>'
+      +czBtn('done','Done')
+    +'</div>';
+  }
+  // The shipped Default is read-only — it can never be overwritten.
+  function isDefaultLayout(){ return !!activeLayout.locked || activeLayout.id==='default'; }
+  function newLayoutId(){ return 'L'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36); }
+  function czAction(a){
+    if(a==='done'){ setCustomizeMode(false); postToHost({type:'customizeExited'}); }
+    else if(a==='revert'){ activeLayout=clone(DEFAULT_LAYOUT); render(); }
+    else if(a==='save'){ if(isDefaultLayout()) czSaveAs(); else postToHost({type:'saveLayout',layout:activeLayout}); }   // Save on Default acts as Save as
+    else if(a==='saveas'){ czSaveAs(); }
+    else if(a==='delete'){ czDelete(); }
+    else { postToHost({type:'cz',action:a}); }   // publish/import/pdf handled by C# (later blocks)
+  }
+  // Delete the current (user) layout — C# removes it and sends back the Default.
+  function czDelete(){
+    if(isDefaultLayout()) return;
+    czConfirm('Delete the layout “'+esc(activeLayout.name||'')+'”? This can’t be undone.','Delete',function(){
+      postToHost({type:'deleteLayout',id:activeLayout.id});
+      if(!(window.chrome&&window.chrome.webview)){ activeLayout=clone(DEFAULT_LAYOUT); render(); }   // standalone fallback
+    });
+  }
+  // Save as: name the layout, convert the working copy into a new (unlocked) user layout, hand it to C# to persist.
+  function czSaveAs(){
+    czPrompt('Save as new layout', isDefaultLayout()?'':(activeLayout.name||''), function(name){
+      name=(name||'').trim(); if(!name) return;
+      activeLayout.name=name; activeLayout.id=newLayoutId(); activeLayout.locked=false; activeLayout.basedOn='default';
+      postToHost({type:'saveLayout',layout:activeLayout});   // C# persistence wired in the next block
+      render();
+    });
+  }
+  // Small in-page name prompt (avoids relying on window.prompt inside WebView2).
+  var _promptOk=null;
+  function czPrompt(title,dflt,onOk){
+    _promptOk=onOk;
+    var host=document.getElementById('vPrompt'); if(!host){ host=document.createElement('div'); host.id='vPrompt'; document.body.appendChild(host); }
+    host.innerHTML='<div style="position:fixed;inset:0;background:rgba(20,20,30,.4);z-index:70;display:flex;align-items:center;justify-content:center;font-family:\'Segoe UI\',system-ui,sans-serif;">'
+      +'<div style="background:#fff;border-radius:8px;width:340px;box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden;">'
+        +'<div style="padding:15px 16px;"><div style="font-size:13px;font-weight:700;color:#1b1b22;margin-bottom:9px;">'+esc(title)+'</div>'
+          +'<input id="vPromptInput" type="text" value="'+esc(dflt||'')+'" maxlength="60" placeholder="Layout name" style="width:100%;font-size:12px;padding:8px 9px;border:1px solid #d3d3dc;border-radius:4px;box-sizing:border-box;color:#26262e;background:#fff;"></div>'
+        +'<div style="border-top:1px solid #e0e0e8;padding:11px 16px;display:flex;justify-content:flex-end;gap:9px;background:#fafafc;">'
+          +'<button data-vp="cancel" style="font-size:11.5px;color:#2b2b36;background:#fff;border:1px solid #cfcfda;border-radius:5px;padding:7px 14px;cursor:pointer;">Cancel</button>'
+          +'<button data-vp="ok" style="font-size:11.5px;font-weight:600;color:#fff;background:#1e1b6b;border:none;border-radius:5px;padding:7px 15px;cursor:pointer;">Save</button>'
+        +'</div></div></div>';
+    var inp=document.getElementById('vPromptInput'); if(inp){ inp.focus(); inp.select(); inp.addEventListener('keydown',function(e){ if(e.key==='Enter') czPromptClose(true); else if(e.key==='Escape') czPromptClose(false); }); }
+  }
+  function czPromptClose(ok){ var inp=document.getElementById('vPromptInput'); var val=inp?inp.value:''; var h=document.getElementById('vPrompt'); if(h) h.remove(); var cb=_promptOk; _promptOk=null; if(ok&&cb) cb(val); }
+  // In-page confirm (destructive-styled OK). Reuses the prompt overlay + close handler.
+  function czConfirm(msg,okLabel,onOk){
+    _promptOk=function(){ onOk(); };
+    var host=document.getElementById('vPrompt'); if(!host){ host=document.createElement('div'); host.id='vPrompt'; document.body.appendChild(host); }
+    host.innerHTML='<div style="position:fixed;inset:0;background:rgba(20,20,30,.4);z-index:70;display:flex;align-items:center;justify-content:center;font-family:\'Segoe UI\',system-ui,sans-serif;">'
+      +'<div style="background:#fff;border-radius:8px;width:350px;box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden;">'
+        +'<div style="padding:15px 16px;font-size:12.5px;color:#3a3a46;line-height:1.5;">'+msg+'</div>'
+        +'<div style="border-top:1px solid #e0e0e8;padding:11px 16px;display:flex;justify-content:flex-end;gap:9px;background:#fafafc;">'
+          +'<button data-vp="cancel" style="font-size:11.5px;color:#2b2b36;background:#fff;border:1px solid #cfcfda;border-radius:5px;padding:7px 14px;cursor:pointer;">Cancel</button>'
+          +'<button data-vp="ok" style="font-size:11.5px;font-weight:600;color:#fff;background:#c0392b;border:none;border-radius:5px;padding:7px 15px;cursor:pointer;">'+esc(okLabel||'OK')+'</button>'
+        +'</div></div></div>';
+  }
+
+  // ---- visual editor (in-page docked panel; live preview via render() beside it) ----
+  var _editId=null, _editOrig=null;
+  function findDef(id){ var f=null;
+    activeLayout.row1.forEach(function(col){ col.forEach(function(d){ if(d.id===id) f=d; }); });
+    (activeLayout.rows||[]).forEach(function(r){ r.visuals.forEach(function(d){ if(d.id===id) f=d; }); });
+    return f; }
+  function typeLabel(t){ return {ring:'Progress ring',statTiles:'Stat tiles',donut:'Composition donut',table:'Summary table',barList:'Bar list',heatmap:'Heatmap',trend:'Trend'}[t]||t; }
+  var MEASURE_OPTS=[['basis','Inherit report basis'],['budgetMH','BudgetMHs'],['qty','Quantity'],['percentEntry','PercentEntry'],['clientBudget','ClientBudget']];
+  function edFld(label,hint){ return '<label style="font-size:10.5px;font-weight:700;color:#5a5a68;display:block;margin-bottom:3px;">'+label+(hint?' <span style="font-weight:400;color:#9a9aa6;">'+hint+'</span>':'')+'</label>'; }
+  function edSel(cur,opts){ return opts.map(function(o){ return '<option value="'+o[0]+'"'+(String(cur)===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join(''); }
+  function edColor(label,field,def,dflt){ var v=(def[field]||dflt);
+    return '<div style="margin-bottom:11px;">'+edFld(label)
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+        +'<input type="color" data-vfield="'+field+'" value="'+v+'" style="width:34px;height:28px;padding:0;border:1px solid #d3d3dc;border-radius:4px;background:#fff;cursor:pointer;">'
+        +'<input type="text" data-vfield="'+field+'" data-hex="1" value="'+v.toUpperCase()+'" style="width:100px;font-size:11.5px;padding:6px 8px;border:1px solid #d3d3dc;border-radius:4px;box-sizing:border-box;color:#26262e;background:#fff;font-family:monospace;">'
+      +'</div></div>'; }
+  function edInput(label,field,val){ return '<div style="margin-bottom:11px;">'+edFld(label)+'<input type="text" data-vfield="'+field+'" value="'+esc(val||'')+'" style="width:100%;font-size:12px;padding:7px 8px;border:1px solid #d3d3dc;border-radius:4px;box-sizing:border-box;color:#26262e;background:#fff;"></div>'; }
+  function edSelect(label,field,cur,opts){ return '<div style="margin-bottom:11px;">'+edFld(label)+'<select data-vfield="'+field+'" style="width:100%;font-size:12px;padding:7px 8px;border:1px solid #d3d3dc;border-radius:4px;background:#fafafc;color:#26262e;">'+edSel(cur,opts)+'</select></div>'; }
+  function edToggle(label,field,on){ return '<div style="margin-bottom:12px;"><label style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:#3a3a46;font-weight:600;cursor:pointer;"><input type="checkbox" data-vfield="'+field+'" data-vtype="bool"'+(on?' checked':'')+'> '+label+'</label></div>'; }
+  function edExcludeStub(){ return '<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edFld('Exclude rows where','— optional')+'<div style="font-size:11px;color:#a4a4b0;font-style:italic;padding:2px 0 6px;">No conditions — uses all filtered rows.</div><span style="font-size:10.5px;color:#b4b4c0;">Filter builder coming soon.</span></div>'; }
+
+  // Per-type editor bodies (built one type at a time).
+  var GROUPBY_OPTS=[['phase','Phase Category'],['comp','Component Type'],['area','Area'],['roc','ROC Step'],['shop','Shop / Field'],['wp','Work Package'],['module','Area / Module (UDF2)'],['status','Status'],['dwg','Drawing'],['phaseCode','Phase Code'],['projectId','Project ID'],['aux1','Aux1'],['aux2','Aux2'],['aux3','Aux3'],['schedActNo','Sched ActNO']];
+  var SORT_OPTS=[['budgetDesc','By size'],['labelAsc','By name'],['pctDesc','By % (high→low)']];
+  var CENTER_OPTS=[['pct','% complete'],['earned','Total earned'],['budget','Total budget'],['count','Row count']];
+  // Select / toggle / number variants. The R-variants rebuild the editor form on change (conditional fields).
+  function edSelectR(label,field,cur,opts){ return '<div style="margin-bottom:11px;">'+edFld(label)+'<select data-vfield="'+field+'" data-vrebuild="1" style="width:100%;font-size:12px;padding:7px 8px;border:1px solid #d3d3dc;border-radius:4px;background:#fafafc;color:#26262e;">'+edSel(cur,opts)+'</select></div>'; }
+  function edToggleR(label,field,on){ return '<div style="margin-bottom:12px;"><label style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:#3a3a46;font-weight:600;cursor:pointer;"><input type="checkbox" data-vfield="'+field+'" data-vtype="bool" data-vrebuild="1"'+(on?' checked':'')+'> '+label+'</label></div>'; }
+  function edNum(label,field,val,hint){ return '<div style="margin-bottom:11px;">'+edFld(label,hint)+'<input type="number" min="1" data-vfield="'+field+'" data-vtype="num" value="'+(val==null?'':val)+'" style="width:110px;font-size:12px;padding:7px 8px;border:1px solid #d3d3dc;border-radius:4px;box-sizing:border-box;color:#26262e;background:#fff;"></div>'; }
+
+  // Column show/hide checkboxes for the % / Earned / Budget columns (summary table + donut table).
+  function edColsToggles(def){
+    return '<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edFld('Columns to show','— hide hours for client-facing reports')
+      +edToggle('Percent (%)','showPct',def.showPct!==false)
+      +edToggle('Earned','showEarn',def.showEarn!==false)
+      +edToggle('Budget','showBudget',def.showBudget!==false)
+    +'</div>';
+  }
+
+  var VEDITORS={};
+  VEDITORS.ring=function(def){
+    return edInput('Label','title',def.title)
+      +edSelect('Measure','measure',def.measure||'basis',MEASURE_OPTS)
+      +edSelect('Center value','center',def.center||'pct',[['pct','% complete'],['earned','Total earned'],['budget','Total budget'],['count','Row count']])
+      +edToggle('Show Earned &amp; Total beneath','showTiles',def.showTiles)
+      +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edColor('Progress color','colorProgress',def,'#1e1b6b')+edColor('Remaining color','colorRemaining',def,'#e6e6ee')+'</div>'
+      +edExcludeStub();
+  };
+  VEDITORS.donut=function(def){
+    return edInput('Label','title',def.title)
+      +edSelect('Group by (slices)','groupBy',def.groupBy||'phase',GROUPBY_OPTS)
+      +edSelect('Measure','measure',def.measure||'basis',MEASURE_OPTS)
+      +edToggleR('Show center value','showCenter',def.showCenter!==false)
+      +(def.showCenter!==false?edSelect('Center value','center',def.center||'pct',CENTER_OPTS):'')
+      +edToggleR('Show summary table beneath','showTable',def.showTable!==false)
+      +(def.showTable!==false?edSelect('Table sort','sort',def.sort||'budgetDesc',SORT_OPTS)+edColsToggles(def):'')
+      +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'
+        +edSelectR('Slice colors','colorMode',def.colorMode||'palette',[['palette','Summit palette (default)'],['spread','Spread between two colors']])
+        +(def.colorMode==='spread'?edColor('Start color','spreadFrom',def,'#1e1b6b')+edColor('End color','spreadTo',def,'#a49fd8'):'<div style="font-size:10px;color:#9a9aa6;margin:-4px 0 8px;">Uses the default Summit palette — switch to “Spread” to pick two colors.</div>')
+      +'</div>'
+      +edExcludeStub();
+  };
+  VEDITORS.barList=function(def){
+    return edInput('Label','title',def.title)
+      +edSelect('Group by (bars)','groupBy',def.groupBy||'roc',GROUPBY_OPTS)
+      +edSelect('Measure','measure',def.measure||'basis',MEASURE_OPTS)
+      +edSelect('Sort','sort',def.sort||'labelAsc',SORT_OPTS)
+      +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'
+        +edColor('Bar color','barColor',def,'#1e1b6b')
+        +edColor('Remaining (track)','colorRemaining',def,'#eef0f4')
+        +edToggleR('Highlight complete (100%)','highlightComplete',def.highlightComplete!==false)
+        +(def.highlightComplete!==false?edColor('Complete color','completeColor',def,'#2bb24c'):'')
+      +'</div>'
+      +edExcludeStub();
+  };
+  VEDITORS.table=function(def){
+    return edInput('Label','title',def.title)
+      +edSelect('Group by (rows)','groupBy',def.groupBy||'comp',GROUPBY_OPTS)
+      +edSelect('Measure','measure',def.measure||'basis',MEASURE_OPTS)
+      +edSelect('Sort','sort',def.sort||'budgetDesc',SORT_OPTS)
+      +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'
+        +edToggleR('Highlight complete (100%)','highlightComplete',def.highlightComplete!==false)
+        +(def.highlightComplete!==false?edColor('Complete % color','completeColor',def,'#2bb24c'):'')
+      +'</div>'
+      +edColsToggles(def)
+      +edExcludeStub();
+  };
+  VEDITORS.heatmap=function(def){
+    return edInput('Label','title',def.title)
+      +edSelect('Rows (group)','rowGroup',def.rowGroup||'module',GROUPBY_OPTS)
+      +edSelect('Columns (group)','colGroup',def.colGroup||'phase',GROUPBY_OPTS)
+      +edSelect('Measure','measure',def.measure||'basis',MEASURE_OPTS)
+      +edNum('Max columns','maxCols',def.maxCols==null?8:def.maxCols,'— most-common values')
+      +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edFld('Color scale','— shades cells by %')
+        +edColor('Low (0%)','colorLow',def,'#c0392b')
+        +edColor('High (100%)','colorHigh',def,'#2bb24c')
+        +edColor('No data','colorNoData',def,'#666666')
+      +'</div>'
+      +edExcludeStub();
+  };
+  VEDITORS.trend=function(def){
+    var isCum=(def.mode||'cumulative')==='cumulative';
+    return edInput('Label','title',def.title)
+      +edSelectR('Mode','mode',def.mode||'cumulative',[['cumulative','Cumulative'],['perWeek','Per-week']])
+      +edSelect('Measure','measure',def.measure||'basis',MEASURE_OPTS)
+      +edSelect('Week start','weekStart',def.weekStart||'mon',[['mon','Monday'],['sun','Sunday']])
+      +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'
+        +edColor('Bar color','barColor',def,'#1e1b6b')
+        +(isCum?edToggleR('Highlight complete','highlightComplete',def.highlightComplete!==false)+(def.highlightComplete!==false?edColor('Complete color','completeColor',def,'#2bb24c'):''):'<div style="font-size:10px;color:#9a9aa6;margin:2px 0;">Highlight-complete applies to Cumulative mode only.</div>')
+      +'</div>'
+      +edExcludeStub();
+  };
+
+  // Find a visual's shipped-default def (in DEFAULT_LAYOUT) for "Revert to default".
+  function findDefaultDef(id){ var f=null;
+    DEFAULT_LAYOUT.row1.forEach(function(col){ col.forEach(function(d){ if(d.id===id) f=d; }); });
+    (DEFAULT_LAYOUT.rows||[]).forEach(function(r){ r.visuals.forEach(function(d){ if(d.id===id) f=d; }); });
+    return f; }
+  function buildEditorPanel(def){
+    var host=document.getElementById('vEditor'); if(!host){ host=document.createElement('div'); host.id='vEditor'; document.body.appendChild(host); }
+    var body=VEDITORS[def.type] ? VEDITORS[def.type](def) : '<div style="font-size:12px;color:#6a6a78;line-height:1.5;">The editor for the <b>'+esc(typeLabel(def.type))+'</b> visual is coming next. For now you can delete it or leave it as-is.</div>';
+    var canRevert=!!findDefaultDef(def.id);
+    host.innerHTML='<div style="position:fixed;top:0;right:0;height:100%;width:360px;background:#fff;box-shadow:-6px 0 24px rgba(16,24,40,.18);z-index:60;display:flex;flex-direction:column;font-family:\'Segoe UI\',system-ui,sans-serif;">'
+      +'<div style="background:#1e1b6b;color:#fff;padding:11px 15px;display:flex;align-items:center;gap:9px;"><span style="font-size:13px;font-weight:700;">Edit visual — '+esc(typeLabel(def.type))+'</span><span style="flex:1;"></span><span data-ved="cancel" title="Close" style="cursor:pointer;font-size:16px;">&#10005;</span></div>'
+      +'<div style="flex:1;overflow-y:auto;padding:14px 15px;">'+body+'</div>'
+      +'<div style="border-top:1px solid #e0e0e8;padding:11px 15px;display:flex;align-items:center;gap:8px;background:#fafafc;">'
+        +(canRevert?'<button data-ved="revert" title="Reset this visual to its default settings" style="font-size:11px;color:#6a6a78;background:#fff;border:1px solid #cfcfda;border-radius:5px;padding:6px 11px;cursor:pointer;">Revert to default</button>':'')
+        +'<span style="flex:1;"></span>'
+        +'<button data-ved="preview" title="Update the report to show your changes" style="font-size:11.5px;color:#1e1b6b;background:#eef0fb;border:1px solid #cfcfec;border-radius:5px;padding:7px 13px;cursor:pointer;">Preview</button>'
+        +'<button data-ved="cancel" style="font-size:11.5px;color:#2b2b36;background:#fff;border:1px solid #cfcfda;border-radius:5px;padding:7px 13px;cursor:pointer;">Cancel</button>'
+        +'<button data-ved="save" style="font-size:11.5px;font-weight:600;color:#fff;background:#1e1b6b;border:none;border-radius:5px;padding:7px 15px;cursor:pointer;">Save visual</button>'
+      +'</div>'
+    +'</div>';
+    document.body.style.paddingRight='360px';
+  }
+  function openVisualEditor(id){ var def=findDef(id); if(!def) return; _editId=id; _editOrig=clone(def); buildEditorPanel(def); }
+  function closeVisualEditor(){ var h=document.getElementById('vEditor'); if(h) h.remove(); document.body.style.paddingRight=''; _editId=null; _editOrig=null; }
+  function cancelEditor(){ var def=findDef(_editId); if(def&&_editOrig){ Object.keys(def).forEach(function(k){ delete def[k]; }); Object.assign(def,_editOrig); } closeVisualEditor(); render(); }
+  function saveEditor(){ closeVisualEditor(); render(); }
+  function previewEditor(){ render(); }
+  // Reset the visual being edited to its shipped-default config (form + report), keeping the editor open.
+  function revertVisualToDefault(){ var def=findDef(_editId), dd=findDefaultDef(_editId); if(!def||!dd) return; Object.keys(def).forEach(function(k){ delete def[k]; }); Object.assign(def,clone(dd)); buildEditorPanel(def); render(); }
+  // Field edits update the working def silently; the report repaints only on Preview / Save (no per-keystroke re-render).
+  function applyEditorField(t){
+    var f=t.getAttribute('data-vfield'); if(!f||!_editId) return;
+    var def=findDef(_editId); if(!def) return;
+    var vt=t.getAttribute('data-vtype');
+    if(vt==='bool'){ def[f]=!!t.checked; }
+    else if(vt==='num'){ var nv=parseInt(t.value,10); if(isNaN(nv)) delete def[f]; else def[f]=nv; }
+    else if(t.getAttribute('data-hex')){ var hx=t.value.trim(); if(!/^#?[0-9a-fA-F]{6}$/.test(hx)) return; if(hx.charAt(0)!=='#') hx='#'+hx; def[f]=hx; var pc=t.parentNode.querySelector('input[type="color"][data-vfield="'+f+'"]'); if(pc) pc.value=hx; }
+    else if(t.type==='color'){ def[f]=t.value; var ph=t.parentNode.querySelector('input[data-hex][data-vfield="'+f+'"]'); if(ph) ph.value=t.value.toUpperCase(); }
+    else { def[f]=t.value; }
+    if(t.getAttribute('data-vrebuild')) buildEditorPanel(def);
   }
 
   // ---- master render ----
@@ -460,10 +777,10 @@
     if(!loaded){ app.innerHTML='<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#faf9f5;color:#9a9aa6;font-size:16px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">Loading dashboard…</div>'; return; }
     if(!ROWS.length){ app.innerHTML=headerHTML(); return; }
     var rows=filtered();
-    app.innerHTML=headerHTML()
+    app.innerHTML=headerHTML()+(customize?managerToolbar():'')
       +'<div style="display:grid;grid-template-columns:150px 1fr;gap:12px;padding:12px 16px 0;align-items:start;">'
         +railHTML()
-        +'<main class="col">'+renderLayout(activeLayout,rows)+'</main>'
+        +'<main class="col">'+renderLayout(activeLayout,rows,customize)+'</main>'
       +'</div>';
     var fl=document.querySelector('[data-footer="left"]');  if(fl) fl.textContent=(activeLayout.footer&&activeLayout.footer.left)||'';
     var fr=document.querySelector('[data-footer="right"]'); if(fr) fr.textContent=(activeLayout.footer&&activeLayout.footer.right)||'';
@@ -479,6 +796,7 @@
     else if(t.getAttribute&&t.getAttribute('data-role')==='slicer'){ var k=t.getAttribute('data-key'); if(t.value==='__all') delete filters[k]; else filters[k]=t.value; render(); }
   });
   document.addEventListener('click',function(e){
+    if(customize) return;   // filtering/sorting is disabled while editing the layout
     var el=e.target.closest?e.target.closest('[data-toggle-key],[data-chip],[data-clear],[data-sort],[data-import]'):null;
     if(!el) return;
     if(el.hasAttribute('data-import')){ document.getElementById('fileInput').click(); }
@@ -487,6 +805,21 @@
     else if(el.hasAttribute('data-toggle-key')){ toggle(el.getAttribute('data-toggle-key'),el.getAttribute('data-toggle-val')); }
     else if(el.hasAttribute('data-sort')){ var k=el.getAttribute('data-sort'); if(mSort===k) mDir=(mDir==='desc'?'asc':'desc'); else {mSort=k;mDir='desc';} render(); }
   });
+  // Customize-mode controls (manager toolbar + per-visual edit/delete).
+  document.addEventListener('click',function(e){
+    var el=e.target.closest?e.target.closest('[data-cz],[data-del-vid],[data-edit-vid]'):null;
+    if(!el) return;
+    if(el.hasAttribute('data-cz')){ czAction(el.getAttribute('data-cz')); }
+    else if(el.hasAttribute('data-del-vid')){ deleteVisual(el.getAttribute('data-del-vid')); }
+    else if(el.hasAttribute('data-edit-vid')){ openVisualEditor(el.getAttribute('data-edit-vid')); }
+  });
+  // Visual-editor: live-apply field edits, and Cancel/Save.
+  function edFieldEvt(e){ var t=e.target; if(t&&t.getAttribute&&t.getAttribute('data-vfield')) applyEditorField(t); }
+  document.addEventListener('input',edFieldEvt);
+  document.addEventListener('change',edFieldEvt);
+  document.addEventListener('click',function(e){ var el=e.target.closest?e.target.closest('[data-ved]'):null; if(!el) return; var a=el.getAttribute('data-ved');
+    if(a==='cancel') cancelEditor(); else if(a==='save') saveEditor(); else if(a==='preview') previewEditor(); else if(a==='revert') revertVisualToDefault(); });
+  document.addEventListener('click',function(e){ var el=e.target.closest?e.target.closest('[data-vp]'):null; if(!el) return; czPromptClose(el.getAttribute('data-vp')==='ok'); });
   document.addEventListener('dragover',function(e){ if(e.target.closest&&e.target.closest('[data-import]')){ e.preventDefault(); } });
   document.addEventListener('drop',function(e){ if(e.target.closest&&e.target.closest('[data-import]')){ e.preventDefault(); var f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) readFile(f); } });
 
@@ -555,7 +888,12 @@
     else { render(); }
     window.vantageDashboardReady=true;
     document.dispatchEvent(new CustomEvent('vantage-dashboard-ready'));
-    if(window.chrome&&window.chrome.webview){ window.chrome.webview.addEventListener('message',function(e){ if(e.data&&e.data.activities){ if(e.data.projects) PROJECTS=e.data.projects; window.loadVantageData(e.data.activities); } }); }
+    if(window.chrome&&window.chrome.webview){ window.chrome.webview.addEventListener('message',function(e){
+      var d=e.data; if(!d) return;
+      if(d.activities){ if(d.projects) PROJECTS=d.projects; window.loadVantageData(d.activities); return; }
+      if(d.type==='setCustomize'){ setCustomizeMode(d.on); return; }
+      if(d.type==='setLayout'){ activeLayout=d.layout?d.layout:clone(DEFAULT_LAYOUT); render(); return; }
+    }); }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
 })();

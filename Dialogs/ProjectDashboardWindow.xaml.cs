@@ -20,6 +20,24 @@ namespace VANTAGE.Dialogs
     {
         private bool _webViewInitialized;
 
+        // Whether the dashboard is in customize (edit-layout) mode. The button toggles it and
+        // posts a setCustomize message to the page; the page posts customizeExited when its
+        // own "Done" button is used, so the button label stays in sync.
+        private bool _customizeMode;
+
+        // Id of the layout currently shown ("default" = the page's built-in Default). User
+        // layouts are persisted in UserSettings via SettingsManager; the page authors the JSON.
+        private string _currentLayoutId = "default";
+        private bool _suppressComboEvent;
+
+        // Combo item: displays Name, carries the layout Id.
+        private sealed class LayoutItem
+        {
+            public string Id { get; set; } = "";
+            public string Name { get; set; } = "";
+            public override string ToString() => Name;
+        }
+
         // Last-built activities array JSON (bare array). Reused by Open in Browser so the
         // snapshot opens with the same dataset without re-querying the database.
         private string _activitiesArrayJson = "[]";
@@ -104,6 +122,8 @@ namespace VANTAGE.Dialogs
         {
             if (!e.IsSuccess) return;
             await webView.CoreWebView2.ExecuteScriptAsync(HideImportScript);
+            // Send the last-used layout before the data so the report opens on it (no Default flash).
+            InitializeLayoutSelection();
             txtLoadingPhase.Text = "Loading records…";
             await PushDataAsync();
         }
@@ -144,11 +164,33 @@ namespace VANTAGE.Dialogs
             try
             {
                 using var doc = JsonDocument.Parse(e.WebMessageAsJson);
-                if (doc.RootElement.ValueKind == JsonValueKind.Object
-                    && doc.RootElement.TryGetProperty("rendered", out var r)
-                    && r.ValueKind == JsonValueKind.True)
+                var root = doc.RootElement;
+                if (root.ValueKind != JsonValueKind.Object) return;
+
+                if (root.TryGetProperty("rendered", out var r) && r.ValueKind == JsonValueKind.True)
                 {
                     RevealDashboard();
+                    return;
+                }
+
+                if (root.TryGetProperty("type", out var t) && t.ValueKind == JsonValueKind.String)
+                {
+                    switch (t.GetString())
+                    {
+                        case "customizeExited":
+                            // The page's own "Done" button was used — resync the toolbar button.
+                            _customizeMode = false;
+                            UpdateCustomizeButton();
+                            break;
+                        case "saveLayout":
+                            HandleSaveLayout(root);
+                            break;
+                        case "deleteLayout":
+                            if (root.TryGetProperty("id", out var delId) && delId.ValueKind == JsonValueKind.String)
+                                HandleDeleteLayout(delId.GetString() ?? "");
+                            break;
+                        // Future blocks: "cz" (publish/import/pdf).
+                    }
                 }
             }
             catch (Exception ex)
@@ -244,6 +286,140 @@ namespace VANTAGE.Dialogs
             if (!_webViewInitialized) return;
             txtStatus.Text = "Refreshing…";
             await PushDataAsync();
+        }
+
+        // Toggle the page into / out of customize (edit-layout) mode.
+        private void BtnCustomize_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_webViewInitialized) return;
+            _customizeMode = !_customizeMode;
+            UpdateCustomizeButton();
+            string msg = "{\"type\":\"setCustomize\",\"on\":" + (_customizeMode ? "true" : "false") + "}";
+            webView.CoreWebView2.PostWebMessageAsJson(msg);
+        }
+
+        // Populate the layout combo (Default + saved user layouts) and select the current id.
+        private void PopulateLayoutCombo()
+        {
+            _suppressComboEvent = true;
+            try
+            {
+                cboLayout.Items.Clear();
+                cboLayout.Items.Add(new LayoutItem { Id = "default", Name = "Default" });
+                foreach (var r in SettingsManager.GetReportLayoutList())
+                    cboLayout.Items.Add(new LayoutItem { Id = r.Id, Name = r.Name });
+
+                cboLayout.SelectedItem = null;
+                foreach (LayoutItem it in cboLayout.Items)
+                {
+                    if (it.Id == _currentLayoutId) { cboLayout.SelectedItem = it; break; }
+                }
+                if (cboLayout.SelectedItem == null && cboLayout.Items.Count > 0)
+                    cboLayout.SelectedIndex = 0;
+            }
+            finally { _suppressComboEvent = false; }
+            UpdateDeleteButtonState();
+        }
+
+        // The Delete button applies to saved user layouts only — never the built-in Default.
+        private void UpdateDeleteButtonState()
+        {
+            btnDeleteLayout.IsEnabled = cboLayout.SelectedItem is LayoutItem it && it.Id != "default";
+        }
+
+        // Pick the initial layout from last-used (falling back to Default) and send it to the page.
+        private void InitializeLayoutSelection()
+        {
+            string lastUsed = SettingsManager.GetLastUsedReportLayout();
+            bool exists = lastUsed == "default" || SettingsManager.GetReportLayoutList().Exists(r => r.Id == lastUsed);
+            _currentLayoutId = string.IsNullOrWhiteSpace(lastUsed) || !exists ? "default" : lastUsed;
+            PopulateLayoutCombo();
+            PostSetLayout(_currentLayoutId);
+        }
+
+        // Send a layout to the page. "default" -> null (the page renders its built-in DEFAULT_LAYOUT).
+        private void PostSetLayout(string id)
+        {
+            string layoutJson = "null";
+            if (id != "default")
+            {
+                var json = SettingsManager.GetReportLayoutJson(id);
+                if (!string.IsNullOrWhiteSpace(json)) layoutJson = json;
+            }
+            webView.CoreWebView2.PostWebMessageAsJson("{\"type\":\"setLayout\",\"layout\":" + layoutJson + "}");
+        }
+
+        private void CboLayout_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (_suppressComboEvent || !_webViewInitialized) return;
+            if (cboLayout.SelectedItem is not LayoutItem it) return;
+            // Switching layout leaves customize mode; any unsaved edits to the previous layout are dropped.
+            if (_customizeMode)
+            {
+                _customizeMode = false;
+                UpdateCustomizeButton();
+                webView.CoreWebView2.PostWebMessageAsJson("{\"type\":\"setCustomize\",\"on\":false}");
+            }
+            _currentLayoutId = it.Id;
+            SettingsManager.SetLastUsedReportLayout(it.Id);
+            PostSetLayout(it.Id);
+            UpdateDeleteButtonState();
+        }
+
+        // Delete the selected saved layout from local storage (toolbar Delete button).
+        private void BtnDeleteLayout_Click(object sender, RoutedEventArgs e)
+        {
+            if (cboLayout.SelectedItem is not LayoutItem it || it.Id == "default") return;
+            var result = AppMessageBox.Show($"Delete the layout \"{it.Name}\"?\n\nThis removes it from this computer and can't be undone.",
+                "Delete layout", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (result != MessageBoxResult.Yes) return;
+            HandleDeleteLayout(it.Id);
+        }
+
+        // Persist a layout the page saved (Save / Save as). Never overwrites the built-in Default.
+        private void HandleSaveLayout(JsonElement root)
+        {
+            if (!root.TryGetProperty("layout", out var lay) || lay.ValueKind != JsonValueKind.Object) return;
+            string id = lay.TryGetProperty("id", out var i) && i.ValueKind == JsonValueKind.String ? (i.GetString() ?? "") : "";
+            string name = lay.TryGetProperty("name", out var n) && n.ValueKind == JsonValueKind.String ? (n.GetString() ?? "Untitled") : "Untitled";
+            if (string.IsNullOrWhiteSpace(id) || id == "default") return;
+
+            SettingsManager.SaveReportLayout(id, name, lay.GetRawText());
+            _currentLayoutId = id;
+            SettingsManager.SetLastUsedReportLayout(id);
+            PopulateLayoutCombo();
+            txtStatus.Text = $"Saved layout: {name}";
+        }
+
+        private void HandleDeleteLayout(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id) || id == "default") return;
+            SettingsManager.DeleteReportLayout(id);
+            if (_currentLayoutId == id)
+            {
+                _currentLayoutId = "default";
+                SettingsManager.SetLastUsedReportLayout(string.Empty);
+                PostSetLayout("default");
+            }
+            PopulateLayoutCombo();
+            txtStatus.Text = "Layout deleted.";
+        }
+
+        // Reflect the current mode on the toolbar button (accent navy while editing).
+        private void UpdateCustomizeButton()
+        {
+            btnCustomize.Content = _customizeMode ? "Done" : "Customize";
+            if (_customizeMode)
+            {
+                btnCustomize.Background = new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromRgb(0x1E, 0x1B, 0x6B));
+                btnCustomize.Foreground = System.Windows.Media.Brushes.White;
+            }
+            else
+            {
+                btnCustomize.SetResourceReference(System.Windows.Controls.Control.BackgroundProperty, "ControlBackground");
+                btnCustomize.SetResourceReference(System.Windows.Controls.Control.ForegroundProperty, "ForegroundColor");
+            }
         }
 
         // Write a standalone snapshot (current dataset baked in) and open it in the default browser.

@@ -444,6 +444,75 @@ namespace VANTAGE.Utilities
             }
         }
 
+        // === PROJECT DASHBOARD REPORT LAYOUTS (Customize feature) ===
+        // Named report layouts for the Project Dashboard, stored the same way as grid layouts:
+        //   ReportLayouts.Index    — JSON List<ReportLayoutRef> ({ Id, Name })
+        //   ReportLayout.<id>.Data — the layout's raw JSON (authored by the dashboard page)
+        //   ReportLayouts.LastUsed — id of the last layout the user viewed (opens next session)
+        // Keyed by page-generated Id (not name), so renames don't orphan data.
+        private const string ReportLayoutIndexKey = "ReportLayouts.Index";
+        private const string ReportLayoutDataPrefix = "ReportLayout.";
+        private const string ReportLayoutDataSuffix = ".Data";
+        private const string ReportLayoutLastUsedKey = "ReportLayouts.LastUsed";
+
+        public sealed class ReportLayoutRef
+        {
+            public string Id { get; set; } = string.Empty;
+            public string Name { get; set; } = string.Empty;
+        }
+
+        public static List<ReportLayoutRef> GetReportLayoutList()
+        {
+            try
+            {
+                var json = GetUserSetting(ReportLayoutIndexKey);
+                if (!string.IsNullOrWhiteSpace(json))
+                    return System.Text.Json.JsonSerializer.Deserialize<List<ReportLayoutRef>>(json) ?? new List<ReportLayoutRef>();
+            }
+            catch (Exception ex) { AppLogger.Error(ex, "SettingsManager.GetReportLayoutList"); }
+            return new List<ReportLayoutRef>();
+        }
+
+        public static string? GetReportLayoutJson(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id)) return null;
+            var json = GetUserSetting($"{ReportLayoutDataPrefix}{id}{ReportLayoutDataSuffix}");
+            return string.IsNullOrWhiteSpace(json) ? null : json;
+        }
+
+        // Upsert a layout (index entry + data). rawJson is the exact JSON the dashboard page authored.
+        public static void SaveReportLayout(string id, string name, string rawJson)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id)) return;
+                var list = GetReportLayoutList();
+                var existing = list.Find(r => r.Id == id);
+                if (existing != null) existing.Name = name;
+                else list.Add(new ReportLayoutRef { Id = id, Name = name });
+                SetUserSetting(ReportLayoutIndexKey, System.Text.Json.JsonSerializer.Serialize(list), "json");
+                SetUserSetting($"{ReportLayoutDataPrefix}{id}{ReportLayoutDataSuffix}", rawJson, "json");
+            }
+            catch (Exception ex) { AppLogger.Error(ex, "SettingsManager.SaveReportLayout"); }
+        }
+
+        public static void DeleteReportLayout(string id)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(id)) return;
+                var list = GetReportLayoutList();
+                if (list.RemoveAll(r => r.Id == id) > 0)
+                    SetUserSetting(ReportLayoutIndexKey, System.Text.Json.JsonSerializer.Serialize(list), "json");
+                RemoveUserSetting($"{ReportLayoutDataPrefix}{id}{ReportLayoutDataSuffix}");
+                if (GetLastUsedReportLayout() == id) SetLastUsedReportLayout(string.Empty);
+            }
+            catch (Exception ex) { AppLogger.Error(ex, "SettingsManager.DeleteReportLayout"); }
+        }
+
+        public static string GetLastUsedReportLayout() => GetUserSetting(ReportLayoutLastUsedKey);
+        public static void SetLastUsedReportLayout(string id) => SetUserSetting(ReportLayoutLastUsedKey, id ?? string.Empty);
+
         // === UDF NAME MAPPINGS (Manage UDF Names dialog) ===
 
         // Storage key for the Manage UDF Names feature.
