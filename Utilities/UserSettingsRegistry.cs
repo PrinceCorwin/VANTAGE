@@ -172,6 +172,9 @@ namespace VANTAGE.Utilities
         //   GridLayouts.Index              — Grid Layouts dialog
         //   GridLayout.{name}.Data         — Grid Layouts dialog
         //   GridLayouts.ActiveLayout       — Grid Layouts dialog
+        //   ReportLayouts.Index            — Project Dashboard layout picker / Delete
+        //   ReportLayout.{id}.Data         — Project Dashboard layout picker / Delete
+        //   ReportLayouts.LastUsed         — Project Dashboard (reopens last-viewed layout)
         //   ReportLayouts.Index            — Project Dashboard Layout picker/Delete
         //   ReportLayout.{id}.Data         — Project Dashboard Layout picker/Delete
         //   ReportLayouts.LastUsed         — Project Dashboard (last-viewed layout, reopened next session)

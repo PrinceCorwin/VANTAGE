@@ -95,6 +95,16 @@
                             BorderBrush="{DynamicResource ControlBorder}"
                             Click="BtnRefresh_Click"
                             ToolTip="Reload the dashboard from the current local database"/>
+                    <Button x:Name="btnExportPdf"
+                            Content="Export PDF"
+                            Width="100"
+                            Height="30"
+                            Margin="0,0,10,0"
+                            Background="{DynamicResource ControlBackground}"
+                            Foreground="{DynamicResource ForegroundColor}"
+                            BorderBrush="{DynamicResource ControlBorder}"
+                            Click="BtnExportPdf_Click"
+                            ToolTip="Export the report to a landscape PDF (the filter panel is not included)"/>
                     <Button x:Name="btnOpenInBrowser"
                             Content="Open in Browser"
                             Width="130"

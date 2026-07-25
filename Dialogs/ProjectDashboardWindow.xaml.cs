@@ -30,6 +30,9 @@ namespace VANTAGE.Dialogs
         private string _currentLayoutId = "default";
         private bool _suppressComboEvent;
 
+        // Resolved when the page confirms it has re-rendered in print mode (rail hidden), before PrintToPdf.
+        private TaskCompletionSource<bool>? _printReadyTcs;
+
         // Combo item: displays Name, carries the layout Id.
         private sealed class LayoutItem
         {
@@ -189,7 +192,14 @@ namespace VANTAGE.Dialogs
                             if (root.TryGetProperty("id", out var delId) && delId.ValueKind == JsonValueKind.String)
                                 HandleDeleteLayout(delId.GetString() ?? "");
                             break;
-                        // Future blocks: "cz" (publish/import/pdf).
+                        case "printReady":
+                            _printReadyTcs?.TrySetResult(true);
+                            break;
+                        case "cz":
+                            // Manager-toolbar actions. "pdf" exports; publish/import are future blocks.
+                            if (root.TryGetProperty("action", out var act) && act.ValueKind == JsonValueKind.String && act.GetString() == "pdf")
+                                _ = ExportPdfAsync();
+                            break;
                     }
                 }
             }
@@ -239,7 +249,25 @@ namespace VANTAGE.Dialogs
                     ROCStep = a.ROCStep,
                     SchedActNO = a.SchedActNO,
                     Area = a.Area,
+                    UDF1 = a.UDF1,
                     UDF2 = a.UDF2,
+                    UDF3 = a.UDF3,
+                    UDF4 = a.UDF4,
+                    UDF5 = a.UDF5,
+                    UDF6 = a.UDF6,
+                    UDF7 = a.UDF7,
+                    UDF8 = a.UDF8,
+                    UDF9 = a.UDF9,
+                    UDF10 = a.UDF10,
+                    UDF11 = a.UDF11,
+                    UDF12 = a.UDF12,
+                    UDF13 = a.UDF13,
+                    UDF14 = a.UDF14,
+                    UDF15 = a.UDF15,
+                    UDF16 = a.UDF16,
+                    UDF17 = a.UDF17,
+                    UDF20 = a.UDF20,
+                    EarnQtyEntry = a.EarnQtyEntry,
                     ShopField = a.ShopField,
                     WorkPackage = a.WorkPackage,
                     Aux1 = a.Aux1,
@@ -422,6 +450,67 @@ namespace VANTAGE.Dialogs
             }
         }
 
+        private async void BtnExportPdf_Click(object sender, RoutedEventArgs e) => await ExportPdfAsync();
+
+        // Export the report to a landscape PDF. Hides the filter rail for the render, then restores it.
+        private async Task ExportPdfAsync()
+        {
+            if (!_webViewInitialized) return;
+            try
+            {
+                // Switch the page to print mode (report only) and wait for it to re-render.
+                _printReadyTcs = new TaskCompletionSource<bool>();
+                webView.CoreWebView2.PostWebMessageAsJson("{\"type\":\"setPrintMode\",\"on\":true}");
+                await Task.WhenAny(_printReadyTcs.Task, Task.Delay(3000));
+
+                // Filename patterned per project.
+                string projPart = "Report";
+                try
+                {
+                    using var pd = JsonDocument.Parse(_projectsJson);
+                    var ids = new List<string>();
+                    foreach (var p in pd.RootElement.EnumerateObject()) ids.Add(p.Name);
+                    projPart = ids.Count == 1 ? ids[0] : (ids.Count > 1 ? "MultiProject" : "Report");
+                }
+                catch { /* keep default */ }
+                projPart = string.Join("_", projPart.Split(Path.GetInvalidFileNameChars()));
+
+                var saveDialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Export Dashboard as PDF",
+                    Filter = "PDF Files (*.pdf)|*.pdf",
+                    FileName = $"ProjectDashboard_{projPart}_{DateTime.Now:yyyyMMdd}.pdf",
+                    DefaultExt = ".pdf"
+                };
+                bool saved = saveDialog.ShowDialog() == true;
+
+                if (saved)
+                {
+                    var settings = webView.CoreWebView2.Environment.CreatePrintSettings();
+                    settings.Orientation = CoreWebView2PrintOrientation.Landscape;
+                    settings.ShouldPrintBackgrounds = true;
+                    await webView.CoreWebView2.PrintToPdfAsync(saveDialog.FileName, settings);
+                }
+
+                webView.CoreWebView2.PostWebMessageAsJson("{\"type\":\"setPrintMode\",\"on\":false}");
+
+                if (saved)
+                {
+                    var result = AppMessageBox.Show(
+                        $"PDF saved to:\n{saveDialog.FileName}\n\nOpen now?",
+                        "PDF Saved", MessageBoxButton.YesNo, MessageBoxImage.None);
+                    if (result == MessageBoxResult.Yes)
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = saveDialog.FileName, UseShellExecute = true });
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProjectDashboardWindow.ExportPdfAsync");
+                try { webView.CoreWebView2.PostWebMessageAsJson("{\"type\":\"setPrintMode\",\"on\":false}"); } catch { }
+                AppMessageBox.Show("Could not export the PDF — see log.", "Dashboard", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         // Write a standalone snapshot (current dataset baked in) and open it in the default browser.
         private void BtnOpenInBrowser_Click(object sender, RoutedEventArgs e)
         {
@@ -475,7 +564,25 @@ namespace VANTAGE.Dialogs
             public string? ROCStep { get; set; }
             public string? SchedActNO { get; set; }
             public string? Area { get; set; }
+            public string? UDF1 { get; set; }
             public string? UDF2 { get; set; }
+            public string? UDF3 { get; set; }
+            public string? UDF4 { get; set; }
+            public string? UDF5 { get; set; }
+            public string? UDF6 { get; set; }
+            public int UDF7 { get; set; }
+            public string? UDF8 { get; set; }
+            public string? UDF9 { get; set; }
+            public string? UDF10 { get; set; }
+            public string? UDF11 { get; set; }
+            public string? UDF12 { get; set; }
+            public string? UDF13 { get; set; }
+            public string? UDF14 { get; set; }
+            public string? UDF15 { get; set; }
+            public string? UDF16 { get; set; }
+            public string? UDF17 { get; set; }
+            public string? UDF20 { get; set; }
+            public double EarnQtyEntry { get; set; }
             public string? ShopField { get; set; }
             public string? WorkPackage { get; set; }
             public string? Aux1 { get; set; }

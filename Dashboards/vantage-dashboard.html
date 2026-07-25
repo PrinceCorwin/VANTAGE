@@ -41,9 +41,10 @@
   // ---- field mapping: internal key -> exact Vantage export column ----
   var COLMAP={projectId:'ProjectID',status:'Status',comp:'CompType',phase:'PhaseCategory',
     roc:'ROCStep',area:'Area',module:'UDF2',shop:'ShopField',wp:'WorkPackage',
-    desc:'Description',tag:'TagNO',line:'LineNumber',dwg:'DwgNO',size:'PipeSize1',uom:'UOM',phaseCode:'PhaseCode',schedActNo:'SchedActNO',aux1:'Aux1',aux2:'Aux2',aux3:'Aux3'};
+    desc:'Description',tag:'TagNO',line:'LineNumber',dwg:'DwgNO',size:'PipeSize1',uom:'UOM',phaseCode:'PhaseCode',schedActNo:'SchedActNO',aux1:'Aux1',aux2:'Aux2',aux3:'Aux3',
+    udf1:'UDF1',udf3:'UDF3',udf4:'UDF4',udf5:'UDF5',udf6:'UDF6',udf7:'UDF7',udf8:'UDF8',udf9:'UDF9',udf10:'UDF10',udf11:'UDF11',udf12:'UDF12',udf13:'UDF13',udf14:'UDF14',udf15:'UDF15',udf16:'UDF16',udf17:'UDF17',udf20:'UDF20'};
   var NUMMAP={budgetMH:'BudgetMHs',earnMH:'EarnMHsCalc',qty:'Quantity',
-    clientBudget:'ClientBudget',percentEntry:'PercentEntry',pct:'PercentCompleteCalc'};
+    clientBudget:'ClientBudget',percentEntry:'PercentEntry',pct:'PercentCompleteCalc',earnQtyEntry:'EarnQtyEntry'};
   var DATEMAP={planStart:'PlanStart',planFin:'PlanFin',actStart:'ActStart',actFin:'ActFin'};
 
   // ---- state ----
@@ -162,8 +163,8 @@
     row1:[
       [ {id:'ovr',  type:'ring',      title:'Overall Progress',   measure:'basis', center:'pct', showTiles:false},
         {id:'conn', type:'statTiles', title:'Summit Connections', aggregate:'count', showRing:true, flex:true,
-          complete:{ label:'Connections Complete', where:[{field:'roc',op:'=',value:'4.CON'},{field:'status',op:'=',value:'Complete'}] },
-          total:   { label:'Total Connections',    where:[{field:'roc',op:'=',value:'4.CON'}] } } ],
+          complete:{ label:'Connections Complete', where:[{field:'roc',op:'Equals',value:'4.CON'},{field:'status',op:'Equals',value:'Complete',logic:'AND'}] },
+          total:   { label:'Total Connections',    where:[{field:'roc',op:'Equals',value:'4.CON'}] } } ],
       [ {id:'phase',type:'donut',     title:'Progress by Phase',  groupBy:'phase', measure:'basis', showCenter:true, center:'pct', showTable:true, sort:'budgetDesc', colorByLabel:PHCOL, flex:true} ],
       [ {id:'comp', type:'table',     title:'Component Type',     groupBy:'comp',  measure:'basis', sort:'budgetDesc', highlightComplete:true, flex:true},
         {id:'area', type:'table',     title:'Area',               groupBy:'area',  measure:'basis', sort:'budgetDesc', highlightComplete:true, flex:true} ],
@@ -188,11 +189,29 @@
   // Aggregate rows weighted by a specific field, earning by pct.
   function aggWith(rows,field){ var b=0,e=0,i; for(i=0;i<rows.length;i++){ var w=+rows[i][field]||0; b+=w; e+=w*((+rows[i].pct||0)/100); } return {budget:b,earn:e,pct:b?e/b*100:0,count:rows.length}; }
   // One where-condition against a normalized row value.
-  function condOne(v,op,val){ var s=String(v==null?'':v);
-    switch(op){ case '=':return s===String(val); case '!=':return s!==String(val);
-      case 'in':return (val||[]).map(String).indexOf(s)>=0; case 'notIn':return (val||[]).map(String).indexOf(s)<0; default:return true; } }
-  // AND of all conditions in a where-clause.
-  function rowMatches(r,conds){ if(!conds||!conds.length) return true; for(var i=0;i<conds.length;i++){ var c=conds[i]; if(!condOne(r[c.field],c.op,c.hasOwnProperty('value')?c.value:c.values)) return false; } return true; }
+  // Matches the Progress module's filter operators (Models/UserFilter.FilterCriteria), case-insensitive.
+  function cmp(a,b){ var na=parseFloat(a),nb=parseFloat(b); if(!isNaN(na)&&!isNaN(nb)) return na<nb?-1:(na>nb?1:0); var sa=String(a),sb=String(b); return sa<sb?-1:(sa>sb?1:0); }
+  function condOne(v,op,val){ var s=String(v==null?'':v), sl=s.toLowerCase(), fl=String(val==null?'':val).toLowerCase();
+    switch(op){
+      case 'Equals': case '=': return sl===fl;
+      case 'Not Equals': case '!=': return sl!==fl;
+      case 'Contains': return sl.indexOf(fl)>=0;
+      case 'Does Not Contain': return sl.indexOf(fl)<0;
+      case 'Starts With': return sl.indexOf(fl)===0;
+      case 'Ends With': return fl===''||(sl.length>=fl.length&&sl.lastIndexOf(fl)===sl.length-fl.length);
+      case 'Is Empty': return s==='';
+      case 'Is Not Empty': return s!=='';
+      case 'Greater Than': return cmp(v,val)>0;
+      case 'Greater Than or Equal': return cmp(v,val)>=0;
+      case 'Less Than': return cmp(v,val)<0;
+      case 'Less Than or Equal': return cmp(v,val)<=0;
+      default: return true;
+    } }
+  // Fold conditions left-to-right honouring each condition's AND/OR logic (like the Progress filters).
+  function rowMatches(r,conds){ if(!conds||!conds.length) return true;
+    var res=condOne(r[conds[0].field],conds[0].op,conds[0].value);
+    for(var i=1;i<conds.length;i++){ var c=conds[i], m=condOne(r[c.field],c.op,c.value); res=((c.logic||'AND')==='OR')?(res||m):(res&&m); }
+    return res; }
   // Drop rows matching a visual's exclude conditions (none on the Default).
   function applyExclude(rows,ex){ if(!ex||!ex.length) return rows; return rows.filter(function(r){ return !rowMatches(r,ex); }); }
 
@@ -234,7 +253,7 @@
   function aggCrit(rows,def,crit){
     var sub=rows.filter(function(r){ return rowMatches(r,(crit&&crit.where)||[]); });
     if(!def.aggregate||def.aggregate==='count') return sub.length;
-    var f=def.aggregate.field, s=0, i; for(i=0;i<sub.length;i++) s+=(+sub[i][f]||0); return s;
+    var f=def.aggregate, s=0, i; for(i=0;i<sub.length;i++) s+=(+sub[i][f]||0); return s;
   }
   RENDERERS.statTiles=function(def,rows){
     var comp=aggCrit(rows,def,def.complete), tot=aggCrit(rows,def,def.total),
@@ -358,11 +377,11 @@
   // Note: standardizes the inter-bar gap to 6px (legacy ROC used 5px, Shop 6px — a 1px accident).
   RENDERERS.barList=function(def,rows){
     var groups=sortGroups(groupAgg(rows,def.groupBy,def.measure),def.sort),
-        barColor=def.barColor||NAVY, track=def.colorRemaining||'#eef0f4', bars='';
+        barColor=def.barColor||NAVY, track=def.colorRemaining||'#eef0f4', lblW=(def.labelWidth||52), bars='';
     groups.forEach(function(g){
       var col=(def.highlightComplete!==false && g.pct>=99.5)?(def.completeColor||GREEN):barColor;
       bars+='<div data-toggle-key="'+def.groupBy+'" data-toggle-val="'+esc(g.label)+'" title="'+esc(g.label)+' — '+g.pct.toFixed(1)+'%" style="display:flex;align-items:center;gap:8px;font-size:10.5px;cursor:pointer;background:'+(String(filters[def.groupBy])===g.label?'#eef0fb':'transparent')+';border-radius:3px;">'
-        +'<span style="width:52px;flex:none;color:#4a4a56;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(g.label)+'</span>'
+        +'<span style="width:'+lblW+'px;flex:none;color:#4a4a56;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(g.label)+'</span>'
         +'<div style="flex:1;height:15px;background:'+track+';border-radius:2px;overflow:hidden;"><div style="height:100%;width:'+Math.min(g.pct,100).toFixed(1)+'%;background:'+col+';border-radius:2px;"></div></div>'
         +'<span style="width:36px;flex:none;text-align:right;font-weight:700;color:#22222c;">'+g.pct.toFixed(0)+'%</span></div>';
     });
@@ -477,23 +496,49 @@
     var t=[]; cols.forEach(function(c,i){ t.push(c); if(i<cols.length-1) t.push('12px'); });
     return t.join(' ');
   }
+  function addSlot(target,label){ return '<div data-addvis="'+target+'" title="Add a visual" style="border:1px dashed #9aa0e0;border-radius:6px;padding:9px;text-align:center;font-size:10.5px;color:#1e1b6b;background:#f2f2fc;cursor:pointer;flex:none;"><i class="ti ti-plus" style="font-size:12px;vertical-align:-1px;"></i> '+label+'</div>'; }
+  function footerBlock(edit,layout){
+    if(!edit) return footerHTML();
+    var f=layout.footer||{};
+    return '<div style="display:flex;gap:20px;padding:8px 6px 22px;">'
+      +'<input data-footedit="left" value="'+esc(f.left||'')+'" placeholder="Left footer text…" style="flex:1;font-size:11px;padding:6px 8px;border:1px dashed #cfcfda;border-radius:4px;background:#fafafc;color:#26262e;box-sizing:border-box;">'
+      +'<input data-footedit="right" value="'+esc(f.right||'')+'" placeholder="Right footer text…" style="flex:1;text-align:right;font-size:11px;padding:6px 8px;border:1px dashed #cfcfda;border-radius:4px;background:#fafafc;color:#26262e;box-sizing:border-box;">'
+    +'</div>';
+  }
   function renderLayout(layout,rows,edit){
     function wrap(def){ var h=renderVisual(def,rows); if(def.flex) h=h.replace('class="panel"','class="panel flexcard"'); return edit?editWrap(h,def):h; }
     var row1='<div class="dashrow1" style="display:grid;grid-template-columns:'+row1Template(layout,edit)+';gap:'+(edit?'0':'12px')+';align-items:start;">';
     layout.row1.forEach(function(col,ci){
       row1+='<div class="col">';
       col.forEach(function(def){ row1+=wrap(def); });
+      if(edit && col.length<2) row1+=addSlot('col:'+ci,'Add visual');   // max two per row-1 column
       row1+='</div>';
       if(edit && ci<layout.row1.length-1){ row1+='<div data-colresize="'+ci+'" title="Drag to resize columns" style="cursor:col-resize;display:flex;align-items:center;justify-content:center;">'
         +'<div style="width:4px;height:56px;background:#c7c7d2;border-radius:2px;"></div></div>'; }
     });
     row1+='</div>';
     var below='';
-    (layout.rows||[]).forEach(function(r){
-      if(r.visuals.length===1){ below+=wrap(r.visuals[0]); }
-      else { below+='<div style="display:grid;grid-template-columns:repeat('+r.visuals.length+',minmax(0,1fr));gap:12px;">'+r.visuals.map(wrap).join('')+'</div>'; }
+    var _rowN=(layout.rows||[]).length;
+    (layout.rows||[]).forEach(function(r,ri){
+      var n=r.visuals.length;
+      if(!edit){
+        if(n===1){ below+=wrap(r.visuals[0]); }
+        else if(n>1){ below+='<div style="display:grid;grid-template-columns:repeat('+n+',minmax(0,1fr));gap:12px;">'+r.visuals.map(wrap).join('')+'</div>'; }
+        return;   // empty rows are skipped in view
+      }
+      below+='<div style="position:relative;">';
+      if(n>=1){ below+='<div style="display:grid;grid-template-columns:repeat('+n+',minmax(0,1fr));gap:12px;">'+r.visuals.map(wrap).join('')+'</div>'; }
+      below+='<div style="display:flex;gap:8px;margin:6px 0 2px;align-items:center;">';
+      if(n<5) below+='<span data-addvis="row:'+ri+'" style="font-size:11px;color:#1e1b6b;cursor:pointer;font-weight:600;border:1px dashed #9aa0e0;background:#f2f2fc;border-radius:5px;padding:5px 11px;"><i class="ti ti-plus" style="font-size:12px;vertical-align:-1px;"></i> Add visual</span>';
+      if(n===0) below+='<span style="font-size:10.5px;color:#9a9aa6;">Empty row</span>';
+      below+='<span style="flex:1;"></span>'
+        +'<span data-moverow="'+ri+':up" title="Move row up" style="cursor:'+(ri>0?'pointer':'default')+';color:'+(ri>0?'#5a5a68':'#d0d0da')+';font-size:15px;padding:0 3px;"><i class="ti ti-arrow-up"></i></span>'
+        +'<span data-moverow="'+ri+':down" title="Move row down" style="cursor:'+(ri<_rowN-1?'pointer':'default')+';color:'+(ri<_rowN-1?'#5a5a68':'#d0d0da')+';font-size:15px;padding:0 3px;"><i class="ti ti-arrow-down"></i></span>'
+        +'<span data-delrow="'+ri+'" title="Delete this row" style="cursor:pointer;color:#c05a5a;font-size:11px;border:1px solid #e6c2c2;border-radius:5px;padding:4px 9px;margin-left:4px;">Remove row</span>';
+      below+='</div></div>';
     });
-    return row1+below+footerHTML();
+    if(edit) below+='<div data-addrow="1" style="font-size:11px;color:#1e1b6b;cursor:pointer;font-weight:600;border:1px dashed #9aa0e0;background:#f2f2fc;border-radius:6px;padding:9px;text-align:center;margin:4px 0 8px;"><i class="ti ti-plus" style="font-size:13px;vertical-align:-2px;"></i> Add row</div>';
+    return row1+below+footerBlock(edit,layout);
   }
 
   // ---- customize: row-1 column drag-resize ----
@@ -529,6 +574,10 @@
 
   // ---- customize (edit mode) ----
   var customize=false;
+  var printMode=false;
+  // Toggled by C# around a PDF export: render the report clean (no rail/edit chrome), then signal readiness.
+  function setPrintMode(on){ printMode=!!on; render(); if(printMode) postToHost({type:'printReady'}); }
+  window.setPrintMode=setPrintMode;
   function clone(o){ return JSON.parse(JSON.stringify(o)); }
   function postToHost(m){ if(window.chrome&&window.chrome.webview){ try{ window.chrome.webview.postMessage(m); }catch(e){} } }
   // Toggled by the WPF CUSTOMIZE button (setCustomize message) or window.setCustomizeMode.
@@ -538,9 +587,44 @@
   // Remove a visual by id from row 1 or the added rows; drop rows left empty.
   function deleteVisual(id){
     activeLayout.row1.forEach(function(col){ for(var i=col.length-1;i>=0;i--){ if(col[i].id===id) col.splice(i,1); } });
-    (activeLayout.rows||[]).forEach(function(r){ for(var i=r.visuals.length-1;i>=0;i--){ if(r.visuals[i].id===id) r.visuals.splice(i,1); } });
-    activeLayout.rows=(activeLayout.rows||[]).filter(function(r){ return r.visuals.length>0; });
+    var rws=activeLayout.rows||[];
+    for(var ri=rws.length-1;ri>=0;ri--){ var vs=rws[ri].visuals; for(var i=vs.length-1;i>=0;i--){ if(vs[i].id===id){ vs.splice(i,1); if(vs.length===0) rws.splice(ri,1); } } }
     render();
+  }
+  // Visual-type palette + factory for "Add visual".
+  var VTYPES=[['ring','Progress ring'],['donut','Composition donut'],['barList','Bar list'],['table','Summary table'],['heatmap','Heatmap'],['trend','Trend'],['statTiles','Stat tiles']];
+  function newVisualId(){ return 'v'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36); }
+  function newVisualDef(type){
+    var id=newVisualId();
+    switch(type){
+      case 'ring': return {id:id,type:'ring',title:'Progress ring',measure:'basis',center:'pct'};
+      case 'donut': return {id:id,type:'donut',title:'Composition donut',groupBy:'phase',measure:'basis',showCenter:true,center:'pct',showTable:true,sort:'budgetDesc'};
+      case 'barList': return {id:id,type:'barList',title:'Bar list',groupBy:'roc',measure:'basis',sort:'labelAsc'};
+      case 'table': return {id:id,type:'table',title:'Summary table',groupBy:'comp',measure:'basis',sort:'budgetDesc'};
+      case 'heatmap': return {id:id,type:'heatmap',title:'Heatmap',rowGroup:'module',colGroup:'phase',measure:'basis',maxCols:8,rowNoun:'rows'};
+      case 'trend': return {id:id,type:'trend',title:'Trend',mode:'cumulative',measure:'budgetMH',weekStart:'mon'};
+      case 'statTiles': return {id:id,type:'statTiles',title:'Stat tiles',aggregate:'count',showRing:true,complete:{label:'Complete',where:[]},total:{label:'Total',where:[]}};
+      default: return {id:id,type:type,title:type};
+    }
+  }
+  var _addTarget=null;
+  function openTypePicker(target){
+    _addTarget=target;
+    var host=document.getElementById('vPick'); if(!host){ host=document.createElement('div'); host.id='vPick'; document.body.appendChild(host); }
+    host.innerHTML='<div style="position:fixed;inset:0;background:rgba(20,20,30,.4);z-index:70;display:flex;align-items:center;justify-content:center;font-family:\'Segoe UI\',system-ui,sans-serif;">'
+      +'<div style="background:#fff;border-radius:8px;width:300px;box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden;">'
+        +'<div style="background:#1e1b6b;color:#fff;padding:11px 15px;font-size:13px;font-weight:700;">Add a visual</div>'
+        +'<div style="padding:10px;display:flex;flex-direction:column;gap:6px;">'+VTYPES.map(function(t){ return '<button data-newtype="'+t[0]+'" style="text-align:left;font-size:12px;color:#2b2b36;background:#fff;border:1px solid #e3e3ea;border-radius:5px;padding:8px 11px;cursor:pointer;">'+esc(t[1])+'</button>'; }).join('')+'</div>'
+        +'<div style="border-top:1px solid #e0e0e8;padding:9px 12px;text-align:right;background:#fafafc;"><button data-pickcancel="1" style="font-size:11.5px;color:#2b2b36;background:#fff;border:1px solid #cfcfda;border-radius:5px;padding:6px 13px;cursor:pointer;">Cancel</button></div>'
+      +'</div></div>';
+  }
+  function closeTypePicker(){ var h=document.getElementById('vPick'); if(h) h.remove(); _addTarget=null; }
+  function addVisual(type){
+    if(!_addTarget) return;
+    var parts=_addTarget.split(':'), scope=parts[0], idx=+parts[1], def=newVisualDef(type);
+    if(scope==='col'){ def.flex=true; activeLayout.row1[idx].push(def); }
+    else if(scope==='row'){ activeLayout.rows[idx].visuals.push(def); }
+    closeTypePicker(); render(); openVisualEditor(def.id);
   }
   function czBtn(act,label,primary){ return '<button data-cz="'+act+'" style="font-size:11px;'+(primary?'font-weight:600;color:#fff;background:#1e1b6b;border:none;':'color:#2b2b36;background:#fff;border:1px solid #cfcfda;')+'border-radius:5px;padding:6px 11px;cursor:pointer;margin-left:6px;">'+label+'</button>'; }
   function managerToolbar(){
@@ -559,13 +643,15 @@
       +czBtn('done','Done')
     +'</div>';
   }
+  // Drop empty added-rows (e.g. an "Add row" that was never filled) before persisting.
+  function stripLayout(){ activeLayout.rows=(activeLayout.rows||[]).filter(function(r){ return r.visuals&&r.visuals.length>0; }); }
   // The shipped Default is read-only — it can never be overwritten.
   function isDefaultLayout(){ return !!activeLayout.locked || activeLayout.id==='default'; }
   function newLayoutId(){ return 'L'+Date.now().toString(36)+Math.floor(Math.random()*1e6).toString(36); }
   function czAction(a){
     if(a==='done'){ setCustomizeMode(false); postToHost({type:'customizeExited'}); }
     else if(a==='revert'){ activeLayout=clone(DEFAULT_LAYOUT); render(); }
-    else if(a==='save'){ if(isDefaultLayout()) czSaveAs(); else postToHost({type:'saveLayout',layout:activeLayout}); }   // Save on Default acts as Save as
+    else if(a==='save'){ if(isDefaultLayout()) czSaveAs(); else { stripLayout(); postToHost({type:'saveLayout',layout:activeLayout}); } }   // Save on Default acts as Save as
     else if(a==='saveas'){ czSaveAs(); }
     else if(a==='delete'){ czDelete(); }
     else { postToHost({type:'cz',action:a}); }   // publish/import/pdf handled by C# (later blocks)
@@ -583,7 +669,7 @@
     czPrompt('Save as new layout', isDefaultLayout()?'':(activeLayout.name||''), function(name){
       name=(name||'').trim(); if(!name) return;
       activeLayout.name=name; activeLayout.id=newLayoutId(); activeLayout.locked=false; activeLayout.basedOn='default';
-      postToHost({type:'saveLayout',layout:activeLayout});   // C# persistence wired in the next block
+      stripLayout(); postToHost({type:'saveLayout',layout:activeLayout});   // C# persistence wired in the next block
       render();
     });
   }
@@ -623,7 +709,9 @@
     (activeLayout.rows||[]).forEach(function(r){ r.visuals.forEach(function(d){ if(d.id===id) f=d; }); });
     return f; }
   function typeLabel(t){ return {ring:'Progress ring',statTiles:'Stat tiles',donut:'Composition donut',table:'Summary table',barList:'Bar list',heatmap:'Heatmap',trend:'Trend'}[t]||t; }
-  var MEASURE_OPTS=[['basis','Inherit report basis'],['budgetMH','BudgetMHs'],['qty','Quantity'],['percentEntry','PercentEntry'],['clientBudget','ClientBudget']];
+  // UDF columns fed to the report (UDF2 is exposed as "Area / Module"); reused across the editor pickers.
+  var UDF_OPTS=[['udf1','UDF1'],['udf3','UDF3'],['udf4','UDF4'],['udf5','UDF5'],['udf6','UDF6'],['udf7','UDF7'],['udf8','UDF8'],['udf9','UDF9'],['udf10','UDF10'],['udf11','UDF11'],['udf12','UDF12'],['udf13','UDF13'],['udf14','UDF14'],['udf15','UDF15'],['udf16','UDF16'],['udf17','UDF17'],['udf20','UDF20']];
+  var MEASURE_OPTS=[['basis','Inherit report basis'],['budgetMH','BudgetMHs'],['qty','Quantity'],['percentEntry','PercentEntry'],['clientBudget','ClientBudget'],['earnQtyEntry','Earned Qty Entry']];
   function edFld(label,hint){ return '<label style="font-size:10.5px;font-weight:700;color:#5a5a68;display:block;margin-bottom:3px;">'+label+(hint?' <span style="font-weight:400;color:#9a9aa6;">'+hint+'</span>':'')+'</label>'; }
   function edSel(cur,opts){ return opts.map(function(o){ return '<option value="'+o[0]+'"'+(String(cur)===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join(''); }
   function edColor(label,field,def,dflt){ var v=(def[field]||dflt);
@@ -635,10 +723,37 @@
   function edInput(label,field,val){ return '<div style="margin-bottom:11px;">'+edFld(label)+'<input type="text" data-vfield="'+field+'" value="'+esc(val||'')+'" style="width:100%;font-size:12px;padding:7px 8px;border:1px solid #d3d3dc;border-radius:4px;box-sizing:border-box;color:#26262e;background:#fff;"></div>'; }
   function edSelect(label,field,cur,opts){ return '<div style="margin-bottom:11px;">'+edFld(label)+'<select data-vfield="'+field+'" style="width:100%;font-size:12px;padding:7px 8px;border:1px solid #d3d3dc;border-radius:4px;background:#fafafc;color:#26262e;">'+edSel(cur,opts)+'</select></div>'; }
   function edToggle(label,field,on){ return '<div style="margin-bottom:12px;"><label style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:#3a3a46;font-weight:600;cursor:pointer;"><input type="checkbox" data-vfield="'+field+'" data-vtype="bool"'+(on?' checked':'')+'> '+label+'</label></div>'; }
-  function edExcludeStub(){ return '<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edFld('Exclude rows where','— optional')+'<div style="font-size:11px;color:#a4a4b0;font-style:italic;padding:2px 0 6px;">No conditions — uses all filtered rows.</div><span style="font-size:10.5px;color:#b4b4c0;">Filter builder coming soon.</span></div>'; }
+  // ---- filter (where-clause) builder — shared by exclude-rows and stat-tile criteria ----
+  // Operator set matches the Progress module's saved filters (Models/UserFilter.FilterCriteria.AllCriteria).
+  var COND_OPS=[['Equals','Equals'],['Not Equals','Not Equals'],['Contains','Contains'],['Does Not Contain','Does Not Contain'],['Starts With','Starts With'],['Ends With','Ends With'],['Is Empty','Is Empty'],['Is Not Empty','Is Not Empty'],['Greater Than','Greater Than'],['Greater Than or Equal','Greater Than or Equal'],['Less Than','Less Than'],['Less Than or Equal','Less Than or Equal']];
+  // Every column in the dashboard feed (COLMAP + NUMMAP + DATEMAP keys), so any field is filterable.
+  var FIELD_OPTS=[['projectId','Project ID'],['status','Status'],['comp','Component Type'],['phase','Phase Category'],['roc','ROC Step'],['area','Area'],['module','Area / Module (UDF2)'],['shop','Shop / Field'],['wp','Work Package'],['desc','Description'],['tag','Tag NO'],['line','Line Number'],['dwg','Drawing'],['size','Pipe Size 1'],['uom','UOM'],['phaseCode','Phase Code'],['schedActNo','Sched ActNO'],['aux1','Aux1'],['aux2','Aux2'],['aux3','Aux3'],['budgetMH','Budget MHs'],['earnMH','Earned MHs'],['qty','Quantity'],['clientBudget','Client Budget'],['percentEntry','Percent Entry'],['pct','Percent Complete'],['planStart','Plan Start'],['planFin','Plan Fin'],['actStart','Act Start'],['actFin','Act Fin'],['earnQtyEntry','Earned Qty Entry']].concat(UDF_OPTS);
+  var NOVAL_OPS={'Is Empty':1,'Is Not Empty':1};
+  function getPath(o,path){ var p=path.split('.'); for(var i=0;i<p.length;i++){ if(o==null) return undefined; o=o[p[i]]; } return o; }
+  function setPath(o,path,val){ var p=path.split('.'); for(var i=0;i<p.length-1;i++){ if(o[p[i]]==null) o[p[i]]={}; o=o[p[i]]; } o[p[p.length-1]]=val; }
+  function getConds(def,path){ var v=getPath(def,path); return Array.isArray(v)?v:[]; }
+  function condArr(def,path){ var v=getPath(def,path); if(!Array.isArray(v)){ v=[]; setPath(def,path,v); } return v; }
+  // Renders the condition rows (AND/OR joiner + field + operator + value + remove) and the Add link.
+  function filterBuilder(def,path){
+    var conds=getConds(def,path), h='';
+    conds.forEach(function(c,i){
+      var noVal=!!NOVAL_OPS[c.op];
+      h+='<div style="display:flex;gap:4px;align-items:center;margin-bottom:5px;">'
+        +(i>0?'<select data-cond="'+path+'" data-ci="'+i+'" data-cprop="logic" style="width:52px;flex:none;font-size:11px;padding:5px 2px;border:1px solid #d3d3dc;border-radius:4px;background:#fafafc;color:#26262e;">'+edSel(c.logic||'AND',[['AND','AND'],['OR','OR']])+'</select>':'<span style="width:52px;flex:none;"></span>')
+        +'<select data-cond="'+path+'" data-ci="'+i+'" data-cprop="field" style="flex:1;min-width:0;font-size:11px;padding:5px 4px;border:1px solid #d3d3dc;border-radius:4px;background:#fff;color:#26262e;">'+edSel(c.field,FIELD_OPTS)+'</select>'
+        +'<select data-cond="'+path+'" data-ci="'+i+'" data-cprop="op" data-condrebuild="1" style="width:118px;flex:none;font-size:11px;padding:5px 2px;border:1px solid #d3d3dc;border-radius:4px;background:#fff;color:#26262e;">'+edSel(c.op||'Equals',COND_OPS)+'</select>'
+        +'<input data-cond="'+path+'" data-ci="'+i+'" data-cprop="value"'+(noVal?' disabled':'')+' value="'+esc(noVal?'':(c.value==null?'':c.value))+'" placeholder="'+(noVal?'—':'value')+'" style="flex:1;min-width:0;font-size:11px;padding:5px 6px;border:1px solid #d3d3dc;border-radius:4px;box-sizing:border-box;color:#26262e;background:'+(noVal?'#f4f4f8':'#fff')+';">'
+        +'<span data-condrem="'+path+'" data-ci="'+i+'" title="Remove" style="cursor:pointer;color:#c05a5a;font-size:13px;padding:0 2px;flex:none;">&#10005;</span>'
+      +'</div>';
+    });
+    if(!conds.length) h+='<div style="font-size:11px;color:#a4a4b0;font-style:italic;padding:1px 0 5px;">No conditions.</div>';
+    h+='<span data-condadd="'+path+'" style="font-size:10.5px;color:#1e1b6b;cursor:pointer;font-weight:600;"><i class="ti ti-plus" style="font-size:11px;vertical-align:-1px;"></i> Add condition</span>';
+    return h;
+  }
+  function edExclude(def){ return '<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edFld('Exclude rows where','— optional')+filterBuilder(def,'excludeFilters')+'</div>'; }
 
   // Per-type editor bodies (built one type at a time).
-  var GROUPBY_OPTS=[['phase','Phase Category'],['comp','Component Type'],['area','Area'],['roc','ROC Step'],['shop','Shop / Field'],['wp','Work Package'],['module','Area / Module (UDF2)'],['status','Status'],['dwg','Drawing'],['phaseCode','Phase Code'],['projectId','Project ID'],['aux1','Aux1'],['aux2','Aux2'],['aux3','Aux3'],['schedActNo','Sched ActNO']];
+  var GROUPBY_OPTS=[['phase','Phase Category'],['comp','Component Type'],['area','Area'],['roc','ROC Step'],['shop','Shop / Field'],['wp','Work Package'],['module','Area / Module (UDF2)'],['status','Status'],['dwg','Drawing'],['phaseCode','Phase Code'],['projectId','Project ID'],['aux1','Aux1'],['aux2','Aux2'],['aux3','Aux3'],['schedActNo','Sched ActNO'],['earnQtyEntry','Earned Qty Entry']].concat(UDF_OPTS);
   var SORT_OPTS=[['budgetDesc','By size'],['labelAsc','By name'],['pctDesc','By % (high→low)']];
   var CENTER_OPTS=[['pct','% complete'],['earned','Total earned'],['budget','Total budget'],['count','Row count']];
   // Select / toggle / number variants. The R-variants rebuild the editor form on change (conditional fields).
@@ -662,7 +777,7 @@
       +edSelect('Center value','center',def.center||'pct',[['pct','% complete'],['earned','Total earned'],['budget','Total budget'],['count','Row count']])
       +edToggle('Show Earned &amp; Total beneath','showTiles',def.showTiles)
       +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edColor('Progress color','colorProgress',def,'#1e1b6b')+edColor('Remaining color','colorRemaining',def,'#e6e6ee')+'</div>'
-      +edExcludeStub();
+      +edExclude(def);
   };
   VEDITORS.donut=function(def){
     return edInput('Label','title',def.title)
@@ -676,20 +791,21 @@
         +edSelectR('Slice colors','colorMode',def.colorMode||'palette',[['palette','Summit palette (default)'],['spread','Spread between two colors']])
         +(def.colorMode==='spread'?edColor('Start color','spreadFrom',def,'#1e1b6b')+edColor('End color','spreadTo',def,'#a49fd8'):'<div style="font-size:10px;color:#9a9aa6;margin:-4px 0 8px;">Uses the default Summit palette — switch to “Spread” to pick two colors.</div>')
       +'</div>'
-      +edExcludeStub();
+      +edExclude(def);
   };
   VEDITORS.barList=function(def){
     return edInput('Label','title',def.title)
       +edSelect('Group by (bars)','groupBy',def.groupBy||'roc',GROUPBY_OPTS)
       +edSelect('Measure','measure',def.measure||'basis',MEASURE_OPTS)
       +edSelect('Sort','sort',def.sort||'labelAsc',SORT_OPTS)
+      +edNum('Label width (px)','labelWidth',def.labelWidth==null?52:def.labelWidth,'— widen so long names aren’t cut off')
       +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'
         +edColor('Bar color','barColor',def,'#1e1b6b')
         +edColor('Remaining (track)','colorRemaining',def,'#eef0f4')
         +edToggleR('Highlight complete (100%)','highlightComplete',def.highlightComplete!==false)
         +(def.highlightComplete!==false?edColor('Complete color','completeColor',def,'#2bb24c'):'')
       +'</div>'
-      +edExcludeStub();
+      +edExclude(def);
   };
   VEDITORS.table=function(def){
     return edInput('Label','title',def.title)
@@ -701,7 +817,7 @@
         +(def.highlightComplete!==false?edColor('Complete % color','completeColor',def,'#2bb24c'):'')
       +'</div>'
       +edColsToggles(def)
-      +edExcludeStub();
+      +edExclude(def);
   };
   VEDITORS.heatmap=function(def){
     return edInput('Label','title',def.title)
@@ -714,7 +830,7 @@
         +edColor('High (100%)','colorHigh',def,'#2bb24c')
         +edColor('No data','colorNoData',def,'#666666')
       +'</div>'
-      +edExcludeStub();
+      +edExclude(def);
   };
   VEDITORS.trend=function(def){
     var isCum=(def.mode||'cumulative')==='cumulative';
@@ -726,7 +842,24 @@
         +edColor('Bar color','barColor',def,'#1e1b6b')
         +(isCum?edToggleR('Highlight complete','highlightComplete',def.highlightComplete!==false)+(def.highlightComplete!==false?edColor('Complete color','completeColor',def,'#2bb24c'):''):'<div style="font-size:10px;color:#9a9aa6;margin:2px 0;">Highlight-complete applies to Cumulative mode only.</div>')
       +'</div>'
-      +edExcludeStub();
+      +edExclude(def);
+  };
+  VEDITORS.statTiles=function(def){
+    return edInput('Title','title',def.title)
+      +edSelect('Aggregate','aggregate',def.aggregate||'count',[['count','Count of rows'],['qty','Sum of Quantity'],['budgetMH','Sum of BudgetMHs'],['earnMH','Sum of EarnMHsCalc'],['earnQtyEntry','Sum of Earned Qty Entry'],['clientBudget','Sum of ClientBudget']])
+      +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edFld('Complete')
+        +edInput('Tile label','complete.label',getPath(def,'complete.label'))
+        +'<label style="font-size:10px;font-weight:700;color:#5a5a68;display:block;margin-bottom:3px;">Where</label>'+filterBuilder(def,'complete.where')
+      +'</div>'
+      +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edFld('Total')
+        +edInput('Tile label','total.label',getPath(def,'total.label'))
+        +'<label style="font-size:10px;font-weight:700;color:#5a5a68;display:block;margin-bottom:3px;">Where</label>'+filterBuilder(def,'total.where')
+      +'</div>'
+      +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'
+        +edToggleR('Show ring','showRing',def.showRing!==false)
+        +(def.showRing!==false?edColor('Ring color','colorProgress',def,'#1e1b6b')+edColor('Remaining color','colorRemaining',def,'#e6e6ee'):'')
+        +'<div style="font-size:10px;color:#9a9aa6;margin-top:2px;">Ring % = Complete ÷ Total.</div>'
+      +'</div>';
   };
 
   // Find a visual's shipped-default def (in DEFAULT_LAYOUT) for "Revert to default".
@@ -763,11 +896,11 @@
     var f=t.getAttribute('data-vfield'); if(!f||!_editId) return;
     var def=findDef(_editId); if(!def) return;
     var vt=t.getAttribute('data-vtype');
-    if(vt==='bool'){ def[f]=!!t.checked; }
-    else if(vt==='num'){ var nv=parseInt(t.value,10); if(isNaN(nv)) delete def[f]; else def[f]=nv; }
-    else if(t.getAttribute('data-hex')){ var hx=t.value.trim(); if(!/^#?[0-9a-fA-F]{6}$/.test(hx)) return; if(hx.charAt(0)!=='#') hx='#'+hx; def[f]=hx; var pc=t.parentNode.querySelector('input[type="color"][data-vfield="'+f+'"]'); if(pc) pc.value=hx; }
-    else if(t.type==='color'){ def[f]=t.value; var ph=t.parentNode.querySelector('input[data-hex][data-vfield="'+f+'"]'); if(ph) ph.value=t.value.toUpperCase(); }
-    else { def[f]=t.value; }
+    if(vt==='bool'){ setPath(def,f,!!t.checked); }
+    else if(vt==='num'){ var nv=parseInt(t.value,10); setPath(def,f,isNaN(nv)?undefined:nv); }
+    else if(t.getAttribute('data-hex')){ var hx=t.value.trim(); if(!/^#?[0-9a-fA-F]{6}$/.test(hx)) return; if(hx.charAt(0)!=='#') hx='#'+hx; setPath(def,f,hx); var pc=t.parentNode.querySelector('input[type="color"][data-vfield="'+f+'"]'); if(pc) pc.value=hx; }
+    else if(t.type==='color'){ setPath(def,f,t.value); var ph=t.parentNode.querySelector('input[data-hex][data-vfield="'+f+'"]'); if(ph) ph.value=t.value.toUpperCase(); }
+    else { setPath(def,f,t.value); }
     if(t.getAttribute('data-vrebuild')) buildEditorPanel(def);
   }
 
@@ -777,11 +910,16 @@
     if(!loaded){ app.innerHTML='<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#faf9f5;color:#9a9aa6;font-size:16px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">Loading dashboard…</div>'; return; }
     if(!ROWS.length){ app.innerHTML=headerHTML(); return; }
     var rows=filtered();
-    app.innerHTML=headerHTML()+(customize?managerToolbar():'')
-      +'<div style="display:grid;grid-template-columns:150px 1fr;gap:12px;padding:12px 16px 0;align-items:start;">'
-        +railHTML()
-        +'<main class="col">'+renderLayout(activeLayout,rows,customize)+'</main>'
-      +'</div>';
+    if(printMode){
+      // PDF/print: report only — no filter rail, no edit chrome, full width.
+      app.innerHTML=headerHTML()+'<div style="padding:12px 16px 12px;"><main class="col">'+renderLayout(activeLayout,rows,false)+'</main></div>';
+    } else {
+      app.innerHTML=headerHTML()+(customize?managerToolbar():'')
+        +'<div style="display:grid;grid-template-columns:150px 1fr;gap:12px;padding:12px 16px 0;align-items:start;">'
+          +railHTML()
+          +'<main class="col">'+renderLayout(activeLayout,rows,customize)+'</main>'
+        +'</div>';
+    }
     var fl=document.querySelector('[data-footer="left"]');  if(fl) fl.textContent=(activeLayout.footer&&activeLayout.footer.left)||'';
     var fr=document.querySelector('[data-footer="right"]'); if(fr) fr.textContent=(activeLayout.footer&&activeLayout.footer.right)||'';
     var ts=document.getElementById('trendScroll'); if(ts) ts.scrollLeft=ts.scrollWidth;
@@ -813,12 +951,33 @@
     else if(el.hasAttribute('data-del-vid')){ deleteVisual(el.getAttribute('data-del-vid')); }
     else if(el.hasAttribute('data-edit-vid')){ openVisualEditor(el.getAttribute('data-edit-vid')); }
   });
+  // Add-visual / add-row / remove-row / type-picker.
+  document.addEventListener('click',function(e){
+    var av=e.target.closest?e.target.closest('[data-addvis]'):null; if(av){ openTypePicker(av.getAttribute('data-addvis')); return; }
+    var nt=e.target.closest?e.target.closest('[data-newtype]'):null; if(nt){ addVisual(nt.getAttribute('data-newtype')); return; }
+    var pc=e.target.closest?e.target.closest('[data-pickcancel]'):null; if(pc){ closeTypePicker(); return; }
+    var ar=e.target.closest?e.target.closest('[data-addrow]'):null; if(ar){ if(!activeLayout.rows) activeLayout.rows=[]; activeLayout.rows.push({visuals:[]}); render(); return; }
+    var dr=e.target.closest?e.target.closest('[data-delrow]'):null; if(dr){ (activeLayout.rows||[]).splice(+dr.getAttribute('data-delrow'),1); render(); return; }
+    var mr=e.target.closest?e.target.closest('[data-moverow]'):null; if(mr){ var pp=mr.getAttribute('data-moverow').split(':'), ri=+pp[0], j=(pp[1]==='up')?ri-1:ri+1, rr=activeLayout.rows||[]; if(j>=0&&j<rr.length){ var t=rr[ri]; rr[ri]=rr[j]; rr[j]=t; render(); } return; }
+  });
+  // Footer text edits (edit mode) — no re-render needed; the inputs hold the value.
+  document.addEventListener('input',function(e){ var t=e.target; if(t&&t.getAttribute&&t.getAttribute('data-footedit')){ if(!activeLayout.footer) activeLayout.footer={}; activeLayout.footer[t.getAttribute('data-footedit')]=t.value; } });
   // Visual-editor: live-apply field edits, and Cancel/Save.
   function edFieldEvt(e){ var t=e.target; if(t&&t.getAttribute&&t.getAttribute('data-vfield')) applyEditorField(t); }
   document.addEventListener('input',edFieldEvt);
   document.addEventListener('change',edFieldEvt);
   document.addEventListener('click',function(e){ var el=e.target.closest?e.target.closest('[data-ved]'):null; if(!el) return; var a=el.getAttribute('data-ved');
     if(a==='cancel') cancelEditor(); else if(a==='save') saveEditor(); else if(a==='preview') previewEditor(); else if(a==='revert') revertVisualToDefault(); });
+  // Filter-builder: apply condition edits + add/remove rows.
+  function edCondEvt(e){ var t=e.target; if(!t||!t.getAttribute||!t.getAttribute('data-cond')||!_editId) return; var def=findDef(_editId); if(!def) return; var arr=condArr(def,t.getAttribute('data-cond')), ci=+t.getAttribute('data-ci'); if(!arr[ci]) return; arr[ci][t.getAttribute('data-cprop')]=t.value; if(t.getAttribute('data-condrebuild')) buildEditorPanel(def); }
+  document.addEventListener('input',edCondEvt);
+  document.addEventListener('change',edCondEvt);
+  document.addEventListener('click',function(e){
+    var add=e.target.closest?e.target.closest('[data-condadd]'):null;
+    if(add&&_editId){ var da=findDef(_editId); if(da){ condArr(da,add.getAttribute('data-condadd')).push({field:'roc',op:'Equals',value:'',logic:'AND'}); buildEditorPanel(da); } return; }
+    var rem=e.target.closest?e.target.closest('[data-condrem]'):null;
+    if(rem&&_editId){ var dr=findDef(_editId); if(dr){ condArr(dr,rem.getAttribute('data-condrem')).splice(+rem.getAttribute('data-ci'),1); buildEditorPanel(dr); } return; }
+  });
   document.addEventListener('click',function(e){ var el=e.target.closest?e.target.closest('[data-vp]'):null; if(!el) return; czPromptClose(el.getAttribute('data-vp')==='ok'); });
   document.addEventListener('dragover',function(e){ if(e.target.closest&&e.target.closest('[data-import]')){ e.preventDefault(); } });
   document.addEventListener('drop',function(e){ if(e.target.closest&&e.target.closest('[data-import]')){ e.preventDefault(); var f=e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) readFile(f); } });
@@ -893,6 +1052,7 @@
       if(d.activities){ if(d.projects) PROJECTS=d.projects; window.loadVantageData(d.activities); return; }
       if(d.type==='setCustomize'){ setCustomizeMode(d.on); return; }
       if(d.type==='setLayout'){ activeLayout=d.layout?d.layout:clone(DEFAULT_LAYOUT); render(); return; }
+      if(d.type==='setPrintMode'){ setPrintMode(d.on); return; }
     }); }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
