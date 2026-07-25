@@ -112,8 +112,10 @@
     var dims=[['area','Area'],['aux1','Aux1'],['aux2','Aux2'],['aux3','Aux3'],['comp','Component Type'],['dwg','Drawing'],['phase','Phase Category'],['phaseCode','Phase Code'],['projectId','Project ID'],['roc','ROC Step'],['schedActNo','Sched ActNO'],['shop','Shop / Field'],['status','Status'],['wp','Work Package']];
     var basisOpts=[['budgetMH','BudgetMHs'],['qty','Quantity'],['percentEntry','PercentEntry'],['clientBudget','ClientBudget']];
     var h='<aside class="panel" style="position:sticky;top:70px;padding:12px 12px 14px;">';
+    var chips=Object.keys(filters).filter(function(k){return filters[k]!=null;});
     h+='<div style="font-size:11px;font-weight:800;letter-spacing:.06em;color:#3a3a48;text-transform:uppercase;">Filters</div>';
-    h+='<div style="font-size:10.5px;color:#8a8a96;margin:2px 0 10px;">'+fmt(filtered().length)+' data rows shown</div>';
+    h+='<div style="font-size:10.5px;color:#8a8a96;margin:2px 0 3px;">'+fmt(filtered().length)+' data rows</div>';
+    h+=(chips.length?'<div style="margin:0 0 10px;"><span data-clear style="font-size:11px;color:#3a9fd6;cursor:pointer;font-weight:600;">Clear all</span></div>':'<div style="height:7px;"></div>');
     h+='<div style="margin-bottom:12px;"><label style="font-size:10.5px;font-weight:700;color:#5a5a68;">Progress basis</label>';
     h+='<select data-role="basis" style="width:100%;font-size:11.5px;padding:5px 6px;border:1px solid #d3d3dc;border-radius:4px;background:#fafafc;color:#333;margin-top:4px;">';
     basisOpts.forEach(function(o){ h+='<option value="'+o[0]+'"'+(basis===o[0]?' selected':'')+'>'+o[1]+'</option>'; });
@@ -126,15 +128,6 @@
       opts.forEach(function(v){ h+='<option value="'+esc(v)+'"'+(String(filters[d[0]])===v?' selected':'')+'>'+esc(v)+'</option>'; });
       h+='</select></div>';
     });
-    var chips=Object.keys(filters).filter(function(k){return filters[k]!=null;});
-    if(chips.length){
-      var lab={projectId:'Project ID',status:'Status',area:'Area',phase:'Phase Category',phaseCode:'Phase Code',shop:'Shop/Field',comp:'Component Type',wp:'Work Pkg',dwg:'Drawing',roc:'ROC Step',schedActNo:'Sched ActNO',aux1:'Aux1',aux2:'Aux2',aux3:'Aux3'};
-      h+='<div style="margin-top:8px;border-top:1px solid #ececf1;padding-top:9px;">';
-      h+='<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:10px;font-weight:700;color:#5a5a68;text-transform:uppercase;">Active</span><span data-clear style="font-size:10.5px;color:#3a9fd6;cursor:pointer;font-weight:600;">Clear all</span></div>';
-      h+='<div style="display:flex;flex-wrap:wrap;gap:5px;">';
-      chips.forEach(function(k){ h+='<span data-chip="'+k+'" style="display:inline-flex;align-items:center;gap:5px;background:#eef0fb;border:1px solid #cdd0ee;color:#2b2b6a;font-size:10.5px;padding:3px 7px;border-radius:11px;cursor:pointer;">'+esc(lab[k]||k)+': '+esc(filters[k])+' <span style="font-weight:700;opacity:.6;">&times;</span></span>'; });
-      h+='</div></div>';
-    }
     h+='</aside>';
     return h;
   }
@@ -347,7 +340,7 @@
       +'<div class="col"><div class="panel flexcard"><div class="ttl">ROC Step Progress</div><div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;">'+barRows(groupPct(rows,'roc').sort(function(a,b){return a.label<b.label?-1:1;}),NAVY)+'</div></div>'+'<div class="panel"><div class="ttl">Shop / Field Progress</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">'+barRows(groupPct(rows,'shop').sort(function(a,b){return b.budget-a.budget;}),NAVY)+'</div></div>'+'</div>'
       +'</div>';
     app.innerHTML=headerHTML()
-      +'<div style="display:grid;grid-template-columns:214px 1fr;gap:12px;padding:12px 16px 0;align-items:start;">'
+      +'<div style="display:grid;grid-template-columns:150px 1fr;gap:12px;padding:12px 16px 0;align-items:start;">'
         +railHTML()
         +'<main class="col">'+top+matrixHTML(rows)+trendHTML(rows)+weeklyTrendHTML(rows)+footerHTML()+'</main>'
       +'</div>';
