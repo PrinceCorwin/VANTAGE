@@ -6,6 +6,20 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 25, 2026 (Project Dashboard — data-driven render engine + click-to-filter on bars/trends)
+
+**Refactored the Project Dashboard report to a data-driven render engine** (`Dashboards/vantage-dashboard.html`) — the groundwork for the upcoming customization feature (`Plans/PRD_ProjectDashboard_Customization.md` §10 step 2). No user-visible change to the report's appearance; verified byte-identical to the prior hand-coded output.
+
+- **Every visual is now drawn from a definition, not hardcoded.** Added a `DEFAULT_LAYOUT` constant expressing the current report as data (row-1 four columns, stretched rows below, footer), a `renderVisual(def,rows)` dispatcher, and 7 per-type renderers (`RENDERERS.{ring,statTiles,donut,table,barList,heatmap,trend}`). `render()` now calls `renderLayout(activeLayout,rows)`; `activeLayout` defaults to `DEFAULT_LAYOUT` and is ready to accept a custom layout via `postMessage`.
+- **Each renderer verified byte-identical** to the legacy function it replaced (ring↔Overall Progress panel, statTiles↔Summit Connections, donut↔phasePanel, table↔evbTable, barList↔barRows, heatmap↔matrixHTML, trend↔trendHTML+weeklyTrendHTML), and the full report body diffed identical (27,162 chars) against the pre-refactor output.
+- **Deleted 186 lines of dead legacy code** (`progressHTML`, `phasePanel`, `evbTable`, `barRows`, `matrixHTML`, `trendHTML`, `weeklyTrendHTML`, plus already-dead `statusPanel`, `agg`, `groupPct`).
+- **Two deliberate 1px/label cleanups** (both render identically): ROC bar-list inter-bar gap 5→6px to match Shop/Field; Summit Connections tile labels use a space instead of a hardcoded `<br>`.
+- **The generic renderers carry the config knobs designed in the PRD** (donut palette/spread coloring, per-visual measure with "inherit basis", stat-tiles as a generic "X of Y" with numerator/denominator where-clauses and count/sum aggregate, ring Show-Earned-&-Total, heatmap Low/High/No-data scale, trend cumulative/per-week mode) — wired but only reachable once the editor UI ships.
+
+**Click-to-filter extended to bar lists and trend charts** (previously only the tables filtered on click):
+- **Bar lists** (ROC Step, Shop/Field): clicking a bar toggles a filter on that group; the active bar highlights — same `data-toggle` mechanism as the tables.
+- **Trend charts** (cumulative + weekly): clicking a week's bar filters the whole dashboard to that single week by actual date, via a reserved `__week` filter added to `filtered()` (Monday week-start); the selected bar gets an outline. Heatmap intentionally left non-filtering for now.
+
 ### July 24, 2026 (Project Dashboard — report tweaks)
 
 **On-report refinements to the Project Dashboard** (all in `Dashboards/vantage-dashboard.html`, plus 5 new projection fields in `ProjectDashboardWindow`).

@@ -1,10 +1,10 @@
 # PRD — Project Dashboard Customization (Saved Report Layouts)
 
-**Status:** Planned — not started. Build AFTER the Default layout content is finalized.
+**Status:** In progress. §10 step 1 (Default content) done; **§10 step 2 (data-driven render engine) DONE 2026-07-24** — all 7 visual types ported to definition-driven renderers, verified byte-identical to the legacy output, legacy functions deleted. Next: step 3 (layout store + manager UI + visual editor).
 **Owner:** Steve
 **Last updated:** July 24, 2026
 
-> Mockups exist (shown in-session: "Customize report layout manager" + "Visual editor dialog"). Steve has additional feedback on the mockups still to be incorporated — treat the mockups as directional, not final.
+> Mockups reviewed and refined 2026-07-24 (layout manager v3 + visual editor). Steve's feedback is incorporated into §3/§4/§7/§9. Note: mockup code is not saved to disk — it is regenerated in-session from this PRD when needed. Remaining editor detail is being worked type-by-type (§7).
 
 ---
 
@@ -25,14 +25,15 @@ Today each visual is a hardcoded JS function (`progressHTML`, `phasePanel`, `evb
 ### Rendering approach — hand-rolled SVG (decided)
 All visuals are hand-drawn SVG / HTML / CSS — **no charting library** (Chart.js, ECharts, D3, etc.). Confirmed 2026-07-24 after weighing the options: keeps the file lean and fully offline, stays PDF-crisp (vector SVG), and gives total control of the Summit look. The engine renders each visual *type* with a small dedicated renderer. Adding a new visual to the Default later is cheap: a same-type visual is just another entry in the Default's JSON (no engine change); a genuinely new *type* is one new renderer, additive and localized — never a rewrite. So the Default being "locked for now" does not paint us into a corner.
 
-### Visual types (fixed palette, configurable data)
-- Progress ring (single % with center value)
-- Composition donut (slices by group, colored per group)
-- Bar list (horizontal % bars per group)
-- Table — group | % | earned | budget, with Total row
-- Heatmap — group-by-phase matrix
-- Week-over-week trend (cumulative)
-- Stat tiles (count / value pairs, e.g. Connections)
+### Visual types (fixed palette, configurable data) — 7 types, confirmed 2026-07-24
+Each type is one dedicated renderer; label, source column, measure, exclusions, and placement are config on top. These 7 are exactly what the current report renders — the Default is expressed entirely with them (the two week trends are two instances of the single Trend type). No net-new types in v1.
+1. **Progress ring** — single % with center value (Overall Progress)
+2. **Composition donut** — slices per group, colored per group, optional center %, **and an optional summary table beneath** (driven by one def). Progress by Phase stays a single card (donut + table). *(Decided 2026-07-24.)*
+3. **Bar list** — horizontal % bar per group (ROC Step, Shop/Field)
+4. **Summary table** — group | % | earned | budget, with a Total row (Component Type, Area)
+5. **Heatmap** — group × phase matrix (Area / Module Progress by Phase). *(Steve refers to this one as "the data table" — same visual.)*
+6. **Trend** — earned MH by week; per-type mode toggle **cumulative / per-week** (Default carries one of each)
+7. **Stat tiles** — a fully-generic "X of Y" pair + % ring. User picks the aggregated column (e.g. Quantity), a **numerator** where-clause and a **denominator** where-clause (e.g. ROCStep = 5.CON), and edits all three labels (title + the two stat labels). "Summit Connections" is just one configuration of this.
 
 ### Layout schema (illustrative)
 ```json
@@ -50,24 +51,29 @@ All visuals are hand-drawn SVG / HTML / CSS — **no charting library** (Chart.j
       "measure": "budgetMHs",
       "centerValue": "percentComplete",
       "excludeFilters": [ { "field": "ROCStep", "op": "notIn", "values": ["X", "0.FAB"] } ],
-      "placement": { "row": 1, "col": 2, "size": "2slots", "order": 0 }
+      "placement": { "row": 2, "slot": 0, "stretch": false }
     }
   ]
 }
 ```
+(No `size`/slots field — sizing is content-driven, see §4. `stretch:true` makes a below-row-1 visual own its whole row.)
 
-## 4. Layout structure & placement rules
+## 4. Layout structure & placement rules  *(refined 2026-07-24 — mockup v3)*
 
-- **Row 1** — four columns, fixed height (2× the Overall Progress card). Each column holds a **maximum of two visuals**.
+- **Row 1 — fixed four columns, exclusive to row 1.** Fixed height (2× the Overall Progress card). Each column holds a **maximum of two visuals**.
   - **Hard rule:** when a column already contains two visuals, the "Add visual" affordance for that column is **hidden/disabled** — the user must delete one before adding another. Never surface a way to add a third.
-- **Row 2+** — full-width visuals (heatmap, trend, and any future rows), stacked.
-- A visual's `size` decides whether it fills a column (2 slots) or takes one slot (1 slot). Two 1-slot visuals or one 2-slot visual per row-1 column.
-- Reordering within/between columns — start with move up/down (and move-to-column); drag-and-drop is a later enhancement. *(Decision — see §9.)*
+  - There is no way to create a second four-column band. The 4-column structure belongs to row 1 only.
+- **Rows 2+ — user-added rows.** The user can add rows below row 1 (never another 4-column row). Each added row holds **1 to 5 visuals**, whose widths are **split equally** by how many are present (5 is the current cap).
+  - **Stretch to fit:** a visual can be set (in its editor) to stretch to fill its whole row. A row containing a stretched visual shows **no "Add visual"** affordance — the user must edit that visual to un-stretch it before the row can hold more. The UI states this inline ("Stretched to fit — edit the visual to add more").
+  - The current report's below-row-1 visuals are all stretched: Row 2 Heatmap, Row 3 Trend (cumulative), Row 4 Trend (per-week) — matching `matrixHTML + trendHTML + weeklyTrendHTML` in the render order.
+- **No slot/size picker.** Size is content-driven: each visual sizes to its content and scrolls if it overflows (per the existing panel code). The only sizing control is the per-visual **stretch-to-fit** toggle.
+- **Footer — its own entity.** Independent left- and right-justified text boxes, **empty by default**; users can add text to either side. Already stubbed as `data-footer="left"/"right"` in `footerHTML`.
+- Reordering rows — start with move up/down (drag handles shown in the mockup); drag-and-drop is a later enhancement. *(Decision — see §9.)*
 
 ## 5. Storage & sharing (Azure-centric, no auto-sync)
 
-- **Local (SQLite):** the user's own saved-layout list, mirroring the existing `ManageLayoutsDialog` (grid layouts) pattern. This is the list the report picks from.
-- **Azure shared library:** a new `ReportLayouts` table on `projectcontrols`.
+- **Local (UserSettings JSON — confirmed 2026-07-24):** mirror the existing grid-layouts pattern in `SettingsManager` ([SettingsManager.cs:320-443](../Utilities/SettingsManager.cs)): an index key `ReportLayouts.Index` (JSON list of names), one `ReportLayout.<name>.Data` key per layout (serialized layout JSON), and `ReportLayouts.LastUsed.<ProjectID>` for the per-project last-used pointer (§9 decision 2). No dedicated local table, no migration; register the keys in `UserSettingsRegistry`. (Grid layouts cap at 5 — decide whether report layouts share that cap.)
+- **Azure shared library:** a new **dedicated** `ReportLayouts` table on `projectcontrols` (decided 2026-07-24 over a generic `GlobalSettings` key-value table — the import picker needs queryable per-layout metadata: name, author, updated-date; and a narrow table is safer on the REQit-shared DB). A `GlobalSettings` table can be added later for scalar cloud settings if needed. Draft schema: `LayoutId` (uniqueidentifier PK), `Name`, `Author`, `SchemaVersion` (int), `LayoutJson` (nvarchar(max)), `CreatedUtc`, `UpdatedUtc`. Finalize + coordinate with REQit at step 5.
   - **Publish to Azure** — pushes a *copy* of a local layout to the shared library.
   - **Import from Azure** — pulls a published layout down into the local list as a new local copy. **One-time copy — the local layout does NOT auto-link or sync to Azure.**
   - Workflow: one person designs a per-project report, publishes it; teammates import it. Replaces passing settings files around.
@@ -78,32 +84,56 @@ All visuals are hand-drawn SVG / HTML / CSS — **no charting library** (Chart.j
 
 - Button on the main report toolbar (not just customize mode).
 - Uses `CoreWebView2.PrintToPdfAsync` (already used by the help sidebar), landscape, fit-to-width, filename patterned per project.
+- **The PDF must NOT include the filter panel** (the left rail) — export the report content only. Hide/detach the rail for the print render, then restore.
 
 ## 7. Customization UI
 
 - **CUSTOMIZE** button on the report's top toolbar (WPF) toggles **edit mode inside the WebView2** (HTML/JS), so add/remove/relabel/edit render with **live preview** against real data.
-- **Layout manager** (edit mode): the saved-layouts list (Default locked + user layouts), and the report's column/row structure with per-visual ✎ edit / ✕ delete, and per-column "+ Add visual" (respecting the row-1 max-two rule). Toolbar: Save, Save as, Revert to default, Publish to Azure, Import from Azure, Export PDF.
-- **Visual editor** (opens on ✎ / Add): Label, Visual type, Group by (source column), Measure, Center/headline value, Exclude-rows filter builder, Column, Size. Live preview updates the report behind the dialog.
+- **Layout manager** (edit mode): the saved-layouts list (Default locked + user layouts), and the report's row structure with per-visual ✎ edit / ✕ delete, per-column "+ Add visual" in row 1 (respecting the max-two rule), per-row "+ Add visual" in rows 2+ (hidden when a row is stretched or full at 5), an "+ Add row" affordance, per-row move up/down, and the editable footer band. Toolbar: Save, Save as, Revert to default, **Publish to Cloud**, **Import from Cloud**, Export PDF. (UI says "Cloud"; the backing store is still the Azure `ReportLayouts` table.)
+- **Visual editor** (opens on ✎ / Add): Label, Visual type, Group by (source column), Measure, Center/headline value, Exclude-rows filter builder, placement (which column in row 1 / which row below), and a **stretch-to-fit** toggle. **No slot/size picker** — sizing is content-driven. Per-type fields differ (e.g. Trend adds a cumulative/per-week toggle; Data table adds a column picker) — the editor is being designed **type-by-type**, not all at once. Live-preview surface (in-dialog thumbnail vs. live update of the report behind the dialog) is still open — see §9.
 - **C# owns:** local layout persistence, Azure publish/import, PDF, and the default-locked logic. Page ↔ C# exchange the layout JSON over `postMessage` (same seam used for data injection).
+
+### Editor fields by type (locked as approved — designed one type at a time)
+Common to every editor: a **Label** field, an **Exclude rows where** filter builder (field / op / values, add-condition), a **live preview**, and Cancel / Save. Placement + stretch are set in the layout manager, not the editor. Measure options everywhere: **Inherit report basis** (default — follows the filter-rail Progress-basis selector, as today) / BudgetMHs / Quantity / PercentEntry / ClientBudget. **All color controls default to the current Summit colors** so an unedited layout matches today exactly. A color control is a single **swatch** that opens a **color-picker popover** containing both a visual palette/spectrum and a hex field (both entry methods in one popup — no separate inline hex box). Use the Syncfusion `ColorPicker` for parity with the rest of the app.
+- **1. Progress ring** — Measure; **Center value** (% complete / Total earned / Total budget / Row count); **Show Earned & Total** toggle (default off) — when on, two tiles beneath the ring show earned + total in the measure's unit (earned derives from the selected basis/measure via `unitLabel` → MH / Qty / %Ent / Client, not a fixed column); **Progress color** (filled arc, default navy `#1e1b6b`) and **Remaining color** (track, default light grey `#e6e6ee`). *(Locked 2026-07-24.)*
+- **2. Composition donut** — Group by (slices); Measure; **Show center value** toggle + value (% / earned / budget / count); **Show summary table beneath** toggle + Sort (by size / by name / by %); **Colors** — default the discrete Summit palette (editable ordered swatch list: navy, blue, light-blue, violet, lilac, amber, green, grey; cycles past 8), plus a **"spread between two colors"** mode (start/end pickers, engine interpolates N evenly-spaced colors). *(Locked 2026-07-24.)*
+- **3. Bar list** — Group by (bars); Measure; **Sort** (by name / by size / by %); **Colors** — **Bar** (default navy `#1e1b6b`), **Remaining** (bar track, default light grey `#eef0f4`), and a **Highlight complete (100%)** toggle (default on) gating the **Complete** color (default green `#2bb24c`; off = bars stay the bar color at 100%). *(Locked 2026-07-24.)*
+- **4. Summary table** — Group by (rows); Measure; **Sort** (by size / by name / by %); **Highlight complete (100%)** toggle (default on) + Complete-% color (default green `#2bb24c`; off = 100% rows use the normal text color). Columns fixed **group │ % │ earned │ budget** + Total row; clicking a row filters the whole report to that group, click again to clear. *(Locked 2026-07-24.)*
+- **5. Heatmap** — **Rows (group)** + **Columns (group)** axes; Measure; **Max columns** (default 8 = top-N most-common column values); **Color scale** — Low 0% (default red), High 100% (default green `#2bb24c`), No data (default grey `#666`); engine blends Low→High by %. Columns sortable. *(Locked 2026-07-24.)*
+- **6. Trend** — **Mode** (Cumulative / Per-week); Measure; **Week start** (Monday default / Sunday). Uses **actual dates only** (`actFin || actStart`) — no planned-date option. **Bar color** stored per-instance (Default: cumulative navy `#1e1b6b`, per-week blue `#3c5c9e`) + **Highlight complete** toggle (cumulative only, default green `#2bb24c`). *(Locked 2026-07-24.)*
+- **7. Stat tiles** — fully-generic "X of Y". **Title**; **Aggregate** (Count of rows / Sum of a chosen column, e.g. Quantity); **Complete** section (editable tile label + where-clause builder) and **Total** section (editable tile label + where-clause builder); **Show ring** toggle (default on) with **Ring color** (default navy) + **Remaining color** (default light grey); ring % = Complete ÷ Total. "Summit Connections" is just this configured (ROCStep = 4.CON). *(Locked 2026-07-24.)*
 
 ## 8. Security
 
 - Treat imported layouts (Azure or file) as **untrusted data**: whitelist `type`, `groupBy` field names, and `measure` values against known enums; drop/ignore anything unrecognized. Never `eval` layout content. (See `Plans/Security_Guidelines.md`.)
 
-## 9. Open decisions
+## 9. Decisions & open items
 
-1. **Reordering UX** — move-buttons first vs drag-and-drop. Lean: move-buttons first.
+**Resolved 2026-07-24 (mockup review, v3):**
+- **Visual palette = 7 types** (see §3) — exactly what renders today; no net-new types. (An earlier "8th detail Data table" was a misread: "data table" is Steve's name for the existing Heatmap.)
+- **Rows 2+ model** — user-added rows of 1–5 equal-width visuals; per-visual stretch-to-fit; no second 4-column band (§4).
+- **Footer** — its own entity with independent left/right text boxes, empty by default (§4).
+- **No slot/size picker** — content-driven sizing + stretch toggle only (§4, §7).
+- **UI wording** — "Publish to Cloud" / "Import from Cloud" instead of "…Azure" (§5, §7).
+
+- **Click-to-filter extended (2026-07-24):** in addition to the tables (which always filtered), **bar lists** now filter by the clicked group and **trend charts** filter by the clicked week (a single week, by actual date, via a reserved `__week` filter in `filtered()`, Monday week-start). **Heatmap** intentionally left non-filtering for now.
+
+**Still open:**
+1. **Reordering UX** — move-buttons first vs drag-and-drop. Lean: move-buttons first (drag handles are drawn but non-functional for v1).
 2. **Layout scope** — reusable template (applied to any project) vs bound to a ProjectID. Lean: reusable template; report remembers last-used layout per ProjectID.
 3. **Publish permissions** — any user vs admins/author only. Lean: admins or the layout's author can publish/overwrite; anyone can import.
-4. Mockup feedback from Steve — pending.
+4. **Live-preview surface** — in-dialog thumbnail vs. live update of the report behind the editor (or both). To settle during the type-by-type editor design.
 
 ## 10. Sequencing
 
 1. **Finish Default layout content** (remaining visuals / rows) — in progress.
-2. Refactor render engine to data-driven visual definitions; express Default as a layout.
+2. ~~Refactor render engine to data-driven visual definitions; express Default as a layout.~~ **DONE 2026-07-24.** Engine in `Dashboards/vantage-dashboard.html`: `DEFAULT_LAYOUT` constant + `renderVisual(def,rows)` dispatcher + per-type renderers (`RENDERERS.{ring,statTiles,donut,table,barList,heatmap,trend}`) + `renderLayout(layout,rows)`; `render()` swapped to `renderLayout(activeLayout,rows)`. `activeLayout` defaults to `DEFAULT_LAYOUT` — ready to accept a custom layout via `postMessage` (wire that intake in step 3). Two deliberate 1px/label cleanups: ROC bar-list gap 5→6px; connections tile labels use a space, not `<br>` (both render identically).
 3. Local layout store + manager UI + visual editor (edit mode in WebView2).
 4. PDF export.
 5. Azure `ReportLayouts` table + Publish/Import (coordinate with REQit).
 6. File export/import (secondary).
+
+## 11. Future / deferred visual ideas
+- **3-week look-ahead (3WLA)** — a planned-date (`PlanStart/PlanFin`) forward view of scheduled workload. Considered as a Trend date-source option and rejected (kept Trend on actuals only); revisit later as its own additive visual type.
 
 > Given the engine refactor + WPF dialogs + Azure work, this is a good candidate to build via a multi-agent workflow when the time comes.

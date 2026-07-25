@@ -67,8 +67,13 @@
   }
 
   // ---- aggregation ----
-  function agg(rows){ var f=basis,b=0,e=0,i; for(i=0;i<rows.length;i++){ var w=+rows[i][f]||0; b+=w; e+=w*((+rows[i].pct||0)/100); } return {budget:b,earn:e,pct:b?e/b*100:0,count:rows.length}; }
-  function filtered(){ return ROWS.filter(function(r){ for(var k in filters){ if(filters[k]!=null&&String(r[k])!==String(filters[k])) return false; } return true; }); }
+  // Monday week-start for the reserved __week filter (set by clicking a trend bar).
+  function weekMon(iso){ var dt=new Date(iso+'T00:00:00Z'); var off=(dt.getUTCDay()+6)%7; dt.setUTCDate(dt.getUTCDate()-off); return dt.toISOString().slice(0,10); }
+  function filtered(){ return ROWS.filter(function(r){
+    for(var k in filters){ if(filters[k]==null) continue;
+      if(k==='__week'){ var dd=r.actFin||r.actStart; if(!dd||weekMon(dd)!==filters[k]) return false; }
+      else if(String(r[k])!==String(filters[k])) return false; }
+    return true; }); }
   function distinct(key){ var s={},out=[],i; for(i=0;i<ROWS.length;i++){ var v=ROWS[i][key]; if(v!==''&&v!=null&&!s[v]){ s[v]=1; out.push(String(v)); } } return out.sort(); }
   function fmt(n){ return Math.round(n||0).toLocaleString('en-US'); }
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -132,192 +137,7 @@
     return h;
   }
 
-  // ---- progress ring + connections ----
-  function progressHTML(rows,A){
-    var C=2*Math.PI*76, len=Math.min(A.pct,100)/100*C;
-    var comp=rows.filter(function(r){return r.roc==='4.CON'&&r.status==='Complete';}).length;
-    var tot=rows.filter(function(r){return r.roc==='4.CON';}).length;
-    var cpct=tot>0?comp/tot*100:0;
-    var C2=2*Math.PI*50, len2=Math.min(cpct,100)/100*C2;
-    return '<div class="col">'
-      +'<div class="panel" style="align-items:center;display:flex;flex-direction:column;">'
-        +'<div class="ttl">Overall Progress</div>'
-        +'<div style="position:relative;width:180px;height:180px;margin:6px 0 4px;">'
-          +'<svg viewBox="0 0 180 180" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="90" cy="90" r="76" fill="none" stroke="#e6e6ee" stroke-width="22"></circle><circle cx="90" cy="90" r="76" fill="none" stroke="'+NAVY+'" stroke-width="22" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'"></circle></svg>'
-          +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;color:#20202c;">'+A.pct.toFixed(1)+'%</div>'
-        +'</div>'
-      +'</div>'
-      +'<div class="panel flexcard" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">'
-        +'<div class="ttl">Summit Connections</div>'
-        +'<div style="position:relative;width:108px;height:108px;margin:6px 0 8px;">'
-          +'<svg viewBox="0 0 120 120" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="60" cy="60" r="50" fill="none" stroke="#e6e6ee" stroke-width="16"></circle><circle cx="60" cy="60" r="50" fill="none" stroke="'+NAVY+'" stroke-width="16" stroke-dasharray="'+len2.toFixed(2)+' '+(C2-len2).toFixed(2)+'"></circle></svg>'
-          +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:800;color:#20202c;">'+cpct.toFixed(0)+'%</div>'
-        +'</div>'
-        +'<div style="display:flex;gap:8px;width:100%;">'
-          +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(comp)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Connections<br>Complete</div></div>'
-          +'<div style="width:1px;background:#ececf1;"></div>'
-          +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(tot)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Total<br>Connections</div></div>'
-        +'</div>'
-      +'</div>'
-    +'</div>';
-  }
-
-  // ---- horizontal bar list (shop / roc) ----
-  function barRows(groups,color2){
-    var h='';
-    groups.forEach(function(g){
-      var col=g.pct>=99.5?GREEN:color2;
-      h+='<div title="'+esc(g.label)+' \u2014 '+g.pct.toFixed(1)+'%" style="display:flex;align-items:center;gap:8px;font-size:10.5px;">'
-        +'<span style="width:52px;flex:none;color:#4a4a56;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(g.label)+'</span>'
-        +'<div style="flex:1;height:15px;background:#eef0f4;border-radius:2px;overflow:hidden;"><div style="height:100%;width:'+Math.min(g.pct,100).toFixed(1)+'%;background:'+col+';border-radius:2px;"></div></div>'
-        +'<span style="width:36px;flex:none;text-align:right;font-weight:700;color:#22222c;">'+g.pct.toFixed(0)+'%</span></div>';
-    });
-    return h;
-  }
-  function groupPct(rows,key){
-    var vals=distinct(key), out=[];
-    vals.forEach(function(v){ var a=agg(rows.filter(function(r){return r[key]===v;})); out.push({label:v,pct:a.pct,budget:a.budget}); });
-    return out;
-  }
-
-  // ---- earn vs budget table (component type / area) ----
-  function evbTable(rows,key,colHead){
-    var groups=groupPct(rows,key).sort(function(a,b){return b.budget-a.budget;});
-    var h='<div class="panel flexcard"><div class="ttl" style="margin-bottom:5px;">'+colHead+'</div><table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">'+colHead.toUpperCase()+'</th><th style="font-weight:600;padding:3px 4px;">%</th><th style="font-weight:600;padding:3px 4px;">EARN</th><th style="font-weight:600;padding:3px 4px;">BUDGET</th></tr></thead><tbody>';
-    var tb=0,te=0;
-    groups.forEach(function(g){ var a=agg(rows.filter(function(r){return r[key]===g.label;})); tb+=a.budget; te+=a.earn;
-      h+='<tr data-toggle-key="'+key+'" data-toggle-val="'+esc(g.label)+'" style="cursor:pointer;border-top:1px solid #f0f0f4;background:'+(String(filters[key])===g.label?'#eef0fb':'transparent')+';">'
-        +'<td style="text-align:left;padding:4px;font-weight:600;color:#2b2b36;">'+esc(g.label)+'</td>'
-        +'<td style="text-align:right;padding:4px;font-weight:700;color:'+pctColor(a.pct)+';">'+a.pct.toFixed(0)+'%</td>'
-        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(a.earn)+'</td>'
-        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(a.budget)+'</td></tr>';
-    });
-    h+='<tr style="border-top:2px solid #d6d6de;font-weight:800;"><td style="text-align:left;padding:4px;">Total</td><td style="text-align:right;padding:4px;">'+(tb?(te/tb*100).toFixed(0):0)+'%</td><td style="text-align:right;padding:4px;">'+fmt(te)+'</td><td style="text-align:right;padding:4px;">'+fmt(tb)+'</td></tr>';
-    h+='</tbody></table></div>';
-    return h;
-  }
-
-  // ---- status + phase donut panels ----
-  function statusPanel(rows){
-    var order=['Complete','In Progress','Not Started'], parts=[],legend='';
-    order.forEach(function(s){ var c=rows.filter(function(r){return r.status===s;}).length; parts.push({value:c,color:STCOL[s]});
-      legend+='<div data-toggle-key="status" data-toggle-val="'+s+'" style="display:flex;align-items:center;gap:6px;font-size:10.5px;cursor:pointer;"><span style="width:9px;height:9px;border-radius:2px;background:'+STCOL[s]+';"></span><span style="flex:1;color:#44444f;">'+s+'</span><span style="font-weight:700;color:#22222c;">'+fmt(c)+'</span></div>'; });
-    return '<div class="panel"><div class="ttl" style="text-align:center;">Components by Status</div><div style="display:flex;align-items:center;gap:8px;margin-top:4px;">'+donut(parts,74)+'<div style="flex:1;display:flex;flex-direction:column;gap:3px;">'+legend+'</div></div></div>';
-  }
-  function phasePanel(rows){
-    var groups=groupPct(rows,'phase').sort(function(a,b){return b.budget-a.budget;});
-    var parts=[],tb=0,te=0,body='';
-    groups.forEach(function(g,i){
-      var a=agg(rows.filter(function(r){return r.phase===g.label;}));
-      tb+=a.budget; te+=a.earn;
-      var col=PHCOL[g.label]||PHPAL[i%PHPAL.length];
-      if(a.budget>0) parts.push({value:a.budget,color:col});
-      body+='<tr data-toggle-key="phase" data-toggle-val="'+esc(g.label)+'" style="cursor:pointer;border-top:1px solid #f0f0f4;background:'+(String(filters.phase)===g.label?'#eef0fb':'transparent')+';">'
-        +'<td style="text-align:left;padding:4px;font-weight:600;color:#2b2b36;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+col+';margin-right:6px;vertical-align:middle;"></span>'+esc(g.label)+'</td>'
-        +'<td style="text-align:right;padding:4px;font-weight:700;color:'+pctColor(a.pct)+';">'+a.pct.toFixed(0)+'%</td>'
-        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(a.earn)+'</td>'
-        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(a.budget)+'</td></tr>';
-    });
-    var totPct=tb?(te/tb*100):0;
-    var h='<div class="panel flexcard"><div class="ttl" style="text-align:center;margin-bottom:4px;">Progress by Phase</div>';
-    h+='<div style="display:flex;justify-content:center;margin:2px 0 10px;"><div style="position:relative;width:118px;height:118px;">'+donut(parts,118)+'<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:23px;font-weight:800;color:#1b1b22;line-height:1;">'+totPct.toFixed(0)+'%</div><div style="font-size:9px;font-weight:700;letter-spacing:.05em;color:#8a8a96;">COMPLETE</div></div></div></div>';
-    h+='<table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">PHASE</th><th style="font-weight:600;padding:3px 4px;">%</th><th style="font-weight:600;padding:3px 4px;">EARN</th><th style="font-weight:600;padding:3px 4px;">BUDGET</th></tr></thead><tbody>';
-    h+=body;
-    h+='<tr style="border-top:2px solid #d6d6de;font-weight:800;"><td style="text-align:left;padding:4px;">Total</td><td style="text-align:right;padding:4px;color:'+pctColor(totPct)+';">'+totPct.toFixed(0)+'%</td><td style="text-align:right;padding:4px;">'+fmt(te)+'</td><td style="text-align:right;padding:4px;">'+fmt(tb)+'</td></tr>';
-    h+='</tbody></table></div>';
-    return h;
-  }
   function unitLabel(){ return {budgetMH:'MH',qty:'Qty',percentEntry:'%Ent',clientBudget:'Client'}[basis]; }
-
-  // ---- matrix (area/module x phase) ----
-  function matrixHTML(rows){
-    var phaseCount={}; ROWS.forEach(function(r){ if(r.phase) phaseCount[r.phase]=(phaseCount[r.phase]||0)+1; });
-    var phases=Object.keys(phaseCount).sort(function(a,b){return phaseCount[b]-phaseCount[a];}).slice(0,8);
-    var GREY='#666666';
-    function cell(sub){ if(!sub.length) return {bg:GREY,tx:'transparent',val:'',p:null}; var a=agg(sub); if(a.budget<=0) return {bg:GREY,tx:'transparent',val:'',p:null}; return {bg:heat(a.pct),tx:'#fff',val:Math.round(a.pct)+'%',p:a.pct}; }
-    var gmap={}; rows.forEach(function(r){ var k=(r.module&&r.module!=='')?r.module:'(Unassigned)'; (gmap[k]=gmap[k]||[]).push(r); });
-    var mrows=Object.keys(gmap).map(function(g){ var rs=gmap[g],a=agg(rs);
-      var cells=phases.map(function(ph){ return cell(rs.filter(function(r){return r.phase===ph;})); });
-      return {wp:g,_b:a.budget,_e:a.earn,_p:a.budget>0?a.pct:-1,budget:fmt(a.budget),earn:fmt(a.earn),pctStr:a.budget>0?Math.round(a.pct)+'%':'\u2014',pctBg:a.budget>0?heat(a.pct):GREY,pctTx:a.budget>0?'#fff':'#b0b4bd',cells:cells}; });
-    var sdir=mDir==='asc'?1:-1;
-    mrows.sort(function(a,b){ var va,vb;
-      if(mSort==='wp'){va=a.wp;vb=b.wp;return sdir*va.localeCompare(vb);}
-      if(mSort.indexOf('ph:')===0){var i=+mSort.slice(3);va=a.cells[i].p==null?-1:a.cells[i].p;vb=b.cells[i].p==null?-1:b.cells[i].p;}
-      else{va=a[mSort];vb=b[mSort];}
-      return sdir*(va-vb); });
-    function arrow(k){ return mSort===k?(mDir==='asc'?' \u25B2':' \u25BC'):''; }
-    var th='<th data-sort="wp" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:left;padding:7px 8px;font-size:10.5px;font-weight:700;cursor:pointer;user-select:none;">AREA / MODULE'+arrow('wp')+'</th>'
-      +'<th data-sort="_p" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:center;padding:7px 8px;font-weight:700;cursor:pointer;user-select:none;">%'+arrow('_p')+'</th>'
-      +'<th data-sort="_b" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:left;padding:7px 8px;font-weight:700;cursor:pointer;user-select:none;">BDGT '+unitLabel()+arrow('_b')+'</th>'
-      +'<th data-sort="_e" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:left;padding:7px 8px;font-weight:700;cursor:pointer;user-select:none;">EARN '+unitLabel()+arrow('_e')+'</th>';
-    phases.forEach(function(ph,i){ th+='<th data-sort="ph:'+i+'" title="'+esc(ph)+'" style="position:sticky;top:0;z-index:2;background:#3c5c9e;color:#fff;text-align:center;padding:7px 6px;font-weight:700;min-width:56px;cursor:pointer;user-select:none;">'+esc(ph)+arrow('ph:'+i)+'</th>'; });
-    var body='';
-    mrows.forEach(function(r){
-      body+='<tr style="border-top:1px solid #f0f0f4;"><td style="padding:5px 8px;font-weight:600;color:#2b2b36;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;" title="'+esc(r.wp)+'">'+esc(r.wp)+'</td>'
-        +'<td style="padding:5px 8px;text-align:center;font-weight:800;background:'+r.pctBg+';color:'+r.pctTx+';">'+r.pctStr+'</td>'
-        +'<td style="padding:5px 8px;text-align:left;color:#4a4a56;">'+r.budget+'</td>'
-        +'<td style="padding:5px 8px;text-align:left;color:#4a4a56;">'+r.earn+'</td>';
-      r.cells.forEach(function(c){ body+='<td style="padding:4px 6px;text-align:center;font-weight:700;font-size:10.5px;background:'+c.bg+';color:'+c.tx+';border-left:1px solid #f4f4f8;">'+c.val+'</td>'; });
-      body+='</tr>';
-    });
-    var tot=agg(rows);
-    var totCells=''; phases.forEach(function(ph){ var sub=rows.filter(function(r){return r.phase===ph;}); var a=agg(sub); totCells+='<td style="padding:6px 6px;text-align:center;">'+(sub.length&&a.budget>0?Math.round(a.pct)+'%':'')+'</td>'; });
-    body+='<tr style="border-top:2px solid #cfcfda;background:#f4f4f8;font-weight:800;"><td style="padding:6px 8px;">Total</td><td style="padding:6px 8px;text-align:center;">'+tot.pct.toFixed(0)+'%</td><td style="padding:6px 8px;text-align:left;">'+fmt(tot.budget)+'</td><td style="padding:6px 8px;text-align:left;">'+fmt(tot.earn)+'</td>'+totCells+'</tr>';
-    return '<div class="panel" style="padding:10px 12px 12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:12px;"><div class="ttl">Area / Module Progress by Phase</div><div style="font-size:10px;color:#9a9aa6;white-space:nowrap;">'+mrows.length+' modules &bull; red 0% &rarr; green 100% &bull; grey = no data</div></div>'
-      +'<div style="max-height:340px;overflow:auto;border:1px solid #ececf1;border-radius:3px;"><table style="width:100%;font-size:11px;"><thead><tr>'+th+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
-  }
-
-  // ---- trend (weekly cumulative earned MH, Monday week-start) ----
-  function trendHTML(rows){
-    function weekStart(iso){ var dt=new Date(iso+'T00:00:00Z'); var day=(dt.getUTCDay()+6)%7; dt.setUTCDate(dt.getUTCDate()-day); return dt.toISOString().slice(0,10); }
-    var totMH=0; rows.forEach(function(r){ totMH+=(+r.budgetMH||0); }); if(!totMH) totMH=1;
-    var byWeek={}; rows.forEach(function(r){ var d=r.actFin||r.actStart; if(d){ var w=weekStart(d); byWeek[w]=(byWeek[w]||0)+(+r.budgetMH||0)*((+r.pct||0)/100); } });
-    var weeks=Object.keys(byWeek).sort(), cum=0, pts=weeks.map(function(w){ cum+=byWeek[w]; return {w:w,val:cum}; });
-    function wlab(iso){ var p=iso.split('-'); return (+p[1])+'/'+(+p[2]); }
-    function wfull(iso){ var p=iso.split('-'); return (+p[1])+'/'+(+p[2])+'/'+p[0]; }
-    var TW=1000,PB=150,PT=14,PL=12,PR=12,n=pts.length,slot=n?(TW-PL-PR)/n:0,bw=Math.max(3,Math.min(slot*0.6,30));
-    function ys(v){ return PB-(PB-PT)*Math.min(v/totMH,1); }
-    var bars='',labels='';
-    pts.forEach(function(p,i){ var cx=PL+slot*(i+0.5),y=ys(p.val),col=p.val>=totMH*0.995?GREEN:NAVY;
-      bars+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(PB-y).toFixed(1)+'" fill="'+col+'"><title>Wk of '+wfull(p.w)+' \u2014 '+fmt(p.val)+' MH ('+(p.val/totMH*100).toFixed(1)+'%)</title></rect>';
-      labels+='<div style="flex:1;min-width:0;font-size:8px;color:#9a9aa6;text-align:center;white-space:nowrap;">'+wlab(p.w)+'</div>'; });
-    var grid=[0,0.5,1].map(function(fr){ return '<line x1="0" y1="'+ys(fr*totMH).toFixed(1)+'" x2="1000" y2="'+ys(fr*totMH).toFixed(1)+'" stroke="#eef0f4" stroke-width="1"></line>'; }).join('');
-    var minW=Math.max(n,1)*34;
-    return '<div class="panel" style="padding:10px 14px 6px;"><div style="display:flex;justify-content:space-between;align-items:baseline;"><div class="ttl">Cumulative Progress &mdash; Week over Week</div><div style="font-size:10.5px;color:#8a8a96;">Cumulative earned MH by week &bull; Monday week-start</div></div>'
-      +'<div style="display:flex;align-items:stretch;margin-top:8px;">'
-        +'<div style="width:46px;flex:none;display:flex;flex-direction:column;justify-content:space-between;font-size:8.5px;font-weight:600;color:#9a9aa6;text-align:right;padding:10px 6px 25px 0;"><span>'+fmt(totMH)+'</span><span>'+fmt(totMH/2)+'</span><span>0</span></div>'
-        +'<div id="trendScroll" style="flex:1;min-width:0;overflow-x:auto;"><div style="min-width:'+minW+'px;">'
-          +'<svg viewBox="0 0 1000 155" preserveAspectRatio="none" style="width:100%;height:150px;display:block;">'+grid+bars+'</svg>'
-          +'<div style="display:flex;padding:3px 0 2px;">'+labels+'</div>'
-        +'</div></div>'
-      +'</div></div>';
-  }
-
-  // ---- trend (earned MH per week, non-cumulative, Monday week-start) ----
-  function weeklyTrendHTML(rows){
-    function weekStart(iso){ var dt=new Date(iso+'T00:00:00Z'); var day=(dt.getUTCDay()+6)%7; dt.setUTCDate(dt.getUTCDate()-day); return dt.toISOString().slice(0,10); }
-    var byWeek={}; rows.forEach(function(r){ var d=r.actFin||r.actStart; if(d){ var w=weekStart(d); byWeek[w]=(byWeek[w]||0)+(+r.budgetMH||0)*((+r.pct||0)/100); } });
-    var weeks=Object.keys(byWeek).sort(), pts=weeks.map(function(w){ return {w:w,val:byWeek[w]}; });
-    var maxWk=0; pts.forEach(function(p){ if(p.val>maxWk) maxWk=p.val; }); if(!maxWk) maxWk=1;
-    function wlab(iso){ var p=iso.split('-'); return (+p[1])+'/'+(+p[2]); }
-    function wfull(iso){ var p=iso.split('-'); return (+p[1])+'/'+(+p[2])+'/'+p[0]; }
-    var TW=1000,PB=150,PT=14,PL=12,PR=12,n=pts.length,slot=n?(TW-PL-PR)/n:0,bw=Math.max(3,Math.min(slot*0.6,30));
-    function ys(v){ return PB-(PB-PT)*Math.min(v/maxWk,1); }
-    var bars='',labels='';
-    pts.forEach(function(p,i){ var cx=PL+slot*(i+0.5),y=ys(p.val);
-      bars+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(PB-y).toFixed(1)+'" fill="#3c5c9e"><title>Wk of '+wfull(p.w)+' — '+fmt(p.val)+' MH</title></rect>';
-      labels+='<div style="flex:1;min-width:0;font-size:8px;color:#9a9aa6;text-align:center;white-space:nowrap;">'+wlab(p.w)+'</div>'; });
-    var grid=[0,0.5,1].map(function(fr){ return '<line x1="0" y1="'+ys(fr*maxWk).toFixed(1)+'" x2="1000" y2="'+ys(fr*maxWk).toFixed(1)+'" stroke="#eef0f4" stroke-width="1"></line>'; }).join('');
-    var minW=Math.max(n,1)*34;
-    return '<div class="panel" style="padding:10px 14px 6px;"><div style="display:flex;justify-content:space-between;align-items:baseline;"><div class="ttl">Weekly Progress &mdash; Earned MH per Week</div><div style="font-size:10.5px;color:#8a8a96;">Earned MH each week &bull; Monday week-start</div></div>'
-      +'<div style="display:flex;align-items:stretch;margin-top:8px;">'
-        +'<div style="width:46px;flex:none;display:flex;flex-direction:column;justify-content:space-between;font-size:8.5px;font-weight:600;color:#9a9aa6;text-align:right;padding:10px 6px 25px 0;"><span>'+fmt(maxWk)+'</span><span>'+fmt(maxWk/2)+'</span><span>0</span></div>'
-        +'<div id="weeklyScroll" style="flex:1;min-width:0;overflow-x:auto;"><div style="min-width:'+minW+'px;">'
-          +'<svg viewBox="0 0 1000 155" preserveAspectRatio="none" style="width:100%;height:150px;display:block;">'+grid+bars+'</svg>'
-          +'<div style="display:flex;padding:3px 0 2px;">'+labels+'</div>'
-        +'</div></div>'
-      +'</div></div>';
-  }
 
   // ---- footer (empty left/right text slots; per-layout custom text added during customization) ----
   function footerHTML(){
@@ -327,23 +147,326 @@
       +'</div>';
   }
 
+  // ============================================================
+  //  DATA-DRIVEN ENGINE (Project Dashboard Customization, PRD step 2)
+  //  The shipped report expressed as a locked layout. Each visual is a
+  //  definition the generic engine renders. Colors are omitted here on
+  //  purpose — the per-type renderers fall back to the current Summit
+  //  defaults, so an unedited Default is pixel-identical to the legacy
+  //  render(). measure:'basis' = follow the Progress-basis selector
+  //  (matches today, where agg() reads the global basis).
+  // ============================================================
+  var DEFAULT_LAYOUT={
+    id:'default', name:'Default', schemaVersion:1, locked:true,
+    // Row 1 — fixed four columns, max two visuals each.
+    row1:[
+      [ {id:'ovr',  type:'ring',      title:'Overall Progress',   measure:'basis', center:'pct', showTiles:false},
+        {id:'conn', type:'statTiles', title:'Summit Connections', aggregate:'count', showRing:true, flex:true,
+          complete:{ label:'Connections Complete', where:[{field:'roc',op:'=',value:'4.CON'},{field:'status',op:'=',value:'Complete'}] },
+          total:   { label:'Total Connections',    where:[{field:'roc',op:'=',value:'4.CON'}] } } ],
+      [ {id:'phase',type:'donut',     title:'Progress by Phase',  groupBy:'phase', measure:'basis', showCenter:true, center:'pct', showTable:true, sort:'budgetDesc', colorByLabel:PHCOL, flex:true} ],
+      [ {id:'comp', type:'table',     title:'Component Type',     groupBy:'comp',  measure:'basis', sort:'budgetDesc', highlightComplete:true, flex:true},
+        {id:'area', type:'table',     title:'Area',               groupBy:'area',  measure:'basis', sort:'budgetDesc', highlightComplete:true, flex:true} ],
+      [ {id:'roc',  type:'barList',   title:'ROC Step Progress',  groupBy:'roc',   measure:'basis', sort:'labelAsc',   highlightComplete:true, flex:true},
+        {id:'shop', type:'barList',   title:'Shop / Field Progress',groupBy:'shop',measure:'basis', sort:'budgetDesc', highlightComplete:true} ]
+    ],
+    // Rows 2+ — each visual here is stretched to fill its own row today.
+    rows:[
+      { stretch:true, visuals:[ {id:'heat', type:'heatmap', title:'Area / Module Progress by Phase', rowGroup:'module', colGroup:'phase', measure:'basis', maxCols:8, rowNoun:'modules'} ] },
+      { stretch:true, visuals:[ {id:'cum',  type:'trend',   title:'Cumulative Progress — Week over Week', mode:'cumulative', measure:'budgetMH', weekStart:'mon', highlightComplete:true} ] },
+      { stretch:true, visuals:[ {id:'wk',   type:'trend',   title:'Weekly Progress — Earned MH per Week',  mode:'perWeek',   measure:'budgetMH', weekStart:'mon', barColor:'#3c5c9e'} ] }
+    ],
+    footer:{ left:'', right:'' }
+  };
+  // The layout the report currently renders (Default until C# posts a custom one).
+  var activeLayout=DEFAULT_LAYOUT;
+
+  // ---- engine: shared helpers ----
+  // Resolve a visual's measure to a numeric field key. 'basis' follows the
+  // global Progress-basis selector, matching how legacy agg() reads basis.
+  function measureField(m){ return (!m||m==='basis')?basis:m; }
+  // Aggregate rows weighted by a specific field, earning by pct.
+  function aggWith(rows,field){ var b=0,e=0,i; for(i=0;i<rows.length;i++){ var w=+rows[i][field]||0; b+=w; e+=w*((+rows[i].pct||0)/100); } return {budget:b,earn:e,pct:b?e/b*100:0,count:rows.length}; }
+  // One where-condition against a normalized row value.
+  function condOne(v,op,val){ var s=String(v==null?'':v);
+    switch(op){ case '=':return s===String(val); case '!=':return s!==String(val);
+      case 'in':return (val||[]).map(String).indexOf(s)>=0; case 'notIn':return (val||[]).map(String).indexOf(s)<0; default:return true; } }
+  // AND of all conditions in a where-clause.
+  function rowMatches(r,conds){ if(!conds||!conds.length) return true; for(var i=0;i<conds.length;i++){ var c=conds[i]; if(!condOne(r[c.field],c.op,c.hasOwnProperty('value')?c.value:c.values)) return false; } return true; }
+  // Drop rows matching a visual's exclude conditions (none on the Default).
+  function applyExclude(rows,ex){ if(!ex||!ex.length) return rows; return rows.filter(function(r){ return !rowMatches(r,ex); }); }
+
+  // ---- engine: dispatcher ----
+  var RENDERERS={};
+  function renderVisual(def,rows){
+    var r=applyExclude(rows,def.excludeFilters), fn=RENDERERS[def.type];
+    if(!fn) return '<div class="panel"><div class="ttl">'+esc(def.title||'')+'</div><div style="font-size:11px;color:#9a9aa6;">Unsupported visual: '+esc(def.type||'?')+'</div></div>';
+    return fn(def,r);
+  }
+
+  // ---- engine: ring renderer (port of the Overall Progress panel) ----
+  function ringCenter(def,A){
+    switch(def.center){ case 'earned':return fmt(A.earn); case 'budget':return fmt(A.budget); case 'count':return fmt(A.count); default:return A.pct.toFixed(1)+'%'; }
+  }
+  RENDERERS.ring=function(def,rows){
+    var A=aggWith(rows,measureField(def.measure)),
+        prog=def.colorProgress||NAVY, rem=def.colorRemaining||'#e6e6ee',
+        C=2*Math.PI*76, len=Math.min(A.pct,100)/100*C, tiles='';
+    if(def.showTiles){
+      var u=unitLabel();
+      tiles='<div style="display:flex;gap:8px;width:100%;margin-top:8px;">'
+        +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(A.earn)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Earned '+u+'</div></div>'
+        +'<div style="width:1px;background:#ececf1;"></div>'
+        +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(A.budget)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">Total '+u+'</div></div>'
+      +'</div>';
+    }
+    return '<div class="panel" style="align-items:center;display:flex;flex-direction:column;">'
+      +'<div class="ttl">'+esc(def.title||'')+'</div>'
+      +'<div style="position:relative;width:180px;height:180px;margin:6px 0 4px;">'
+        +'<svg viewBox="0 0 180 180" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="90" cy="90" r="76" fill="none" stroke="'+rem+'" stroke-width="22"></circle><circle cx="90" cy="90" r="76" fill="none" stroke="'+prog+'" stroke-width="22" stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'"></circle></svg>'
+        +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:800;color:#20202c;">'+ringCenter(def,A)+'</div>'
+      +'</div>'
+      +tiles
+    +'</div>';
+  };
+
+  // ---- engine: stat tiles renderer (port of the Summit Connections panel) ----
+  // Aggregate rows matching a criteria's where-clause: count of rows, or sum of a column.
+  function aggCrit(rows,def,crit){
+    var sub=rows.filter(function(r){ return rowMatches(r,(crit&&crit.where)||[]); });
+    if(!def.aggregate||def.aggregate==='count') return sub.length;
+    var f=def.aggregate.field, s=0, i; for(i=0;i<sub.length;i++) s+=(+sub[i][f]||0); return s;
+  }
+  RENDERERS.statTiles=function(def,rows){
+    var comp=aggCrit(rows,def,def.complete), tot=aggCrit(rows,def,def.total),
+        pct=tot>0?comp/tot*100:0,
+        prog=def.colorProgress||NAVY, rem=def.colorRemaining||'#e6e6ee', ring='';
+    if(def.showRing!==false){
+      var C2=2*Math.PI*50, len2=Math.min(pct,100)/100*C2;
+      ring='<div style="position:relative;width:108px;height:108px;margin:6px 0 8px;">'
+        +'<svg viewBox="0 0 120 120" style="width:100%;height:100%;transform:rotate(-90deg);"><circle cx="60" cy="60" r="50" fill="none" stroke="'+rem+'" stroke-width="16"></circle><circle cx="60" cy="60" r="50" fill="none" stroke="'+prog+'" stroke-width="16" stroke-dasharray="'+len2.toFixed(2)+' '+(C2-len2).toFixed(2)+'"></circle></svg>'
+        +'<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:800;color:#20202c;">'+pct.toFixed(0)+'%</div>'
+      +'</div>';
+    }
+    return '<div class="panel" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">'
+      +'<div class="ttl">'+esc(def.title||'')+'</div>'
+      +ring
+      +'<div style="display:flex;gap:8px;width:100%;">'
+        +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(comp)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">'+esc((def.complete&&def.complete.label)||'')+'</div></div>'
+        +'<div style="width:1px;background:#ececf1;"></div>'
+        +'<div style="flex:1;text-align:center;"><div style="font-size:21px;font-weight:800;color:#20202c;line-height:1;">'+fmt(tot)+'</div><div style="font-size:9px;color:#77778a;margin-top:4px;text-transform:uppercase;">'+esc((def.total&&def.total.label)||'')+'</div></div>'
+      +'</div>'
+    +'</div>';
+  };
+
+  // ---- engine: shared group/color helpers (used by donut, table, bar list) ----
+  // Group set matches the legacy groupPct() — distinct values over ALL rows, then
+  // aggregated over the passed (filtered) rows with the visual's measure.
+  function groupAgg(rows,key,measure){
+    var mf=measureField(measure), labels=distinct(key);
+    return labels.map(function(L){ var a=aggWith(rows.filter(function(r){return r[key]===L;}),mf); return {label:L,pct:a.pct,budget:a.budget,earn:a.earn}; });
+  }
+  function sortGroups(groups,sort){
+    if(sort==='labelAsc') return groups.slice().sort(function(a,b){return a.label<b.label?-1:(a.label>b.label?1:0);});
+    if(sort==='pctDesc')  return groups.slice().sort(function(a,b){return b.pct-a.pct;});
+    return groups.slice().sort(function(a,b){return b.budget-a.budget;}); // budgetDesc (default)
+  }
+  // Column key -> display header.
+  function colDisplay(key){ var m={projectId:'Project',status:'Status',comp:'Component Type',phase:'Phase',roc:'ROC Step',area:'Area',module:'Area / Module',shop:'Shop / Field',wp:'Work Package'}; return m[key]||key; }
+  // Interpolate between two hex colors (donut "spread" color mode).
+  function lerpColor(a,b,t){
+    function h(x){ x=x.replace('#',''); if(x.length===3)x=x.replace(/./g,'$&$&'); return [parseInt(x.slice(0,2),16),parseInt(x.slice(2,4),16),parseInt(x.slice(4,6),16)]; }
+    var A=h(a),B=h(b); return '#'+[0,1,2].map(function(k){ return ('0'+Math.round(A[k]+(B[k]-A[k])*t).toString(16)).slice(-2); }).join('');
+  }
+  // One color per group: two-color spread, name-pins (Default phase donut), else the Summit palette by index.
+  function sliceColors(def,labels){
+    if(def.colorMode==='spread'&&def.spreadFrom&&def.spreadTo){ var n=labels.length; return labels.map(function(_,i){ return lerpColor(def.spreadFrom,def.spreadTo,n<=1?0:i/(n-1)); }); }
+    var pal=def.palette||PHPAL, byL=def.colorByLabel||null;
+    return labels.map(function(L,i){ return (byL&&byL[L])||pal[i%pal.length]; });
+  }
+
+  // ---- engine: composition donut renderer (port of phasePanel) ----
+  RENDERERS.donut=function(def,rows){
+    var groups=sortGroups(groupAgg(rows,def.groupBy,def.measure),def.sort),
+        cols=sliceColors(def,groups.map(function(g){return g.label;})),
+        parts=[],tb=0,te=0,body='';
+    groups.forEach(function(g,i){
+      tb+=g.budget; te+=g.earn; var col=cols[i];
+      if(g.budget>0) parts.push({value:g.budget,color:col});
+      body+='<tr data-toggle-key="'+def.groupBy+'" data-toggle-val="'+esc(g.label)+'" style="cursor:pointer;border-top:1px solid #f0f0f4;background:'+(String(filters[def.groupBy])===g.label?'#eef0fb':'transparent')+';">'
+        +'<td style="text-align:left;padding:4px;font-weight:600;color:#2b2b36;"><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:'+col+';margin-right:6px;vertical-align:middle;"></span>'+esc(g.label)+'</td>'
+        +'<td style="text-align:right;padding:4px;font-weight:700;color:'+pctColor(g.pct)+';">'+g.pct.toFixed(0)+'%</td>'
+        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.earn)+'</td>'
+        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.budget)+'</td></tr>';
+    });
+    var totPct=tb?(te/tb*100):0, center='';
+    if(def.showCenter!==false){
+      center='<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;"><div style="font-size:23px;font-weight:800;color:#1b1b22;line-height:1;">'+totPct.toFixed(0)+'%</div><div style="font-size:9px;font-weight:700;letter-spacing:.05em;color:#8a8a96;">COMPLETE</div></div>';
+    }
+    var h='<div class="panel"><div class="ttl" style="text-align:center;margin-bottom:4px;">'+esc(def.title||'')+'</div>';
+    h+='<div style="display:flex;justify-content:center;margin:2px 0 10px;"><div style="position:relative;width:118px;height:118px;">'+donut(parts,118)+center+'</div></div>';
+    if(def.showTable!==false){
+      h+='<table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">'+colDisplay(def.groupBy).toUpperCase()+'</th><th style="font-weight:600;padding:3px 4px;">%</th><th style="font-weight:600;padding:3px 4px;">EARN</th><th style="font-weight:600;padding:3px 4px;">BUDGET</th></tr></thead><tbody>';
+      h+=body;
+      h+='<tr style="border-top:2px solid #d6d6de;font-weight:800;"><td style="text-align:left;padding:4px;">Total</td><td style="text-align:right;padding:4px;color:'+pctColor(totPct)+';">'+totPct.toFixed(0)+'%</td><td style="text-align:right;padding:4px;">'+fmt(te)+'</td><td style="text-align:right;padding:4px;">'+fmt(tb)+'</td></tr>';
+      h+='</tbody></table>';
+    }
+    h+='</div>';
+    return h;
+  };
+
+  // ---- engine: summary table renderer (port of evbTable) ----
+  // % color: default reproduces legacy pctColor (green at 100%); the Highlight-complete
+  // toggle can drop the green (then 100% reads like any in-progress row).
+  function pctColorFor(pct,def){
+    if(def.highlightComplete===false) return pct>=1?'#22222c':'#9a9aa6';
+    return pct>=99.5?(def.completeColor||GREEN):(pct>=1?'#22222c':'#9a9aa6');
+  }
+  RENDERERS.table=function(def,rows){
+    var groups=sortGroups(groupAgg(rows,def.groupBy,def.measure),def.sort||'budgetDesc'),
+        head=esc(def.title||''), tb=0,te=0,body='';
+    groups.forEach(function(g){
+      tb+=g.budget; te+=g.earn;
+      body+='<tr data-toggle-key="'+def.groupBy+'" data-toggle-val="'+esc(g.label)+'" style="cursor:pointer;border-top:1px solid #f0f0f4;background:'+(String(filters[def.groupBy])===g.label?'#eef0fb':'transparent')+';">'
+        +'<td style="text-align:left;padding:4px;font-weight:600;color:#2b2b36;">'+esc(g.label)+'</td>'
+        +'<td style="text-align:right;padding:4px;font-weight:700;color:'+pctColorFor(g.pct,def)+';">'+g.pct.toFixed(0)+'%</td>'
+        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.earn)+'</td>'
+        +'<td style="text-align:right;padding:4px;color:#3a3a46;">'+fmt(g.budget)+'</td></tr>';
+    });
+    return '<div class="panel"><div class="ttl" style="margin-bottom:5px;">'+head+'</div><table style="width:100%;font-size:11.5px;"><thead><tr style="color:#7a7a88;text-align:right;font-size:10px;"><th style="text-align:left;font-weight:600;padding:3px 4px;">'+esc((def.title||'').toUpperCase())+'</th><th style="font-weight:600;padding:3px 4px;">%</th><th style="font-weight:600;padding:3px 4px;">EARN</th><th style="font-weight:600;padding:3px 4px;">BUDGET</th></tr></thead><tbody>'
+      +body
+      +'<tr style="border-top:2px solid #d6d6de;font-weight:800;"><td style="text-align:left;padding:4px;">Total</td><td style="text-align:right;padding:4px;">'+(tb?(te/tb*100).toFixed(0):0)+'%</td><td style="text-align:right;padding:4px;">'+fmt(te)+'</td><td style="text-align:right;padding:4px;">'+fmt(tb)+'</td></tr>'
+      +'</tbody></table></div>';
+  };
+
+  // ---- engine: bar list renderer (port of barRows + its panel wrapper) ----
+  // Note: standardizes the inter-bar gap to 6px (legacy ROC used 5px, Shop 6px — a 1px accident).
+  RENDERERS.barList=function(def,rows){
+    var groups=sortGroups(groupAgg(rows,def.groupBy,def.measure),def.sort),
+        barColor=def.barColor||NAVY, track=def.colorRemaining||'#eef0f4', bars='';
+    groups.forEach(function(g){
+      var col=(def.highlightComplete!==false && g.pct>=99.5)?(def.completeColor||GREEN):barColor;
+      bars+='<div data-toggle-key="'+def.groupBy+'" data-toggle-val="'+esc(g.label)+'" title="'+esc(g.label)+' — '+g.pct.toFixed(1)+'%" style="display:flex;align-items:center;gap:8px;font-size:10.5px;cursor:pointer;background:'+(String(filters[def.groupBy])===g.label?'#eef0fb':'transparent')+';border-radius:3px;">'
+        +'<span style="width:52px;flex:none;color:#4a4a56;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(g.label)+'</span>'
+        +'<div style="flex:1;height:15px;background:'+track+';border-radius:2px;overflow:hidden;"><div style="height:100%;width:'+Math.min(g.pct,100).toFixed(1)+'%;background:'+col+';border-radius:2px;"></div></div>'
+        +'<span style="width:36px;flex:none;text-align:right;font-weight:700;color:#22222c;">'+g.pct.toFixed(0)+'%</span></div>';
+    });
+    return '<div class="panel"><div class="ttl">'+esc(def.title||'')+'</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">'+bars+'</div></div>';
+  };
+
+  // ---- engine: heatmap renderer (port of matrixHTML) ----
+  // Keeps the legacy heat() HSL sweep for the Default; a custom Low/High interpolates.
+  // Column-sort state stays in the shared mSort/mDir globals (the delegated data-sort
+  // handler already drives them) — one heatmap per report today.
+  RENDERERS.heatmap=function(def,rows){
+    var mf=measureField(def.measure), GREY=def.colorNoData||'#666666',
+        rowKey=def.rowGroup, colKey=def.colGroup, maxCols=def.maxCols||8;
+    function heatColor(p){ return (def.colorLow&&def.colorHigh)?lerpColor(def.colorLow,def.colorHigh,Math.max(0,Math.min(100,p))/100):heat(p); }
+    // column set = most-common colGroup values across ALL rows, capped
+    var colCount={}; ROWS.forEach(function(r){ var v=r[colKey]; if(v) colCount[v]=(colCount[v]||0)+1; });
+    var cols=Object.keys(colCount).sort(function(a,b){return colCount[b]-colCount[a];}).slice(0,maxCols);
+    function cell(sub){ if(!sub.length) return {bg:GREY,tx:'transparent',val:'',p:null}; var a=aggWith(sub,mf); if(a.budget<=0) return {bg:GREY,tx:'transparent',val:'',p:null}; return {bg:heatColor(a.pct),tx:'#fff',val:Math.round(a.pct)+'%',p:a.pct}; }
+    var gmap={}; rows.forEach(function(r){ var k=(r[rowKey]&&r[rowKey]!=='')?r[rowKey]:'(Unassigned)'; (gmap[k]=gmap[k]||[]).push(r); });
+    var mrows=Object.keys(gmap).map(function(g){ var rs=gmap[g],a=aggWith(rs,mf);
+      var cells=cols.map(function(cv){ return cell(rs.filter(function(r){return r[colKey]===cv;})); });
+      return {wp:g,_b:a.budget,_e:a.earn,_p:a.budget>0?a.pct:-1,budget:fmt(a.budget),earn:fmt(a.earn),pctStr:a.budget>0?Math.round(a.pct)+'%':'—',pctBg:a.budget>0?heatColor(a.pct):GREY,pctTx:a.budget>0?'#fff':'#b0b4bd',cells:cells}; });
+    var sdir=mDir==='asc'?1:-1;
+    mrows.sort(function(a,b){ var va,vb;
+      if(mSort==='wp'){va=a.wp;vb=b.wp;return sdir*va.localeCompare(vb);}
+      if(mSort.indexOf('ph:')===0){var i=+mSort.slice(3);va=a.cells[i].p==null?-1:a.cells[i].p;vb=b.cells[i].p==null?-1:b.cells[i].p;}
+      else{va=a[mSort];vb=b[mSort];}
+      return sdir*(va-vb); });
+    function arrow(k){ return mSort===k?(mDir==='asc'?' ▲':' ▼'):''; }
+    var th='<th data-sort="wp" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:left;padding:7px 8px;font-size:10.5px;font-weight:700;cursor:pointer;user-select:none;">'+colDisplay(rowKey).toUpperCase()+arrow('wp')+'</th>'
+      +'<th data-sort="_p" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:center;padding:7px 8px;font-weight:700;cursor:pointer;user-select:none;">%'+arrow('_p')+'</th>'
+      +'<th data-sort="_b" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:left;padding:7px 8px;font-weight:700;cursor:pointer;user-select:none;">BDGT '+unitLabel()+arrow('_b')+'</th>'
+      +'<th data-sort="_e" style="position:sticky;top:0;z-index:2;background:'+NAVY+';color:#fff;text-align:left;padding:7px 8px;font-weight:700;cursor:pointer;user-select:none;">EARN '+unitLabel()+arrow('_e')+'</th>';
+    cols.forEach(function(ph,i){ th+='<th data-sort="ph:'+i+'" title="'+esc(ph)+'" style="position:sticky;top:0;z-index:2;background:#3c5c9e;color:#fff;text-align:center;padding:7px 6px;font-weight:700;min-width:56px;cursor:pointer;user-select:none;">'+esc(ph)+arrow('ph:'+i)+'</th>'; });
+    var body='';
+    mrows.forEach(function(r){
+      body+='<tr style="border-top:1px solid #f0f0f4;"><td style="padding:5px 8px;font-weight:600;color:#2b2b36;white-space:nowrap;max-width:260px;overflow:hidden;text-overflow:ellipsis;" title="'+esc(r.wp)+'">'+esc(r.wp)+'</td>'
+        +'<td style="padding:5px 8px;text-align:center;font-weight:800;background:'+r.pctBg+';color:'+r.pctTx+';">'+r.pctStr+'</td>'
+        +'<td style="padding:5px 8px;text-align:left;color:#4a4a56;">'+r.budget+'</td>'
+        +'<td style="padding:5px 8px;text-align:left;color:#4a4a56;">'+r.earn+'</td>';
+      r.cells.forEach(function(c){ body+='<td style="padding:4px 6px;text-align:center;font-weight:700;font-size:10.5px;background:'+c.bg+';color:'+c.tx+';border-left:1px solid #f4f4f8;">'+c.val+'</td>'; });
+      body+='</tr>';
+    });
+    var tot=aggWith(rows,mf);
+    var totCells=''; cols.forEach(function(cv){ var sub=rows.filter(function(r){return r[colKey]===cv;}); var a=aggWith(sub,mf); totCells+='<td style="padding:6px 6px;text-align:center;">'+(sub.length&&a.budget>0?Math.round(a.pct)+'%':'')+'</td>'; });
+    body+='<tr style="border-top:2px solid #cfcfda;background:#f4f4f8;font-weight:800;"><td style="padding:6px 8px;">Total</td><td style="padding:6px 8px;text-align:center;">'+tot.pct.toFixed(0)+'%</td><td style="padding:6px 8px;text-align:left;">'+fmt(tot.budget)+'</td><td style="padding:6px 8px;text-align:left;">'+fmt(tot.earn)+'</td>'+totCells+'</tr>';
+    return '<div class="panel" style="padding:10px 12px 12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;gap:12px;"><div class="ttl">'+esc(def.title||'')+'</div><div style="font-size:10px;color:#9a9aa6;white-space:nowrap;">'+mrows.length+' '+(def.rowNoun||'rows')+' &bull; red 0% &rarr; green 100% &bull; grey = no data</div></div>'
+      +'<div style="max-height:340px;overflow:auto;border:1px solid #ececf1;border-radius:3px;"><table style="width:100%;font-size:11px;"><thead><tr>'+th+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+  };
+
+  // ---- engine: trend renderer (unifies trendHTML + weeklyTrendHTML via mode) ----
+  RENDERERS.trend=function(def,rows){
+    var mf=measureField(def.measure), mode=def.mode==='perWeek'?'perWeek':'cumulative',
+        barColor=def.barColor||NAVY, wkLabel=(def.weekStart==='sun'?'Sunday':'Monday');
+    function weekStart(iso){ var dt=new Date(iso+'T00:00:00Z'); var off=(def.weekStart==='sun')?dt.getUTCDay():((dt.getUTCDay()+6)%7); dt.setUTCDate(dt.getUTCDate()-off); return dt.toISOString().slice(0,10); }
+    var byWeek={}, totMH=0;
+    rows.forEach(function(r){ totMH+=(+r[mf]||0); var dd=r.actFin||r.actStart; if(dd){ var w=weekStart(dd); byWeek[w]=(byWeek[w]||0)+(+r[mf]||0)*((+r.pct||0)/100); } });
+    if(!totMH) totMH=1;
+    var weeks=Object.keys(byWeek).sort(), pts, yMax;
+    if(mode==='cumulative'){ var cum=0; pts=weeks.map(function(w){ cum+=byWeek[w]; return {w:w,val:cum}; }); yMax=totMH; }
+    else { pts=weeks.map(function(w){ return {w:w,val:byWeek[w]}; }); yMax=0; pts.forEach(function(p){ if(p.val>yMax)yMax=p.val; }); if(!yMax)yMax=1; }
+    function wlab(iso){ var p=iso.split('-'); return (+p[1])+'/'+(+p[2]); }
+    function wfull(iso){ var p=iso.split('-'); return (+p[1])+'/'+(+p[2])+'/'+p[0]; }
+    var TW=1000,PB=150,PT=14,PL=12,PR=12,n=pts.length,slot=n?(TW-PL-PR)/n:0,bw=Math.max(3,Math.min(slot*0.6,30));
+    function ys(v){ return PB-(PB-PT)*Math.min(v/yMax,1); }
+    var bars='',labels='';
+    pts.forEach(function(p,i){ var cx=PL+slot*(i+0.5),y=ys(p.val);
+      var green=(mode==='cumulative' && def.highlightComplete!==false && p.val>=yMax*0.995);
+      var col=green?(def.completeColor||GREEN):barColor;
+      var tip='Wk of '+wfull(p.w)+' — '+fmt(p.val)+' MH'+(mode==='cumulative'?' ('+(p.val/yMax*100).toFixed(1)+'%)':'');
+      bars+='<rect data-toggle-key="__week" data-toggle-val="'+p.w+'" style="cursor:pointer" x="'+(cx-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(PB-y).toFixed(1)+'" fill="'+col+'"'+(String(filters.__week)===p.w?' stroke="#20202c" stroke-width="2"':'')+'><title>'+tip+'</title></rect>';
+      labels+='<div style="flex:1;min-width:0;font-size:8px;color:#9a9aa6;text-align:center;white-space:nowrap;">'+wlab(p.w)+'</div>'; });
+    var grid=[0,0.5,1].map(function(fr){ return '<line x1="0" y1="'+ys(fr*yMax).toFixed(1)+'" x2="1000" y2="'+ys(fr*yMax).toFixed(1)+'" stroke="#eef0f4" stroke-width="1"></line>'; }).join('');
+    var minW=Math.max(n,1)*34;
+    // Block 9: replace fixed ids with per-instance ids + class-based auto-scroll to support multiple trends.
+    var scrollId=(mode==='cumulative')?'trendScroll':'weeklyScroll';
+    var sub=(mode==='cumulative')?('Cumulative earned MH by week • '+wkLabel+' week-start'):('Earned MH each week • '+wkLabel+' week-start');
+    return '<div class="panel" style="padding:10px 14px 6px;"><div style="display:flex;justify-content:space-between;align-items:baseline;"><div class="ttl">'+esc(def.title||'')+'</div><div style="font-size:10.5px;color:#8a8a96;">'+sub+'</div></div>'
+      +'<div style="display:flex;align-items:stretch;margin-top:8px;">'
+        +'<div style="width:46px;flex:none;display:flex;flex-direction:column;justify-content:space-between;font-size:8.5px;font-weight:600;color:#9a9aa6;text-align:right;padding:10px 6px 25px 0;"><span>'+fmt(yMax)+'</span><span>'+fmt(yMax/2)+'</span><span>0</span></div>'
+        +'<div id="'+scrollId+'" style="flex:1;min-width:0;overflow-x:auto;"><div style="min-width:'+minW+'px;">'
+          +'<svg viewBox="0 0 1000 155" preserveAspectRatio="none" style="width:100%;height:150px;display:block;">'+grid+bars+'</svg>'
+          +'<div style="display:flex;padding:3px 0 2px;">'+labels+'</div>'
+        +'</div></div>'
+      +'</div></div>';
+  };
+
+  // ---- engine: layout composer (replaces the hardcoded render() body) ----
+  // Builds the report body: row-1 four-column band, then the added rows (each
+  // 1..N equal-width visuals; a single stretched visual fills its row), then footer.
+  function renderLayout(layout,rows){
+    var row1='<div class="dashrow1" style="display:grid;grid-template-columns:minmax(200px,1fr) minmax(0,0.9fr) minmax(232px,1.15fr) minmax(0,1.3fr);gap:12px;align-items:start;">';
+    layout.row1.forEach(function(col){
+      row1+='<div class="col">';
+      col.forEach(function(def){ var h=renderVisual(def,rows); if(def.flex) h=h.replace('class="panel"','class="panel flexcard"'); row1+=h; });
+      row1+='</div>';
+    });
+    row1+='</div>';
+    var below='';
+    (layout.rows||[]).forEach(function(r){
+      if(r.visuals.length===1){ below+=renderVisual(r.visuals[0],rows); }
+      else { below+='<div style="display:grid;grid-template-columns:repeat('+r.visuals.length+',minmax(0,1fr));gap:12px;">'+r.visuals.map(function(def){return renderVisual(def,rows);}).join('')+'</div>'; }
+    });
+    return row1+below+footerHTML();
+  }
+
   // ---- master render ----
   function render(){
     var app=document.getElementById('app');
     if(!loaded){ app.innerHTML='<div style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#faf9f5;color:#9a9aa6;font-size:16px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">Loading dashboard…</div>'; return; }
     if(!ROWS.length){ app.innerHTML=headerHTML(); return; }
-    var rows=filtered(), A=agg(rows);
-    var top='<div class="dashrow1" style="display:grid;grid-template-columns:minmax(200px,1fr) minmax(0,0.9fr) minmax(232px,1.15fr) minmax(0,1.3fr);gap:12px;align-items:start;">'
-      +progressHTML(rows,A)
-      +'<div class="col">'+phasePanel(rows)+'</div>'
-      +'<div class="col">'+evbTable(rows,'comp','Component Type')+evbTable(rows,'area','Area')+'</div>'
-      +'<div class="col"><div class="panel flexcard"><div class="ttl">ROC Step Progress</div><div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;">'+barRows(groupPct(rows,'roc').sort(function(a,b){return a.label<b.label?-1:1;}),NAVY)+'</div></div>'+'<div class="panel"><div class="ttl">Shop / Field Progress</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">'+barRows(groupPct(rows,'shop').sort(function(a,b){return b.budget-a.budget;}),NAVY)+'</div></div>'+'</div>'
-      +'</div>';
+    var rows=filtered();
     app.innerHTML=headerHTML()
       +'<div style="display:grid;grid-template-columns:150px 1fr;gap:12px;padding:12px 16px 0;align-items:start;">'
         +railHTML()
-        +'<main class="col">'+top+matrixHTML(rows)+trendHTML(rows)+weeklyTrendHTML(rows)+footerHTML()+'</main>'
+        +'<main class="col">'+renderLayout(activeLayout,rows)+'</main>'
       +'</div>';
+    var fl=document.querySelector('[data-footer="left"]');  if(fl) fl.textContent=(activeLayout.footer&&activeLayout.footer.left)||'';
+    var fr=document.querySelector('[data-footer="right"]'); if(fr) fr.textContent=(activeLayout.footer&&activeLayout.footer.right)||'';
     var ts=document.getElementById('trendScroll'); if(ts) ts.scrollLeft=ts.scrollWidth;
     var ws=document.getElementById('weeklyScroll'); if(ws) ws.scrollLeft=ws.scrollWidth;
   }
