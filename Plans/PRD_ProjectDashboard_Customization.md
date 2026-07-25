@@ -22,6 +22,9 @@ Let users tailor the Project Dashboard per project: add / remove / relabel visua
 
 Today each visual is a hardcoded JS function (`progressHTML`, `phasePanel`, `evbTable`, ROC bars, heatmap, trend). Customization requires making rendering **data-driven**: one generic renderer that draws any visual from its definition. The current report is re-expressed as the Default layout in this schema. **This engine refactor is the bulk of the effort and is why the Default content must be finalized first** — we lock the visual vocabulary, then generalize it.
 
+### Rendering approach — hand-rolled SVG (decided)
+All visuals are hand-drawn SVG / HTML / CSS — **no charting library** (Chart.js, ECharts, D3, etc.). Confirmed 2026-07-24 after weighing the options: keeps the file lean and fully offline, stays PDF-crisp (vector SVG), and gives total control of the Summit look. The engine renders each visual *type* with a small dedicated renderer. Adding a new visual to the Default later is cheap: a same-type visual is just another entry in the Default's JSON (no engine change); a genuinely new *type* is one new renderer, additive and localized — never a rewrite. So the Default being "locked for now" does not paint us into a corner.
+
 ### Visual types (fixed palette, configurable data)
 - Progress ring (single % with center value)
 - Composition donut (slices by group, colored per group)
