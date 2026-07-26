@@ -18,6 +18,7 @@ This document tracks completed features and fixes. Items are moved here from Pro
 - **Fixed: rows below row 1 had no height limit.** A tall visual (e.g. a bar list with many groups) ran the full page length. Rows below row 1 now cap at the row-1 height (450px) and scroll inside their own panel, matching how row 1 already behaves.
 - **Fixed: intermittent crash clicking Publish / Import from Cloud.** Both opened a modal dialog synchronously *inside* the WebView2 `WebMessageReceived` callback; re-entering the message pump from within that native callback (worse while the page was still rendering) intermittently crashed the WebView2 runtime with an uncatchable access violation. Both handlers now yield off the callback (`Dispatcher.Yield(Background)`) before opening any dialog, and the import path is fully wrapped in try/catch.
 - **Button press feedback.** Every clickable element in the dashboard now dims (buttons also nudge down 1px) while pressed, via a single `:active` rule, so a click visibly registers.
+- **PDF export no longer splits a row across pages.** Print mode wraps the report in `.printwrap` and applies `break-inside:avoid` to each row (and the row-1 band), so a row that would straddle a page break moves whole to the next page; the on-screen 450px row cap is also lifted in print so tall visuals print their full content instead of being clipped. (A single visual taller than a page still splits — unavoidable.)
 
 ### July 25, 2026 (Project Dashboard — Customize UI: layout manager, in-page visual editors, layout persistence)
 

@@ -89,6 +89,7 @@ Implemented: an **Export PDF** button on the main toolbar (`ProjectDashboardWind
 - Button on the main report toolbar (not just customize mode).
 - Uses `CoreWebView2.PrintToPdfAsync` (already used by the help sidebar), landscape, fit-to-width, filename patterned per project.
 - **The PDF must NOT include the filter panel** (the left rail) — export the report content only. Hide/detach the rail for the print render, then restore.
+- **No mid-row page splits (2026-07-25):** the print-mode DOM is wrapped in `.printwrap`; `break-inside:avoid` on `.dashstack` (each below-row-1 row) and `.dashrow1` keeps a row whole — a row that would straddle a page boundary moves entirely to the next page. Print also removes the on-screen 450px `.dashstack` cap (`max-height:none;overflow:visible`) so tall visuals print full content instead of being clipped. A single visual taller than one page still splits (unavoidable).
 
 ## 7. Customization UI
 
