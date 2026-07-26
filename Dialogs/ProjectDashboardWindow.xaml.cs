@@ -475,7 +475,7 @@ namespace VANTAGE.Dialogs
             {
                 AppLogger.Error(ex, "ProjectDashboardWindow.PublishToCloudAsync");
                 txtStatus.Text = "Publish failed — see log.";
-                AppMessageBox.Show("Could not publish to the Cloud — see log.\n\nIf this is the first publish, the shared VMS_ReportLayouts table may need to be created on Azure.",
+                AppMessageBox.Show("Could not publish to the Cloud — see log.",
                     "Publish to Cloud", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
