@@ -6,6 +6,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 25, 2026 (Project Dashboard — more measures, native column labels, vertical bars, content sizing, heatmap changes)
+
+**Round of Project Dashboard customization refinements** driven by report-design feedback (`Dashboards/vantage-dashboard.html`; measures also touch `Dialogs/ProjectDashboardWindow` projection).
+
+- **Seven more numeric measures.** ClientCustom3, ClientEquivQty, EarnedMHsRoc, EquivQTY, PrevEarnMHs, PrevEarnQTY, ROCBudgetQTY were added to the `ActivityDto` projection and the page's `NUMMAP`, joining BudgetMHs / EarnMHsCalc / Quantity / ClientBudget / PercentEntry / EarnQtyEntry. They're selectable as the report **Progress basis**, as any visual's **measure**, and as **filter/exclude** fields.
+- **Native Activity column names in every picker.** Filter panel + all visual editors now label fields/measures with the raw Activity column names users see in the app (CompType, PhaseCategory, ROCStep, ShopField, WorkPackage, DwgNO, SchedActNO, BudgetMHs, EarnMHsCalc, EarnQtyEntry, …) instead of friendly relabels ("Component Type", "Budget MHs"), so the dashboard matches the grid.
+- **Bar list — Horizontal / Vertical orientation.** New Orientation dropdown; vertical renders columns rising from a shared baseline with the value on top and category below, scrolling sideways past ~12 bars (default stays Horizontal, so existing layouts are unchanged).
+- **X-Axis / Y-Axis editor labels** on axis charts: the bar list's two field pickers are labeled by axis and **swap with orientation** (horizontal → category is Y-Axis / value is X-Axis; vertical → reversed); trend's measure is **Y-Axis**; heatmap's rows/columns are **Y-Axis / X-Axis**. Non-axis visuals (donut, table, ring, stat tiles) keep their labels.
+- **Content-based bar-list sizing in a row-1 column.** A bar list sizes to its content instead of stretching to fill the column: alone it can grow to the full column height (2H), and when it shares the column it and its neighbour flex with a `max-content` cap so each is guaranteed ~1H, a shorter one frees its surplus to a taller one, and anything taller scrolls in its own panel. Vertical bar lists cap at 1H.
+- **Heatmap:** columns are ordered **alphabetically**; the **Max-columns cap was removed** so every distinct column value shows (drop any via Exclude rows); added **%/Earned/Budget show-hide** toggles matching the summary table and donut.
+- **Rows below row 1 size to content width by default** — a heatmap with a few columns no longer stretches across the whole row. A per-row **Stretch to fit** toggle (customize mode) fills the width when wanted; the Default's two trend rows ship stretched. Wide visuals cap at the row width and scroll.
+- **Removed the redundant "Import weekly file" control.** The dashboard is fed from the local database, so the header drop zone, the hidden file input, the CSV/XLSX parse plumbing, and the C# CSS that used to hide the control were all deleted.
+
 ### July 25, 2026 (Project Dashboard — Cloud layout sharing + customize polish/crash fix)
 
 **Shared cloud library for report layouts, plus polish and a crash fix for the customize feature.** A layout you design can now be published to a central library and imported by teammates; admins can remove shared layouts. Backing store is a new dedicated Azure table on `projectcontrols` (`dbo.VMS_ReportLayouts`) — additive and REQit-neutral.

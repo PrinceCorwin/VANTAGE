@@ -49,12 +49,6 @@ namespace VANTAGE.Dialogs
         // ("ProjectID: Description"). Reused by Open in Browser.
         private string _projectsJson = "{}";
 
-        // Hides the dashboard's built-in "Import weekly file" control. Injected as a global
-        // CSS rule (not an element removal) so it survives the page's header re-renders.
-        // The dashboard is fed from the local database, so the file-import control is redundant.
-        private const string HideImportScript =
-            "(function(){var s=document.createElement('style');s.textContent='[data-import]{display:none !important;}';document.head.appendChild(s);})();";
-
         public ProjectDashboardWindow()
         {
             InitializeComponent();
@@ -124,7 +118,6 @@ namespace VANTAGE.Dialogs
         private async void CoreWebView2_NavigationCompleted(object? sender, CoreWebView2NavigationCompletedEventArgs e)
         {
             if (!e.IsSuccess) return;
-            await webView.CoreWebView2.ExecuteScriptAsync(HideImportScript);
             // Send the last-used layout before the data so the report opens on it (no Default flash).
             InitializeLayoutSelection();
             txtLoadingPhase.Text = "Loading records…";
@@ -291,6 +284,13 @@ namespace VANTAGE.Dialogs
                     ClientBudget = a.ClientBudget,
                     PercentEntry = a.PercentEntry,
                     PercentCompleteCalc = a.PercentCompleteCalc,
+                    ClientCustom3 = a.ClientCustom3,
+                    ClientEquivQty = a.ClientEquivQty,
+                    EarnedMHsRoc = a.EarnedMHsRoc,
+                    EquivQTY = a.EquivQTY,
+                    PrevEarnMHs = a.PrevEarnMHs,
+                    PrevEarnQTY = a.PrevEarnQTY,
+                    ROCBudgetQTY = a.ROCBudgetQTY,
                     PlanStart = FormatDate(a.PlanStart),
                     PlanFin = FormatDate(a.PlanFin),
                     ActStart = FormatDate(a.ActStart),
@@ -629,10 +629,8 @@ namespace VANTAGE.Dialogs
 
                 string html = File.ReadAllText(htmlPath);
 
-                // Bake the current dataset in so the standalone file opens with live data,
-                // and hide the redundant file-import control in the snapshot too.
-                string inject = "<style>[data-import]{display:none !important;}</style>"
-                    + "<script>window.__VANTAGE_DATA__ = " + _activitiesArrayJson + ";"
+                // Bake the current dataset in so the standalone file opens with live data.
+                string inject = "<script>window.__VANTAGE_DATA__ = " + _activitiesArrayJson + ";"
                     + "window.__VANTAGE_PROJECTS__ = " + _projectsJson + ";</script>";
                 int bodyClose = html.LastIndexOf("</body>", StringComparison.OrdinalIgnoreCase);
                 html = bodyClose >= 0 ? html.Insert(bodyClose, inject) : html + inject;
@@ -702,6 +700,13 @@ namespace VANTAGE.Dialogs
             public double ClientBudget { get; set; }
             public double PercentEntry { get; set; }
             public double PercentCompleteCalc { get; set; }
+            public double ClientCustom3 { get; set; }
+            public double ClientEquivQty { get; set; }
+            public double EarnedMHsRoc { get; set; }
+            public double EquivQTY { get; set; }
+            public double PrevEarnMHs { get; set; }
+            public double PrevEarnQTY { get; set; }
+            public double ROCBudgetQTY { get; set; }
             public string? PlanStart { get; set; }
             public string? PlanFin { get; set; }
             public string? ActStart { get; set; }

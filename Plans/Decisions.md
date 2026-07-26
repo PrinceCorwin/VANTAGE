@@ -291,6 +291,16 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** The page is standalone and offline; an icon-class element with no backing font renders as an invisible empty box. This silently hid the customize-mode row move (▲/▼) arrows, which were icon-only. Unicode glyphs always render with the system font, keeping the page self-contained.
 **Date:** July 2026
 
+### Dashboard Field & Measure Pickers Use Native Activity Column Names
+**Rule:** In the Project Dashboard's customize UI (filter panel Progress-basis, every visual editor's group-by / measure / axis / filter pickers), fields and measures are labeled with the raw Activity column names — `CompType`, `PhaseCategory`, `ROCStep`, `ShopField`, `WorkPackage`, `DwgNO`, `SchedActNO`, `BudgetMHs`, `EarnMHsCalc`, `EarnQtyEntry`, etc. — not friendly relabels ("Component Type", "Budget MHs"). The dashboard is fed only from the local DB (no file import), so the page never surfaces a data-load control.
+**Why:** Users author reports against the same columns they see in the Progress grid; friendly relabels made the picker names diverge from the app and caused confusion. Matching the grid's `MappingName`/`HeaderText` keeps one vocabulary across the app.
+**Date:** July 2026
+
+### Rows Below Row 1 Are Content-Width by Default; Bar Lists Are Content-Sized in Row 1
+**Rule:** In the Project Dashboard, a visual in a row after row 1 takes only the width its content needs (left-packed) unless that row's per-row **Stretch to fit** toggle is on, which fills the row width. Bar lists in a row-1 column are content-sized rather than stretched to fill the fixed 450px column: alone one can grow to the full column (2H); sharing the column, each flexes with a `max-content` cap so it's guaranteed ~1H, a shorter neighbour frees its surplus to a taller one, and overflow scrolls in-panel. The heatmap shows every distinct column value (no max-columns cap), ordered alphabetically.
+**Why:** Full-width stretch made tables/heatmaps with a few columns spread unnaturally wide, and the fixed-fill column made a short bar list waste space while a tall one was clipped. Content sizing with flex surplus redistribution matches "each visual takes what it needs," and the per-row toggle preserves full-bleed layouts (e.g. the Default's trend rows ship stretched).
+**Date:** July 2026
+
 ---
 
 ## Progress Module
