@@ -195,8 +195,14 @@ namespace VANTAGE.Dialogs
                         case "printReady":
                             _printReadyTcs?.TrySetResult(true);
                             break;
+                        case "publishLayout":
+                            HandlePublishLayout(root);
+                            break;
+                        case "importLayouts":
+                            _ = OpenImportDialogAsync();
+                            break;
                         case "cz":
-                            // Manager-toolbar actions. "pdf" exports; publish/import are future blocks.
+                            // Manager-toolbar actions. "pdf" exports; publish/import have their own message types.
                             if (root.TryGetProperty("action", out var act) && act.ValueKind == JsonValueKind.String && act.GetString() == "pdf")
                                 _ = ExportPdfAsync();
                             break;
@@ -431,6 +437,102 @@ namespace VANTAGE.Dialogs
             }
             PopulateLayoutCombo();
             txtStatus.Text = "Layout deleted.";
+        }
+
+        // Publish the current layout to the shared Cloud library (dbo.VMS_ReportLayouts). Upserts by name+author.
+        private void HandlePublishLayout(JsonElement root)
+        {
+            if (!root.TryGetProperty("layout", out var lay) || lay.ValueKind != JsonValueKind.Object) return;
+            string name = lay.TryGetProperty("name", out var n) && n.ValueKind == JsonValueKind.String ? (n.GetString() ?? "Untitled") : "Untitled";
+            int ver = 1;
+            if (lay.TryGetProperty("schemaVersion", out var sv) && sv.ValueKind == JsonValueKind.Number) ver = sv.GetInt32();
+            _ = PublishToCloudAsync(name, ver, lay.GetRawText());
+        }
+
+        private async Task PublishToCloudAsync(string name, int schemaVersion, string layoutJson)
+        {
+            // Unwind the WebView2 callback before any synchronous CheckConnection / modal MessageBox
+            // (same WebView2 reentrancy hazard as OpenImportDialogAsync).
+            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
+
+            if (!AzureDbManager.CheckConnection(out _))
+            {
+                AppMessageBox.Show("Cannot connect to the cloud database. Check your connection and try again.",
+                    "Publish to Cloud", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            string author = App.CurrentUser?.Username ?? "Unknown";
+            try
+            {
+                txtStatus.Text = $"Publishing \"{name}\"…";
+                await AzureReportLayoutRepository.PublishAsync(name, author, schemaVersion, layoutJson);
+                AppLogger.Info($"Published report layout '{name}'", "ProjectDashboardWindow.PublishToCloudAsync", author);
+                txtStatus.Text = $"Published \"{name}\" to Cloud.";
+                AppMessageBox.Show($"Published \"{name}\" to the Cloud library.\n\nTeammates can now Import it.",
+                    "Publish to Cloud", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProjectDashboardWindow.PublishToCloudAsync");
+                txtStatus.Text = "Publish failed — see log.";
+                AppMessageBox.Show("Could not publish to the Cloud — see log.\n\nIf this is the first publish, the shared VMS_ReportLayouts table may need to be created on Azure.",
+                    "Publish to Cloud", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Browse the shared Cloud library and import a one-time local copy of a layout.
+        private async Task OpenImportDialogAsync()
+        {
+            // Let the WebView2 WebMessageReceived callback fully unwind before opening any modal
+            // dialog. Calling ShowDialog() (a nested message loop) synchronously inside that native
+            // callback — especially while the page is still rendering — intermittently crashes the
+            // WebView2 runtime with an access violation that no managed catch can trap.
+            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Background);
+
+            try
+            {
+                if (!AzureDbManager.CheckConnection(out _))
+                {
+                    AppMessageBox.Show("Cannot connect to the cloud database. Check your connection and try again.",
+                        "Import from Cloud", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var dlg = new ReportLayoutImportDialog { Owner = this };
+                if (dlg.ShowDialog() != true || dlg.SelectedLayoutId is not Guid cloudId) return;
+
+                string? json = await AzureReportLayoutRepository.GetJsonAsync(cloudId);
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    AppMessageBox.Show("That layout could not be downloaded — it may have just been deleted.",
+                        "Import from Cloud", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Re-home the imported layout as a fresh local user layout: new id, unlocked, keep the name.
+                var node = System.Text.Json.Nodes.JsonNode.Parse(json);
+                string name = node?["name"]?.GetValue<string>() ?? "Imported layout";
+                string localId = "L" + Guid.NewGuid().ToString("N").Substring(0, 12);
+                if (node is System.Text.Json.Nodes.JsonObject obj)
+                {
+                    obj["id"] = localId;
+                    obj["locked"] = false;
+                }
+                string localJson = node!.ToJsonString();
+
+                SettingsManager.SaveReportLayout(localId, name, localJson);
+                _currentLayoutId = localId;
+                SettingsManager.SetLastUsedReportLayout(localId);
+                PopulateLayoutCombo();
+                PostSetLayout(localId);
+                txtStatus.Text = $"Imported \"{name}\" from the Cloud.";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "ProjectDashboardWindow.OpenImportDialogAsync");
+                AppMessageBox.Show("Could not import the layout — see log.",
+                    "Import from Cloud", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         // Reflect the current mode on the toolbar button (accent navy while editing).

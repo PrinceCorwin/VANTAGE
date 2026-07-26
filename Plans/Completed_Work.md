@@ -6,6 +6,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 25, 2026 (Project Dashboard — Cloud layout sharing + customize polish/crash fix)
+
+**Shared cloud library for report layouts, plus polish and a crash fix for the customize feature.** A layout you design can now be published to a central library and imported by teammates; admins can remove shared layouts. Backing store is a new dedicated Azure table on `projectcontrols` (`dbo.VMS_ReportLayouts`) — additive and REQit-neutral.
+
+- **Publish to Cloud** — the manager toolbar's Publish pushes a copy of the current named layout to the shared library, stamped with your username as author (re-publishing your own name+layout updates in place). Publishing the read-only Default routes to Save-as first so it gets a name.
+- **Import from Cloud** — a new picker (`Dialogs/ReportLayoutImportDialog`) lists every shared layout (Name / Author / Updated); importing downloads a **one-time local copy** (fresh local id, unlocked) and makes it the active layout — no live link back to the cloud.
+- **Delete from Cloud (admins only)** — the same picker shows a Delete button that removes a shared layout for everyone, visible only to admins (`AzureDbManager.IsUserAdmin`). Local layouts remain freely deletable by their owner via the toolbar.
+- **`Data/AzureReportLayoutRepository.cs`** — idempotent table create (`IF OBJECT_ID`), Publish (MERGE upsert by Name+Author), List/Get/Delete; parameterized throughout.
+- **Fixed: invisible row move arrows.** The dashboard HTML never loaded an icon font, so icon-only `<i class="ti …">` elements — the row up/down (▲/▼) reorder arrows — rendered as blank spans. Replaced every icon in the page with real Unicode glyphs (▲ ▼ ✎ ✕ +); text-labelled buttons were unaffected.
+- **Fixed: rows below row 1 had no height limit.** A tall visual (e.g. a bar list with many groups) ran the full page length. Rows below row 1 now cap at the row-1 height (450px) and scroll inside their own panel, matching how row 1 already behaves.
+- **Fixed: intermittent crash clicking Publish / Import from Cloud.** Both opened a modal dialog synchronously *inside* the WebView2 `WebMessageReceived` callback; re-entering the message pump from within that native callback (worse while the page was still rendering) intermittently crashed the WebView2 runtime with an uncatchable access violation. Both handlers now yield off the callback (`Dispatcher.Yield(Background)`) before opening any dialog, and the import path is fully wrapped in try/catch.
+- **Button press feedback.** Every clickable element in the dashboard now dims (buttons also nudge down 1px) while pressed, via a single `:active` rule, so a click visibly registers.
+
 ### July 25, 2026 (Project Dashboard — Customize UI: layout manager, in-page visual editors, layout persistence)
 
 **Built the Project Dashboard customization UI** (§10 step 3 of `Plans/PRD_ProjectDashboard_Customization.md`) on top of the data-driven engine — users can edit the report's visuals, save named layouts, and switch between them. All customize interactions are page-side (`Dashboards/vantage-dashboard.html`); C# (`ProjectDashboardWindow`, `SettingsManager`) owns the toolbar + persistence.

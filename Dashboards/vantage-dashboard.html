@@ -16,6 +16,12 @@
   .panel{background:#fff;border:1px solid #edeef2;border-radius:7px;padding:10px 12px;box-shadow:0 1px 2px rgba(16,24,40,0.05),0 4px 10px rgba(16,24,40,0.06);}
   .ttl{font-size:11px;font-weight:700;letter-spacing:.05em;color:#6c6c7a;text-transform:uppercase;}
   .col{display:flex;flex-direction:column;gap:12px;min-width:0;}.dashrow1>.col{height:450px;overflow:visible;}.dashrow1 .panel{flex:0 0 auto;}.dashrow1 .panel.flexcard{flex:1 1 0;min-height:0;overflow-y:auto;}
+  /* Rows below row 1 are capped at row-1 height (2 visuals tall); taller content scrolls inside its own panel. */
+  .dashstack .panel{max-height:450px;overflow-y:auto;}
+  /* Universal click feedback: any button or inline cursor:pointer element dims (and buttons nudge down) while pressed. */
+  button,[style*="cursor:pointer"]{transition:opacity .07s ease,transform .07s ease;}
+  button:active{transform:translateY(1px);opacity:.85;}
+  [style*="cursor:pointer"]:active{opacity:.5;}
 </style>
 </head>
 <body>
@@ -496,7 +502,7 @@
     var t=[]; cols.forEach(function(c,i){ t.push(c); if(i<cols.length-1) t.push('12px'); });
     return t.join(' ');
   }
-  function addSlot(target,label){ return '<div data-addvis="'+target+'" title="Add a visual" style="border:1px dashed #9aa0e0;border-radius:6px;padding:9px;text-align:center;font-size:10.5px;color:#1e1b6b;background:#f2f2fc;cursor:pointer;flex:none;"><i class="ti ti-plus" style="font-size:12px;vertical-align:-1px;"></i> '+label+'</div>'; }
+  function addSlot(target,label){ return '<div data-addvis="'+target+'" title="Add a visual" style="border:1px dashed #9aa0e0;border-radius:6px;padding:9px;text-align:center;font-size:10.5px;color:#1e1b6b;background:#f2f2fc;cursor:pointer;flex:none;">+ '+label+'</div>'; }
   function footerBlock(edit,layout){
     if(!edit) return footerHTML();
     var f=layout.footer||{};
@@ -522,22 +528,22 @@
     (layout.rows||[]).forEach(function(r,ri){
       var n=r.visuals.length;
       if(!edit){
-        if(n===1){ below+=wrap(r.visuals[0]); }
-        else if(n>1){ below+='<div style="display:grid;grid-template-columns:repeat('+n+',minmax(0,1fr));gap:12px;">'+r.visuals.map(wrap).join('')+'</div>'; }
+        if(n===1){ below+='<div class="dashstack">'+wrap(r.visuals[0])+'</div>'; }
+        else if(n>1){ below+='<div class="dashstack" style="display:grid;grid-template-columns:repeat('+n+',minmax(0,1fr));gap:12px;">'+r.visuals.map(wrap).join('')+'</div>'; }
         return;   // empty rows are skipped in view
       }
       below+='<div style="position:relative;">';
-      if(n>=1){ below+='<div style="display:grid;grid-template-columns:repeat('+n+',minmax(0,1fr));gap:12px;">'+r.visuals.map(wrap).join('')+'</div>'; }
+      if(n>=1){ below+='<div class="dashstack" style="display:grid;grid-template-columns:repeat('+n+',minmax(0,1fr));gap:12px;">'+r.visuals.map(wrap).join('')+'</div>'; }
       below+='<div style="display:flex;gap:8px;margin:6px 0 2px;align-items:center;">';
-      if(n<5) below+='<span data-addvis="row:'+ri+'" style="font-size:11px;color:#1e1b6b;cursor:pointer;font-weight:600;border:1px dashed #9aa0e0;background:#f2f2fc;border-radius:5px;padding:5px 11px;"><i class="ti ti-plus" style="font-size:12px;vertical-align:-1px;"></i> Add visual</span>';
+      if(n<5) below+='<span data-addvis="row:'+ri+'" style="font-size:11px;color:#1e1b6b;cursor:pointer;font-weight:600;border:1px dashed #9aa0e0;background:#f2f2fc;border-radius:5px;padding:5px 11px;">+ Add visual</span>';
       if(n===0) below+='<span style="font-size:10.5px;color:#9a9aa6;">Empty row</span>';
       below+='<span style="flex:1;"></span>'
-        +'<span data-moverow="'+ri+':up" title="Move row up" style="cursor:'+(ri>0?'pointer':'default')+';color:'+(ri>0?'#5a5a68':'#d0d0da')+';font-size:15px;padding:0 3px;"><i class="ti ti-arrow-up"></i></span>'
-        +'<span data-moverow="'+ri+':down" title="Move row down" style="cursor:'+(ri<_rowN-1?'pointer':'default')+';color:'+(ri<_rowN-1?'#5a5a68':'#d0d0da')+';font-size:15px;padding:0 3px;"><i class="ti ti-arrow-down"></i></span>'
+        +'<span data-moverow="'+ri+':up" title="Move row up" style="cursor:'+(ri>0?'pointer':'default')+';color:'+(ri>0?'#5a5a68':'#d0d0da')+';font-size:13px;line-height:1;padding:0 4px;">&#9650;</span>'
+        +'<span data-moverow="'+ri+':down" title="Move row down" style="cursor:'+(ri<_rowN-1?'pointer':'default')+';color:'+(ri<_rowN-1?'#5a5a68':'#d0d0da')+';font-size:13px;line-height:1;padding:0 4px;">&#9660;</span>'
         +'<span data-delrow="'+ri+'" title="Delete this row" style="cursor:pointer;color:#c05a5a;font-size:11px;border:1px solid #e6c2c2;border-radius:5px;padding:4px 9px;margin-left:4px;">Remove row</span>';
       below+='</div></div>';
     });
-    if(edit) below+='<div data-addrow="1" style="font-size:11px;color:#1e1b6b;cursor:pointer;font-weight:600;border:1px dashed #9aa0e0;background:#f2f2fc;border-radius:6px;padding:9px;text-align:center;margin:4px 0 8px;"><i class="ti ti-plus" style="font-size:13px;vertical-align:-2px;"></i> Add row</div>';
+    if(edit) below+='<div data-addrow="1" style="font-size:11px;color:#1e1b6b;cursor:pointer;font-weight:600;border:1px dashed #9aa0e0;background:#f2f2fc;border-radius:6px;padding:9px;text-align:center;margin:4px 0 8px;">+ Add row</div>';
     return row1+below+footerBlock(edit,layout);
   }
 
@@ -654,7 +660,9 @@
     else if(a==='save'){ if(isDefaultLayout()) czSaveAs(); else { stripLayout(); postToHost({type:'saveLayout',layout:activeLayout}); } }   // Save on Default acts as Save as
     else if(a==='saveas'){ czSaveAs(); }
     else if(a==='delete'){ czDelete(); }
-    else { postToHost({type:'cz',action:a}); }   // publish/import/pdf handled by C# (later blocks)
+    else if(a==='publish'){ if(isDefaultLayout()){ czSaveAs(); } else { stripLayout(); postToHost({type:'publishLayout',layout:activeLayout}); } }   // publish a named user layout; Default → name it first
+    else if(a==='import'){ postToHost({type:'importLayouts'}); }
+    else { postToHost({type:'cz',action:a}); }   // pdf handled by C#
   }
   // Delete the current (user) layout — C# removes it and sends back the Default.
   function czDelete(){
@@ -747,7 +755,7 @@
       +'</div>';
     });
     if(!conds.length) h+='<div style="font-size:11px;color:#a4a4b0;font-style:italic;padding:1px 0 5px;">No conditions.</div>';
-    h+='<span data-condadd="'+path+'" style="font-size:10.5px;color:#1e1b6b;cursor:pointer;font-weight:600;"><i class="ti ti-plus" style="font-size:11px;vertical-align:-1px;"></i> Add condition</span>';
+    h+='<span data-condadd="'+path+'" style="font-size:10.5px;color:#1e1b6b;cursor:pointer;font-weight:600;">+ Add condition</span>';
     return h;
   }
   function edExclude(def){ return '<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edFld('Exclude rows where','— optional')+filterBuilder(def,'excludeFilters')+'</div>'; }

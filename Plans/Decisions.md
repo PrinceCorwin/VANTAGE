@@ -281,6 +281,16 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** Baking the report as HTML/JS lets it be designed and tweaked independently of WPF and re-used standalone (Open in Browser writes a snapshot with data baked into `__VANTAGE_DATA__`). One-way postMessage injection (not file import) keeps the app the single source of data. Theme-neutral avoids maintaining a second theming system inside the webview. Hidden-until-rendered is required because a WPF overlay cannot reliably cover a WebView2 (airspace); the report having no JS width-dependency (pure CSS + SVG) makes revealing a hidden-rendered page safe.
 **Date:** July 2026
 
+### Modal Dialogs Are Never Opened Synchronously Inside a WebView2 Message Callback
+**Rule:** Any handler reached from `CoreWebView2.WebMessageReceived` that needs to open a modal dialog (`ShowDialog`, `SaveFileDialog`, `AppMessageBox.Show`) must first yield off the callback — `await System.Windows.Threading.Dispatcher.Yield(DispatcherPriority.Background)` — so the native WebView2 callback fully unwinds before the dialog's nested message loop runs. In `ProjectDashboardWindow`, `OpenImportDialogAsync` and `PublishToCloudAsync` do exactly this.
+**Why:** `ShowDialog` spins a nested Win32 message loop. Entering that loop while still inside WebView2's native `WebMessageReceived` callback re-enters the browser process's message pump and intermittently crashes the WebView2 runtime with an access violation — an unmanaged crash no `try/catch` can trap, made more likely while the page is still rendering. Yielding to a fresh dispatcher turn moves the modal out of the callback stack and eliminates the reentrancy.
+**Date:** July 2026
+
+### The Dashboard HTML Uses Unicode Glyphs, Never an Icon Font
+**Rule:** `Dashboards/vantage-dashboard.html` loads no icon font (no `@font-face`, no `<link>`). All iconography uses literal Unicode glyphs (`▲ ▼ ✎ ✕ +`). Do not introduce `<i class="ti …">` or other icon-class markup.
+**Why:** The page is standalone and offline; an icon-class element with no backing font renders as an invisible empty box. This silently hid the customize-mode row move (▲/▼) arrows, which were icon-only. Unicode glyphs always render with the system font, keeping the page self-contained.
+**Date:** July 2026
+
 ---
 
 ## Progress Module
