@@ -6,6 +6,15 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 26, 2026 (Project Dashboard — user manual chapter)
+
+**Documented the Project Dashboard and its Customize feature in the user manual** (`Help/manual.html`). No code changes — help content only.
+
+- **New top-level chapter "6. Project Dashboard"** with nine subsections: Overview, Layout & Filtering, Toolbar, Visual Types, Customize Mode, Visual Editors, Saved Layouts, Cloud Sharing, PDF Export. Covers opening the report, the header (`ProjectID: Description`), the filter panel (Progress basis + categorical slicers by native column name), click-a-row/bar/week to filter, the footer; the toolbar (Layout dropdown / Delete / Customize / Refresh / Export PDF / Open in Browser); all 7 visual types (incl. horizontal + vertical bar list); Customize mode (manager toolbar, ✎/✕, +Add visual/row, Remove/▲▼ move, drag-resize row-1 columns, per-row Stretch to fit); the 7 editors (native column-name + X/Y-Axis pickers, colors swatch+hex+presets, per-type options, the Exclude-rows filter builder); saved-layout persistence; cloud Publish/Import (admin-only Delete from Cloud); and landscape PDF export.
+- **TOC renumbered** — Project Dashboard inserted as section 6; former sections 6–11 (Progress Books … Plugins) shifted to 7–12. The Tools Menu → Project Dashboard stub was slimmed to a cross-link into the new chapter.
+- **New `.shot-row` CSS class** — a wrapping flex gallery for the visual-type and editor thumbnail rows.
+- **Screenshots are placeholders.** All `<img>` tags reference not-yet-captured files under `Assets/Images/Sidebar/` (`project-dashboard.png`, `pd-*.png`); the capture list and a standing TODO live in `Plans/Project_Status.md`.
+
 ### July 26, 2026 (Tutorials — GA to all users, watched tracking, manual link, full video set)
 
 **Tutorials went live for everyone, gained per-user watched tracking, and got a launch link in the user manual.** Builds on the July 25 in-app player.

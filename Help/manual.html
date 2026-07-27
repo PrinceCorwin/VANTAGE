@@ -317,6 +317,26 @@
             margin-top: 10px;
         }
 
+        /* A wrapping gallery of small screenshots shown side by side. */
+        .shot-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            align-items: flex-start;
+            margin: 20px 0 24px;
+        }
+
+        .shot-row .manual-shot {
+            margin: 0;
+            flex: 0 1 auto;
+            max-width: 320px;
+        }
+
+        .shot-row .manual-shot figcaption {
+            text-align: center;
+            margin-top: 6px;
+        }
+
         /* Numbered pin placed over a region of the screenshot */
         .callout-pin {
             position: absolute;
@@ -463,7 +483,20 @@
                     <li><a href="#analysis-summary-grid">Summary Grid</a></li>
                 </ul>
             </li>
-            <li><a href="#progress-books">6. Progress Books</a>
+            <li><a href="#project-dashboard">6. Project Dashboard</a>
+                <ul>
+                    <li><a href="#pd-overview">Overview</a></li>
+                    <li><a href="#pd-layout">Layout &amp; Filtering</a></li>
+                    <li><a href="#pd-toolbar">Toolbar</a></li>
+                    <li><a href="#pd-visuals">Visual Types</a></li>
+                    <li><a href="#pd-customize">Customize Mode</a></li>
+                    <li><a href="#pd-editors">Visual Editors</a></li>
+                    <li><a href="#pd-layouts">Saved Layouts</a></li>
+                    <li><a href="#pd-cloud">Cloud Sharing</a></li>
+                    <li><a href="#pd-pdf">PDF Export</a></li>
+                </ul>
+            </li>
+            <li><a href="#progress-books">7. Progress Books</a>
                 <ul>
                     <li><a href="#pb-overview">Overview</a></li>
                     <li><a href="#pb-generating">Progress Book Editor</a></li>
@@ -472,7 +505,7 @@
                     <li><a href="#pb-applying">Applying Scanned Progress</a></li>
                 </ul>
             </li>
-            <li><a href="#work-packages">7. Work Packages</a>
+            <li><a href="#work-packages">8. Work Packages</a>
                 <ul>
                     <li><a href="#wp-overview">Overview</a></li>
                     <li><a href="#wp-layout">Layout</a></li>
@@ -484,7 +517,7 @@
                     <li><a href="#wp-previewing">Previewing Templates</a></li>
                 </ul>
             </li>
-            <li><a href="#ai-takeoff">8. AI Takeoff</a>
+            <li><a href="#ai-takeoff">9. AI Takeoff</a>
                 <ul>
                     <li><a href="#takeoff-overview">Overview</a></li>
                     <li><a href="#takeoff-configs">Configs</a></li>
@@ -501,7 +534,7 @@
                     <li><a href="#takeoff-manage-drawings">Manage Drawings</a></li>
                 </ul>
             </li>
-            <li><a href="#administration">9. Administration</a>
+            <li><a href="#administration">10. Administration</a>
                 <ul>
                     <li><a href="#admin-overview">Overview</a></li>
                     <li><a href="#admin-user-management">User Management</a></li>
@@ -514,7 +547,7 @@
                     <li><a href="#admin-sync">Database Sync</a></li>
                 </ul>
             </li>
-            <li><a href="#reference">10. Reference</a>
+            <li><a href="#reference">11. Reference</a>
                 <ul>
                     <li><a href="#ref-column-mappings">Column Mappings</a></li>
 
@@ -522,7 +555,7 @@
                     <li><a href="#ref-getting-help">Getting Help</a></li>
                 </ul>
             </li>
-            <li><a href="#plugins">11. Plugins</a>
+            <li><a href="#plugins">12. Plugins</a>
                 <ul>
                     <li><a href="#plugins-overview">Overview</a></li>
                     <li><a href="#plugins-manager">Plugin Manager</a></li>
@@ -642,12 +675,7 @@
     <h4 id="ui-menus-tools">Tools Menu</h4>
     <ul>
         <li><strong>Help Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
-        <li><strong>Project Dashboard</strong> — Opens a live, one-screen progress report for your local data in its own window. It shows overall percent complete, connections complete vs. total, Shop-vs-Field / Component-Type / ROC-Step breakdowns, Budget-MH by phase, an Area rollup, an Area/Module-by-phase heatmap (red 0% → green 100%), and a week-over-week cumulative earned-hours chart. The header names the project(s) as <em>ProjectID: Description</em>. Built-in filters (Project, Status, Area, Phase, Shop/Field, Component Type, Work Package, and the progress basis) slice the report on the fly. You can also <strong>click to filter</strong> directly on the charts: click a row in the Component-Type, Area, or phase tables, a bar in the ROC-Step or Shop/Field lists, or a week's bar in either week-over-week chart, and the whole report narrows to that group (or that single week, by actual date) — click the same item again to clear. The toolbar's <strong>Refresh</strong> re-reads your local database; <strong>Open in Browser</strong> saves a standalone snapshot of the current data and opens it in your default web browser (handy for sharing or presenting). More dashboard features are on the way.
-            <figure class="manual-shot">
-                <img src="../Assets/Images/Sidebar/project-dashboard.png" alt="Project Dashboard window showing the progress donut, breakdown tiles, and the Area/Module-by-phase heatmap for the loaded project" />
-                <figcaption>Tools → Project Dashboard — a live progress report for your local data.</figcaption>
-            </figure>
-        </li>
+        <li><strong>Project Dashboard</strong> — Opens a live, one-screen progress report for your local data in its own window: overall percent complete, breakdown tiles and tables, an Area/Module-by-phase heatmap, and week-over-week trend charts. You can filter it, click charts to drill in, and fully customize the report — add, remove, and rearrange visuals, save named layouts, and share them with your team through the cloud. See the <a href="#project-dashboard">Project Dashboard</a> chapter for the full walkthrough.</li>
         <li><strong>Prorate MHs</strong> — Distribute budgeted man-hours across filtered activities</li>
         <li><strong>Schedule Change Log</strong> — View and apply changes made in the Schedule detail grid to live Activities</li>
         <li><strong>Schedule UDF Mapping...</strong> — Configure custom P6 column mappings for the Schedule module UDF columns</li>
@@ -2229,7 +2257,270 @@
     <p>The grid supports sorting (double-click column headers), filtering, column resizing, and column reordering. All settings are saved automatically.</p>
 
     <!-- ============================================ -->
-    <h2 id="progress-books">6. Progress Books</h2>
+    <h2 id="project-dashboard">6. Project Dashboard</h2>
+    <!-- ============================================ -->
+
+    <h3 id="pd-overview">Overview</h3>
+    <p>The <strong>Project Dashboard</strong> is a live, one-screen progress report for the data in your local database. Open it from <strong>Tools &rarr; Project Dashboard</strong>; it opens in its own resizable window. The report reads directly from your local activities &mdash; there is no file to import &mdash; so it always reflects what you currently have synced down. It shows overall percent complete, a set of breakdown tiles and tables, an Area/Module-by-phase heatmap, and week-over-week trend charts, and you can slice it, click into it, and completely reshape it.</p>
+    <p>The report is intentionally always light (it does not follow the app's Dark/Light theme), so it looks the same on screen, in your browser, and in a PDF. Everything below the toolbar &mdash; the header, the filter panel, and the visuals &mdash; is the report itself.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/project-dashboard.png" alt="The Project Dashboard window: Summit logo and PROGRESS DASHBOARD header across the top, a Filters panel down the left, and the default report of rings, tiles, tables, a heatmap, and trend charts" />
+        </div>
+        <figcaption>Tools &rarr; Project Dashboard &mdash; the default report, fed live from your local data.</figcaption>
+    </figure>
+
+    <h3 id="pd-layout">Layout &amp; Filtering</h3>
+
+    <h4>Header</h4>
+    <p>The header spans the top of the report: the Summit Industrial logo on the left, the words <strong>PROGRESS DASHBOARD</strong> on the right, and beneath them the project(s) the data covers, shown as <em>ProjectID: Description</em>. When your local data spans more than one project, they are listed comma-separated.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-header.png" alt="Dashboard header showing the Summit logo, the PROGRESS DASHBOARD title, and a ProjectID: Description subtitle line" />
+        </div>
+        <figcaption>The header names the project(s) as <em>ProjectID: Description</em>.</figcaption>
+    </figure>
+
+    <h4>Filter panel</h4>
+    <p>The panel down the left side filters the whole report. At the top it shows how many <em>data rows</em> currently match, and a <strong>Clear all</strong> link appears there whenever any filter is active. Below that:</p>
+    <ul>
+        <li><strong>Progress basis</strong> &mdash; the numeric measure that drives every percent-complete and rollup on the report (for example <code>BudgetMHs</code>, <code>EarnMHsCalc</code>, <code>Quantity</code>, <code>PercentEntry</code>, <code>EarnQtyEntry</code>, <code>ClientBudget</code>, <code>ROCBudgetQTY</code>, and more). Changing it re-weights the entire report at once. Individual visuals can override this in their editor, but by default they all inherit whatever you pick here.</li>
+        <li><strong>Categorical slicers</strong> &mdash; a dropdown per column, each defaulting to <em>All</em>: Area, Aux1, Aux2, Aux3, CompType, DwgNO, PhaseCategory, PhaseCode, ProjectID, ROCStep, SchedActNO, ShopField, Status, and WorkPackage. Pick a value in any of them to narrow the report to those rows; combine several to drill in further.</li>
+    </ul>
+    <p>The slicers use the <strong>native Activity column names</strong> &mdash; the same headers you see in the Progress grid (<code>CompType</code>, <code>PhaseCategory</code>, <code>ROCStep</code>, <code>ShopField</code>, <code>WorkPackage</code>, and so on), not friendly relabels &mdash; so the vocabulary matches the rest of the app.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-filter-panel.png" alt="The left filter panel with the data-row count, a Progress basis dropdown, and a stack of categorical slicer dropdowns labeled with native Activity column names" />
+        </div>
+        <figcaption>The filter panel &mdash; Progress basis plus one slicer per column, using native column names.</figcaption>
+    </figure>
+
+    <h4>Click a visual to filter the report</h4>
+    <p>Beyond the panel, you can filter by clicking directly on the visuals:</p>
+    <ul>
+        <li>Click a <strong>row</strong> in any summary table (Component Type, Area, the Progress-by-Phase table) to filter the whole report to that group.</li>
+        <li>Click a <strong>bar</strong> in a bar list (ROC Step, Shop / Field) to filter to that group.</li>
+        <li>Click a <strong>week's bar</strong> in either trend chart to filter to that single week (by actual date, Monday week-start).</li>
+    </ul>
+    <p>The item you clicked highlights, and the rest of the report narrows to match. Click the same item again to clear it. (The heatmap is display-only and does not filter.)</p>
+
+    <h4>Footer</h4>
+    <p>The report has a footer with independent left and right text areas. They are empty by default; you can type your own text into either side while customizing a layout (see <a href="#pd-customize">Customize Mode</a>), and that text saves with the layout &mdash; handy for a report title, a date, or a note when you share or print.</p>
+
+    <h3 id="pd-toolbar">Toolbar</h3>
+    <p>The toolbar across the top of the window holds the report-level actions:</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-toolbar.png" alt="The dashboard window toolbar with a Layout dropdown, Delete, Customize, Refresh, Export PDF, and Open in Browser buttons" />
+        </div>
+        <figcaption>The Project Dashboard toolbar.</figcaption>
+    </figure>
+    <ul>
+        <li><strong>Layout</strong> (dropdown) &mdash; switch between the built-in <em>Default</em> report and any layouts you have saved. The report re-renders as soon as you pick one. Whichever layout you were last viewing reopens automatically the next time you open the dashboard.</li>
+        <li><strong>Delete</strong> &mdash; delete the selected saved layout (after a confirmation). The <em>Default</em> layout is built in and cannot be deleted, so this is disabled while Default is selected.</li>
+        <li><strong>Customize</strong> &mdash; enter edit mode to add, remove, rearrange, and edit the visuals. See <a href="#pd-customize">Customize Mode</a>.</li>
+        <li><strong>Refresh</strong> &mdash; re-read your current local database and redraw the report (use this after a sync or edits made elsewhere in the app).</li>
+        <li><strong>Export PDF</strong> &mdash; save the report as a landscape PDF. See <a href="#pd-pdf">PDF Export</a>.</li>
+        <li><strong>Open in Browser</strong> &mdash; save a standalone snapshot of the current report (with its data baked in) and open it in your default web browser &mdash; useful for sharing or presenting outside the app.</li>
+    </ul>
+
+    <h3 id="pd-visuals">Visual Types</h3>
+    <p>Every visual on the report is one of seven types. The Default report is built entirely from these, and when you customize a layout you add and configure them yourself. Each one is fed by a measure (the <em>Progress basis</em> by default) and can be grouped, sorted, colored, and filtered in its editor.</p>
+
+    <table>
+        <tr><th>Visual</th><th>What it shows</th><th>In the Default report</th></tr>
+        <tr>
+            <td><strong>Progress ring</strong></td>
+            <td>A single percentage drawn as a ring, with a value in the center (percent complete, total earned, total budget, or a row count).</td>
+            <td>Overall Progress</td>
+        </tr>
+        <tr>
+            <td><strong>Stat tiles</strong></td>
+            <td>A generic &ldquo;X of Y&rdquo; pair &mdash; a <em>Complete</em> count and a <em>Total</em> count, each defined by its own criteria &mdash; with an optional ring showing Complete &divide; Total.</td>
+            <td>Summit Connections</td>
+        </tr>
+        <tr>
+            <td><strong>Composition donut</strong></td>
+            <td>A donut split into a colored slice per group, with an optional center value and an optional summary table beneath it.</td>
+            <td>Progress by Phase</td>
+        </tr>
+        <tr>
+            <td><strong>Summary table</strong></td>
+            <td>A table of group &rarr; %, Earned, Budget with a Total row. Rows are clickable to filter the report.</td>
+            <td>Component Type, Area</td>
+        </tr>
+        <tr>
+            <td><strong>Bar list</strong></td>
+            <td>A percent bar per group. Runs <strong>horizontally</strong> (a bar per row) or <strong>vertically</strong> (columns rising from a shared baseline, scrolling sideways past about a dozen bars). Bars are clickable to filter.</td>
+            <td>ROC Step Progress, Shop / Field Progress</td>
+        </tr>
+        <tr>
+            <td><strong>Heatmap</strong></td>
+            <td>A grid of one group down the rows and another across the columns, each cell colored on a low-to-high scale by its percent. Shows every distinct column value, ordered alphabetically.</td>
+            <td>Area / Module Progress by Phase</td>
+        </tr>
+        <tr>
+            <td><strong>Trend</strong></td>
+            <td>Earned man-hours over time by week, in <strong>cumulative</strong> (running total) or <strong>per-week</strong> mode. Uses actual dates. Week bars are clickable to filter.</td>
+            <td>Cumulative Progress, Weekly Progress</td>
+        </tr>
+    </table>
+
+    <div class="shot-row">
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-visual-ring.png" alt="Progress ring visual" /></div><figcaption>Progress ring</figcaption></figure>
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-visual-stattiles.png" alt="Stat tiles visual" /></div><figcaption>Stat tiles</figcaption></figure>
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-visual-donut.png" alt="Composition donut visual with summary table" /></div><figcaption>Composition donut</figcaption></figure>
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-visual-table.png" alt="Summary table visual" /></div><figcaption>Summary table</figcaption></figure>
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-visual-barlist-horizontal.png" alt="Horizontal bar list visual" /></div><figcaption>Bar list (horizontal)</figcaption></figure>
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-visual-barlist-vertical.png" alt="Vertical bar list visual" /></div><figcaption>Bar list (vertical)</figcaption></figure>
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-visual-heatmap.png" alt="Heatmap visual" /></div><figcaption>Heatmap</figcaption></figure>
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-visual-trend.png" alt="Trend chart visual" /></div><figcaption>Trend</figcaption></figure>
+    </div>
+
+    <h3 id="pd-customize">Customize Mode</h3>
+    <p>Click <strong>Customize</strong> in the toolbar to edit the report in place. The report stays on screen and you edit it directly &mdash; add and remove visuals, rearrange rows, retitle and reconfigure each visual &mdash; then save the result as a named layout. Filtering is paused while you edit.</p>
+
+    <div class="note">
+        <div class="note-title">The Default layout is read-only</div>
+        <p>The built-in <em>Default</em> report cannot be overwritten. Customize mode shows a standing reminder that your changes aren't saved until you save them, and if you click <strong>Save</strong> while viewing the Default, it routes to <strong>Save as</strong> so your work becomes a new, named layout of your own. The Default is never changed.</p>
+    </div>
+
+    <h4>Manager toolbar</h4>
+    <p>Entering Customize mode replaces the report actions with a manager toolbar:</p>
+    <ul>
+        <li><strong>Save</strong> &mdash; save your changes to the current layout (or, on the Default, prompt for a name via Save as).</li>
+        <li><strong>Save as</strong> &mdash; save the current report as a new named layout.</li>
+        <li><strong>Revert to default</strong> &mdash; discard changes and return to the built-in Default report.</li>
+        <li><strong>Publish to Cloud</strong> / <strong>Import from Cloud</strong> &mdash; share layouts with your team. See <a href="#pd-cloud">Cloud Sharing</a>.</li>
+        <li><strong>Export PDF</strong> &mdash; the same landscape PDF export as the main toolbar. See <a href="#pd-pdf">PDF Export</a>.</li>
+        <li><strong>Done</strong> &mdash; leave Customize mode.</li>
+    </ul>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-customize-toolbar.png" alt="Customize-mode manager toolbar with Save, Save as, Revert to default, Publish to Cloud, Import from Cloud, Export PDF, and Done, plus the read-only reminder" />
+        </div>
+        <figcaption>Customize mode: the manager toolbar and the read-only reminder.</figcaption>
+    </figure>
+
+    <h4>Editing visuals and rows</h4>
+    <p>In Customize mode each visual gains two controls in its corner: <strong>&#9998;</strong> (edit) opens that visual's editor, and <strong>&#10005;</strong> (delete) removes it. To build up the report:</p>
+    <ul>
+        <li><strong>+ Add visual</strong> &mdash; appears in each row-1 column and in each added row. It opens a picker of the seven visual types; choosing one drops in a sensible starting visual and opens its editor. Row&nbsp;1 columns hold a maximum of <strong>two</strong> visuals each (the add option disappears once a column is full); added rows hold up to <strong>five</strong>.</li>
+        <li><strong>+ Add row</strong> &mdash; appends a new empty row below row&nbsp;1. Each added row also has a <strong>Remove row</strong> control. (Empty rows are ignored on screen and dropped when you save.)</li>
+        <li><strong>Move row</strong> (<strong>&#9650;</strong> / <strong>&#9660;</strong>) &mdash; reorder any row below row&nbsp;1. Row&nbsp;1 &mdash; the fixed four-column band at the top &mdash; never moves.</li>
+        <li><strong>Stretch to fit</strong> (per row, below row&nbsp;1) &mdash; off by default, so each visual takes only the width its content needs and they pack to the left; turn it on to stretch a row's visuals across the full width. (The Default's two trend rows ship stretched.)</li>
+    </ul>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-customize-overlays.png" alt="A row in customize mode showing per-visual edit and delete icons, Add visual and Add row buttons, Remove row and row move arrows, and a Stretch to fit checkbox" />
+        </div>
+        <figcaption>Per-visual edit/delete, add/remove row and visual, row move arrows, and the per-row Stretch to fit toggle.</figcaption>
+    </figure>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-type-picker.png" alt="The Add visual type picker listing the seven visual types" />
+        </div>
+        <figcaption>Adding a visual: the seven-type picker.</figcaption>
+    </figure>
+
+    <h4>Resizing the row-1 columns</h4>
+    <p>Row&nbsp;1 is a fixed band of four columns. In Customize mode you can drag the divider between any two of them to make one wider and its neighbor narrower; the widths save with the layout. This is useful when one column holds a table of large numbers that would otherwise crowd its neighbors &mdash; drag it narrower and its content scrolls inside its own panel.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-col-resize.png" alt="Dragging the divider between two row-1 columns to resize them in customize mode" />
+        </div>
+        <figcaption>Drag a divider between row-1 columns to adjust their widths.</figcaption>
+    </figure>
+
+    <h3 id="pd-editors">Visual Editors</h3>
+    <p>Clicking <strong>&#9998;</strong> on a visual (or adding a new one) opens its editor as a panel docked beside the report. Edit the settings, click <strong>Preview</strong> to repaint the report with your changes, and <strong>Save</strong> to keep them. <strong>Preview is on-demand</strong> &mdash; the report doesn't redraw on every keystroke (that would be slow on large datasets), so use the Preview button to see your changes. <strong>Cancel</strong> discards everything you changed since opening the panel.</p>
+
+    <p>Some things are common to every editor:</p>
+    <ul>
+        <li><strong>Label</strong> &mdash; the visual's title.</li>
+        <li><strong>Measure</strong> &mdash; the numeric column the visual aggregates. The default is <em>Inherit report basis</em> (follow the filter panel's Progress basis); you can instead pin a specific measure (BudgetMHs, ClientBudget, EarnMHsCalc, Quantity, EarnQtyEntry, ROCBudgetQTY, and the rest of the numeric set).</li>
+        <li><strong>Exclude rows</strong> &mdash; a filter builder that drops matching rows from just this visual (see below).</li>
+        <li><strong>Revert to default</strong> &mdash; reset this visual to its shipped configuration (shown only for visuals that exist in the Default).</li>
+        <li><strong>Preview</strong>, <strong>Cancel</strong>, and <strong>Save</strong>.</li>
+    </ul>
+    <p>Every field, measure, and axis picker uses the <strong>native Activity column names</strong>, matching the Progress grid. All the extra UDF columns and <code>EarnQtyEntry</code> are available in these pickers (group-by, filter, measure, heatmap axes, stat-tile aggregate) even though they aren't in the left filter panel. Sizing is automatic &mdash; there is no slot or size picker; placement and stretch are set in the layout manager, not here.</p>
+
+    <h4>Colors</h4>
+    <p>Color controls are a <strong>swatch</strong> paired with a <strong>hex</strong> box &mdash; click the swatch to pick from the system color picker, or type a hex value &mdash; alongside <strong>Summit preset</strong> swatches for the standard palette. Every color defaults to the current Summit colors, so an unedited visual looks exactly as it does today.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-editor-colorpicker.png" alt="A color control showing a swatch, a hex input, and a row of Summit preset swatches" />
+        </div>
+        <figcaption>Color controls: swatch + hex + Summit presets.</figcaption>
+    </figure>
+
+    <h4>What each editor offers</h4>
+    <ul>
+        <li><strong>Progress ring</strong> &mdash; Measure; <em>Center value</em> (% complete / Total earned / Total budget / Row count); a <em>Show Earned &amp; Total</em> toggle that adds two tiles beneath the ring; and <em>Progress</em> (filled arc) and <em>Remaining</em> (track) colors.</li>
+        <li><strong>Composition donut</strong> &mdash; Group by (the slices); Measure; a <em>Show center value</em> toggle and value; a <em>Show summary table beneath</em> toggle with a Sort option and per-column show/hide for <em>%, Earned, and Budget</em> (hide the hour columns for client-facing reports); and Colors &mdash; either the ordered Summit palette or a &ldquo;spread between two colors&rdquo; mode that evenly interpolates across the groups.</li>
+        <li><strong>Bar list</strong> &mdash; <em>Orientation</em> (Horizontal / Vertical); the two field pickers are labeled <em>X-Axis</em> / <em>Y-Axis</em> and swap by orientation; a <em>Sort</em>; a <em>Label width</em> (horizontal only, so long group names aren't clipped); and colors for the <em>Bar</em>, the <em>Remaining</em> track, and a <em>Highlight complete (100%)</em> toggle with its <em>Complete</em> color.</li>
+        <li><strong>Summary table</strong> &mdash; Group by (rows); Measure; a <em>Sort</em>; a <em>Highlight complete (100%)</em> toggle and color; and show/hide checkboxes for the <em>%, Earned, and Budget</em> columns (the group column and Total row always show).</li>
+        <li><strong>Heatmap</strong> &mdash; <em>Y-Axis</em> (rows) and <em>X-Axis</em> (columns) groups; Measure; <em>%, Earned, Budget</em> show/hide; and a <em>Color scale</em> with Low (0%), High (100%), and No-data colors that the engine blends across each cell's percentage.</li>
+        <li><strong>Trend</strong> &mdash; <em>Mode</em> (Cumulative / Per-week); a <em>Y-Axis</em> measure (the X axis is always time); <em>Week start</em> (Monday or Sunday); a <em>Bar</em> color; and a <em>Highlight complete</em> toggle (cumulative mode). Trend uses actual dates only.</li>
+        <li><strong>Stat tiles</strong> &mdash; a <em>Title</em>; an <em>Aggregate</em> (Count of rows, or Sum of a chosen column); a <em>Complete</em> section (an editable tile label plus a where-clause) and a <em>Total</em> section (its own label plus where-clause); and a <em>Show ring</em> toggle with <em>Ring</em> and <em>Remaining</em> colors. The ring shows Complete &divide; Total. (&ldquo;Summit Connections&rdquo; is simply this configured for <code>ROCStep = 4.CON</code>.)</li>
+    </ul>
+    <div class="shot-row">
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-editor-barlist.png" alt="Bar list editor" /></div><figcaption>Bar list editor</figcaption></figure>
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-editor-heatmap.png" alt="Heatmap editor" /></div><figcaption>Heatmap editor</figcaption></figure>
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-editor-stattiles.png" alt="Stat tiles editor" /></div><figcaption>Stat tiles editor</figcaption></figure>
+    </div>
+
+    <h4>The Exclude-rows filter builder</h4>
+    <p>Every editor has an <strong>Exclude rows</strong> section, and the stat-tile editor uses the same builder for its <em>Complete</em> and <em>Total</em> criteria. It works exactly like the saved filters in the Progress module: add one or more conditions, each a <em>field</em>, an <em>operator</em>, and a <em>value</em>, joined with <strong>AND</strong> / <strong>OR</strong>. The operators are the same twelve as the Progress filters (Equals, Not Equals, Contains, Does Not Contain, Starts With, Ends With, Is Empty, Is Not Empty, Greater Than, Greater Than or Equal, Less Than, Less Than or Equal), matching is case-insensitive, and the full column list is available (<em>Is Empty</em> / <em>Is Not Empty</em> take no value). Conditions are evaluated left to right, honoring each row's AND/OR.</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-editor-filterbuilder.png" alt="The exclude-rows filter builder with two conditions joined by AND/OR, each with a field, operator, and value" />
+        </div>
+        <figcaption>The filter builder &mdash; the same where-clause UI as the Progress module's saved filters.</figcaption>
+    </figure>
+
+    <h3 id="pd-layouts">Saved Layouts</h3>
+    <p>A <strong>layout</strong> is your whole report &mdash; its visuals, their settings, the arrangement, and the footer text &mdash; saved under a name.</p>
+    <ul>
+        <li><strong>Save</strong> updates the current layout; <strong>Save as</strong> creates a new one. Saving while viewing the Default always prompts for a name (the Default itself is never changed).</li>
+        <li>The toolbar <strong>Layout</strong> dropdown lists the Default plus all your saved layouts. Pick one to switch to it.</li>
+        <li><strong>Delete</strong> (beside the dropdown) removes the selected saved layout after confirmation. You can freely delete your own layouts; the Default can't be deleted.</li>
+        <li>Layouts are remembered per user, and the <strong>last layout you viewed reopens automatically</strong> the next time you open the dashboard.</li>
+    </ul>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-layout-dropdown.png" alt="The Layout dropdown open, listing Default and several saved layouts, with the Delete button beside it" />
+        </div>
+        <figcaption>The Layout dropdown &mdash; switch between the Default and your saved layouts.</figcaption>
+    </figure>
+
+    <h3 id="pd-cloud">Cloud Sharing</h3>
+    <p>Layouts can be shared with your team through a central cloud library, so one person can design a report and everyone else can pull it in. The controls are in the Customize-mode manager toolbar.</p>
+    <ul>
+        <li><strong>Publish to Cloud</strong> &mdash; pushes a copy of the current layout to the shared library, stamped with your username as its author. Re-publishing your own layout of the same name updates it in place. (Publishing the read-only Default prompts you to Save as first, so it has a name.)</li>
+        <li><strong>Import from Cloud</strong> &mdash; opens a picker listing every shared layout with its <em>Name</em>, <em>Author</em>, and <em>Updated</em> date. Importing downloads a <strong>one-time local copy</strong> and makes it your active layout. The copy is yours to edit or delete; it does <em>not</em> stay linked to the cloud, so later changes on either side don't affect the other &mdash; re-import to pick up a newer version.</li>
+    </ul>
+    <div class="note">
+        <div class="note-title">Deleting shared layouts is admin-only</div>
+        <p>Removing a layout from the shared cloud library affects everyone, so the <strong>Delete from Cloud</strong> button in the Import dialog is visible only to administrators. Your own <em>local</em> layouts are always yours to delete from the toolbar, regardless of role.</p>
+    </div>
+    <div class="shot-row">
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-publish-cloud.png" alt="Publishing a layout to the cloud library" /></div><figcaption>Publish to Cloud</figcaption></figure>
+        <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-import-dialog.png" alt="The Import from Cloud dialog listing shared layouts by Name, Author, and Updated date, with an admin-only Delete from Cloud button" /></div><figcaption>Import from Cloud (with the admin-only Delete)</figcaption></figure>
+    </div>
+
+    <h3 id="pd-pdf">PDF Export</h3>
+    <p><strong>Export PDF</strong> (on both the main toolbar and the Customize manager toolbar) saves the report as a <strong>landscape</strong> PDF. The export shows the report content only &mdash; the left filter panel and any edit controls are left out &mdash; at full width. You choose where to save it (the file is named <code>ProjectDashboard_&lt;project&gt;_&lt;date&gt;.pdf</code> by default), and you're offered the option to open it afterward.</p>
+    <p>Rows are kept whole: a row that would straddle a page break moves entirely to the next page rather than splitting across pages. (A single visual taller than one page is the one unavoidable exception.)</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-pdf-export.png" alt="A landscape PDF of the dashboard report with no filter panel, rows kept whole across page breaks" />
+        </div>
+        <figcaption>The landscape PDF export &mdash; report only, no filter panel, rows never split.</figcaption>
+    </figure>
+
+    <!-- ============================================ -->
+    <h2 id="progress-books">7. Progress Books</h2>
     <!-- ============================================ -->
 
     <h3 id="pb-overview">Overview</h3>
@@ -2579,7 +2870,7 @@
     </div>
 
     <!-- ============================================ -->
-    <h2 id="work-packages">7. Work Packages</h2>
+    <h2 id="work-packages">8. Work Packages</h2>
     <!-- ============================================ -->
 
     <h3 id="wp-overview">Overview</h3>
@@ -3256,7 +3547,7 @@
     </div>
 
     <!-- ============================================ -->
-    <h2 id="ai-takeoff">8. AI Takeoff</h2>
+    <h2 id="ai-takeoff">9. AI Takeoff</h2>
     <!-- ============================================ -->
 
     <h3 id="takeoff-overview">Overview</h3>
@@ -3478,7 +3769,7 @@
     <p>Click <strong>Manage Drawings</strong> to view and delete drawings stored in S3 for any config. Select a config from the dropdown, then select drawings to delete. Drawings are uploaded automatically during processing — this dialog is for cleanup. Because drawings are automatically removed from S3 after each batch completes (whether it succeeds, fails, or is cancelled), this list is normally empty — it only shows files while a batch is mid-flight or if a prior cleanup failed.</p>
 
     <!-- ============================================ -->
-    <h2 id="administration">9. Administration</h2>
+    <h2 id="administration">10. Administration</h2>
     <!-- ============================================ -->
 
     <h3 id="admin-overview">Overview</h3>
@@ -3654,7 +3945,7 @@
     </ul>
 
     <!-- ============================================ -->
-    <h2 id="reference">10. Reference</h2>
+    <h2 id="reference">11. Reference</h2>
     <!-- ============================================ -->
 
     <h3 id="ref-column-mappings">Column Mappings</h3>
@@ -3798,7 +4089,7 @@
     <p>Press <span class="keyboard-shortcut">F1</span> at any time to open the Help sidebar. Use the search field to find specific topics, or browse by section.</p>
 
     <!-- ============================================ -->
-    <h2 id="plugins">11. Plugins</h2>
+    <h2 id="plugins">12. Plugins</h2>
     <!-- ============================================ -->
 
     <h3 id="plugins-overview">Overview</h3>
