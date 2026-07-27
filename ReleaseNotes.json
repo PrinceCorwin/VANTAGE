@@ -1,6 +1,17 @@
 {
   "releases": [
     {
+      "version": "26.3.4",
+      "date": "2026-07-27",
+      "highlights": [
+        "New — Project Dashboard (Tools → Project Dashboard) is a live, one-screen progress report built from your local data: an overall progress ring, breakdown tiles and tables, an Area/Module-by-phase heatmap, and week-over-week trend charts. Filter it from the side panel, or click a table row, bar, or week to drill the whole report in. You can fully customize it — add, remove, relabel, and rearrange visuals, then save named layouts. Publish a layout to the cloud so teammates can import it, and export the report to a landscape PDF.",
+        "New — Phase Code Analysis (Tools → Phase Code Analysis) opens the summary roll-up in its own window: your activities grouped by any field (Phase Code, Work Package, Component Type, and more) with budget and earned man-hours, quantities, and a color-coded weighted percent complete. Grouping by Phase Code gives the per-phase-code percent complete used for Viewpoint entry.",
+        "New — Tutorials are now available to everyone. Open Tutorials from the settings (three-dot) menu, or the link at the top of the Help manual, to watch short how-to videos right inside the app. Each video shows a 'Watched' badge once you have opened it.",
+        "New — You can now export snapshots to Excel. In Manage My Snapshots (and the admin Manage Snapshots dialog), select one or more weeks and click Export to save their records to an .xlsx file, one row per record.",
+        "Fix — Improved the on-screen color of read-only rows you do not own when using the dark theme."
+      ]
+    },
+    {
       "version": "26.3.3",
       "date": "2026-07-18",
       "highlights": [
