@@ -6,6 +6,11 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 27, 2026 (Manual — pre-release screenshot refresh)
+
+- **Manage My Snapshots figure re-captured** (`progress-manage-snapshots.png`) to show the new **Export** button; alt text updated. The section's prose already documented Export.
+- **Tools menu screenshot added** (`start-menu-tools.png`) to the Tools Menu section, which previously had none — shows **Project Dashboard** and **Phase Code Analysis** in the menu.
+
 ### July 27, 2026 (Project Dashboard — manual screenshots + PDF scale-to-fit)
 
 **Captured and wired all 24 Project Dashboard manual screenshots, and fixed the PDF export squeezing row-1 visuals.**
