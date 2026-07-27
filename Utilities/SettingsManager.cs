@@ -654,5 +654,44 @@ namespace VANTAGE.Utilities
                 AppLogger.Error(ex, "SettingsManager.SetScheduleUDFMappings");
             }
         }
+
+        // === TUTORIAL WATCH TRACKING ===
+        // Set of S3 object keys the user has opened, stored as a JSON array under
+        // Tutorials.Watched. Drives the "Watched" badge in the Tutorials dialog.
+        private const string TutorialsWatchedKey = "Tutorials.Watched";
+
+        public static HashSet<string> GetWatchedTutorials()
+        {
+            try
+            {
+                var json = GetUserSetting(TutorialsWatchedKey);
+                if (!string.IsNullOrWhiteSpace(json))
+                {
+                    var list = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
+                    if (list != null)
+                        return new HashSet<string>(list, StringComparer.OrdinalIgnoreCase);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.GetWatchedTutorials");
+            }
+            return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        }
+
+        public static void MarkTutorialWatched(string videoKey)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(videoKey)) return;
+                var set = GetWatchedTutorials();
+                if (set.Add(videoKey))
+                    SetUserSetting(TutorialsWatchedKey, System.Text.Json.JsonSerializer.Serialize(set), "json");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.MarkTutorialWatched");
+            }
+        }
     }
 }

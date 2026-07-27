@@ -6,6 +6,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 26, 2026 (Tutorials — GA to all users, watched tracking, manual link, full video set)
+
+**Tutorials went live for everyone, gained per-user watched tracking, and got a launch link in the user manual.** Builds on the July 25 in-app player.
+
+- **Opened to all users.** Removed the `steve`/`steve.amalfitano` allowlist gate in `MainWindow` — the ⋮ **Tutorials** menu item is now visible to every user.
+- **Per-user "✓ Watched" badge.** Opening a video records its manifest key in the `Tutorials.Watched` UserSetting (JSON set; new `SettingsManager.GetWatchedTutorials` / `MarkTutorialWatched`), and the picker shows a subtle accent-outlined **"✓ Watched"** pill on rows the current user has already opened. `Models/TutorialItem` now implements `INotifyPropertyChanged` so the badge appears the instant a row is clicked.
+- **Manifest gained a `name` field.** `tutorials.json` entries are now `{key, name, description}`; the picker shows the manifest **`name`** (independent of the filename) with the description underneath, still sorted by number-prefixed filename key. `TutorialItem` stores `Name` explicitly instead of deriving it from the filename.
+- **"Watch the Tutorial Videos" link in the manual.** Added a call-to-action link at the top of `Help/manual.html` (between the subtitle and the Table of Contents) that opens the in-app Tutorials picker. Wired via a new `WebView2.WebMessageReceived` bridge in `Views/SidePanelView` — the link posts `open-tutorials` and the app opens `TutorialsDialog`. Added a **Tutorials** subsection under the Settings Menu docs (and TOC entry).
+- **Full video set uploaded.** All 8 tutorial videos are in the `summit-vantage-tutorials` bucket (`1-Vantage-Intro` … `8-Vantage-Themes`), exported from DaVinci Resolve as browser-friendly MP4 (H.264/AAC, codecs verified with ffprobe); manifest complete.
+
 ### July 25, 2026 (Project Dashboard — more measures, native column labels, vertical bars, content sizing, heatmap changes)
 
 **Round of Project Dashboard customization refinements** driven by report-design feedback (`Dashboards/vantage-dashboard.html`; measures also touch `Dialogs/ProjectDashboardWindow` projection).

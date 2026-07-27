@@ -52,6 +52,31 @@
             border-top: 1px solid var(--border-color);
         }
 
+        /* "Watch the Tutorial Videos" call-to-action — opens the in-app Tutorials picker */
+        .tutorial-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0 24px 0;
+            padding: 10px 18px;
+            background-color: var(--accent-color);
+            color: #ffffff;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .tutorial-cta:hover {
+            background-color: #1a86d9;
+        }
+
+        .tutorial-cta .play {
+            font-size: 12px;
+            line-height: 1;
+        }
+
         h3 {
             color: var(--text-primary);
             font-size: 16px;
@@ -360,6 +385,10 @@
     <h1>VANTAGE: Milestone User Manual</h1>
     <p>Construction Project Management System</p>
 
+    <a class="tutorial-cta" href="#" onclick="if(window.chrome&amp;&amp;window.chrome.webview){window.chrome.webview.postMessage('open-tutorials');}return false;">
+        <span class="play">&#9654;</span> Watch the Tutorial Videos
+    </a>
+
     <div class="toc">
         <div class="toc-title">Table of Contents</div>
         <ul>
@@ -384,6 +413,7 @@
                     </li>
                     <li><a href="#ui-status-bar">Status Bar</a></li>
                     <li><a href="#ui-help-sidebar">Help Sidebar</a></li>
+                    <li><a href="#ui-tutorials">Tutorials</a></li>
                     <li><a href="#ui-shortcuts">Keyboard Shortcuts</a></li>
                 </ul>
             </li>
@@ -691,6 +721,7 @@
     <h4 id="ui-menus-settings">Settings Menu (three-dot icon, top right)</h4>
     <ul>
         <li><strong>Help Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
+        <li><strong>Tutorials</strong> — Open the Tutorials library and watch short how-to videos that play inside the app. See <a href="#ui-tutorials">Tutorials</a>.</li>
         <li><strong>Feedback Board</strong> — Submit ideas or report bugs to the development team. The grid supports sorting and filtering on all columns. A Notes column shows admin status updates visible to all users. The Notes field is only editable by admins.</li>
         <li><strong>Import Settings</strong> — Load saved application settings from a file</li>
         <li><strong>Export Settings</strong> — Save your current settings to a file for backup or transfer</li>
@@ -701,6 +732,14 @@
         <li><strong>Theme...</strong> — Choose between Dark, Light, Orchid, and Dark Forest application themes. The selected theme is applied instantly across the entire application.</li>
         <li><strong>See Release Notes</strong> — View features and changes in each release. This dialog also appears automatically after an app update.</li>
         <li><strong>About VANTAGE: Milestone</strong> — View version information and credits</li>
+    </ul>
+
+    <h3 id="ui-tutorials">Tutorials</h3>
+    <p>Open <strong>Tutorials</strong> from the settings menu (three-dot icon in the top-right corner) to watch short how-to videos that play right inside VANTAGE: Milestone. You can also launch it from the <strong>Watch the Tutorial Videos</strong> link at the top of this manual.</p>
+    <ul>
+        <li>The list shows every available video with a short description. Click a video to open the in-app player.</li>
+        <li>Once you have opened a video, its row shows a <strong>&#10003; Watched</strong> badge so you can track which ones you have already seen. This is tracked per user.</li>
+        <li>New videos can be added by the team at any time and appear in the list automatically — no app update required.</li>
     </ul>
 
     <h3 id="ui-status-bar">Status Bar</h3>

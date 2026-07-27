@@ -37,6 +37,11 @@ namespace VANTAGE.Dialogs
                     return;
                 }
 
+                // Flag videos this user has opened before so the "Watched" badge shows.
+                var watched = SettingsManager.GetWatchedTutorials();
+                foreach (var item in items)
+                    item.Watched = watched.Contains(item.Key);
+
                 listTutorials.ItemsSource = items;
                 loadingOverlay.Visibility = Visibility.Collapsed;
             }
@@ -74,6 +79,11 @@ namespace VANTAGE.Dialogs
                     Owner = Application.Current.MainWindow
                 };
                 player.Show();
+
+                // Opening a video marks it watched: persist for this user and update
+                // the row so the badge appears immediately.
+                SettingsManager.MarkTutorialWatched(item.Key);
+                item.Watched = true;
             }
             catch (Exception ex)
             {

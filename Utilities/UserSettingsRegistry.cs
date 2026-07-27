@@ -167,6 +167,7 @@ namespace VANTAGE.Utilities
         // ----------------------------------------------------------------
         //   Theme                          — Theme submenu in Settings popup
         //   LastView                       — auto-updated whenever you navigate to a view; no reset needed
+        //   Tutorials.Watched              — auto-managed bookkeeping (set by opening a tutorial video); drives the "Watched" badge, not a user preference
         //   LastSyncUtcDate                — system bookkeeping (deleting triggers full re-sync)
         //   LastSeenVersion                — internal release-notes gating
         //   GridLayouts.Index              — Grid Layouts dialog

@@ -92,6 +92,9 @@ namespace VANTAGE.Views
                 webViewHelp.CoreWebView2.Find.MatchCountChanged += Find_MatchCountChanged;
                 webViewHelp.CoreWebView2.Find.ActiveMatchIndexChanged += Find_ActiveMatchIndexChanged;
 
+                // Let the manual's "Watch the Tutorial Videos" link open the in-app picker.
+                webViewHelp.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+
                 _webViewInitialized = true;
                 helpOverlay.Visibility = Visibility.Collapsed;
 
@@ -129,6 +132,27 @@ namespace VANTAGE.Views
             if (activeIndex >= 0)
             {
                 _viewModel.CurrentMatchIndex = activeIndex + 1;
+            }
+        }
+
+        // Handle messages posted from manual.html. Currently only the tutorials link.
+        private void CoreWebView2_WebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
+        {
+            try
+            {
+                string message = e.TryGetWebMessageAsString();
+                if (message == "open-tutorials")
+                {
+                    var dialog = new Dialogs.TutorialsDialog
+                    {
+                        Owner = Window.GetWindow(this) ?? Application.Current.MainWindow
+                    };
+                    dialog.Show();
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SidePanelView.CoreWebView2_WebMessageReceived");
             }
         }
 

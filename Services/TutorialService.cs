@@ -16,8 +16,8 @@ namespace VANTAGE.Services
     // Access to tutorial videos in the private summit-vantage-tutorials S3 bucket.
     // Reuses the scoped AWS credential the AI Takeoff feature already ships
     // (vantage-takeoff-user). A tutorials.json manifest holds each video's filename
-    // key and description; the list shows the filename and description, sorted by
-    // filename. Playback uses a short-lived pre-signed URL so a copied link can't
+    // key, name, and description; the list shows the name and description, sorted by
+    // filename key. Playback uses a short-lived pre-signed URL so a copied link can't
     // circulate.
     public static class TutorialService
     {

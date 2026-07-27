@@ -26,12 +26,6 @@ namespace VANTAGE
         private Button? _activeNavButton;
         private PluginLoaderService? _pluginLoader;
 
-        // Allowlist of usernames who see the Tutorials menu item while the tutorial
-        // videos are still being produced and uploaded. Case-insensitive. Widen (or
-        // remove the gate) once the full set of videos is published.
-        private static readonly System.Collections.Generic.HashSet<string> TutorialAllowedUsers =
-            new(StringComparer.OrdinalIgnoreCase) { "steve", "steve.amalfitano" };
-
         // Modeless snapshot dialogs — tracked so repeat menu clicks just focus the existing window.
         private Dialogs.ManageSnapshotsDialog? _manageSnapshotsDialog;
         private Dialogs.AdminSnapshotsDialog? _adminSnapshotsDialog;
@@ -544,13 +538,6 @@ namespace VANTAGE
             if (App.CurrentUser == null || !App.CurrentUser.IsEstimator)
             {
                 btnTakeoff.Visibility = Visibility.Collapsed;
-            }
-
-            // Show TUTORIALS menu item only for the allowlisted users for now.
-            if (!string.IsNullOrEmpty(App.CurrentUser?.Username)
-                && TutorialAllowedUsers.Contains(App.CurrentUser!.Username))
-            {
-                btnTutorials.Visibility = Visibility.Visible;
             }
 
             // Restore last visited view (default to Progress)

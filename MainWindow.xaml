@@ -311,7 +311,6 @@
                                         Cursor="Hand"/>
                                 <Button x:Name="btnTutorials"
                                         Content="Tutorials"
-                                        Visibility="Collapsed"
                                         Background="Transparent"
                                         Foreground="{DynamicResource ForegroundColor}"
                                         BorderThickness="0"
