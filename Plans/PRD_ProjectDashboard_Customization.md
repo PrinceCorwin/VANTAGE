@@ -90,6 +90,7 @@ Implemented: an **Export PDF** button on the main toolbar (`ProjectDashboardWind
 - Uses `CoreWebView2.PrintToPdfAsync` (already used by the help sidebar), landscape, fit-to-width, filename patterned per project.
 - **The PDF must NOT include the filter panel** (the left rail) — export the report content only. Hide/detach the rail for the print render, then restore.
 - **No mid-row page splits (2026-07-25):** the print-mode DOM is wrapped in `.printwrap`; `break-inside:avoid` on `.dashstack` (each below-row-1 row) and `.dashrow1` keeps a row whole — a row that would straddle a page boundary moves entirely to the next page. Print also removes the on-screen 450px `.dashstack` cap (`max-height:none;overflow:visible`) so tall visuals print full content instead of being clipped. A single visual taller than one page still splits (unavoidable).
+- **Scale-to-fit (2026-07-27):** `ExportPdfAsync` sets `CoreWebView2PrintSettings.ScaleFactor = 0.68`. The ~1400px-wide report on a ~975px landscape-Letter page was squeezing/clipping the row-1 columns (tables, bars) at scale 1.0; because `.printwrap` is fluid `width:100%`, a sub-1 scale factor gives Chromium a wider logical canvas (~1435px) then shrinks the page to fit — proportional, vector-crisp, no font hacks. Value is tunable (lower = wider canvas).
 
 ## 7. Customization UI
 

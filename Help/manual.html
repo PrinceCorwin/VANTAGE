@@ -2390,9 +2390,12 @@
     <p>Row&nbsp;1 is a fixed band of four columns. In Customize mode you can drag the divider between any two of them to make one wider and its neighbor narrower; the widths save with the layout. This is useful when one column holds a table of large numbers that would otherwise crowd its neighbors &mdash; drag it narrower and its content scrolls inside its own panel.</p>
     <figure class="manual-shot">
         <div class="shot-frame">
-            <img src="../Assets/Images/Sidebar/pd-col-resize.png" alt="Dragging the divider between two row-1 columns to resize them in customize mode" />
+            <img src="../Assets/Images/Sidebar/pd-col-resize.png" alt="Row-1 columns in customize mode; the gray vertical bar between two cards is the draggable column divider" />
+            <span class="callout-pin" style="top:42%; left:73%;">1</span>
         </div>
-        <figcaption>Drag a divider between row-1 columns to adjust their widths.</figcaption>
+        <ol class="callout-legend">
+            <li><span class="num">1</span><span><strong>Column divider</strong> — the gray vertical bar between two row-1 columns. Drag it left or right to make one column wider and its neighbor narrower; the widths save with the layout.</span></li>
+        </ol>
     </figure>
 
     <h3 id="pd-editors">Visual Editors</h3>
@@ -2409,12 +2412,12 @@
     <p>Every field, measure, and axis picker uses the <strong>native Activity column names</strong>, matching the Progress grid. All the extra UDF columns and <code>EarnQtyEntry</code> are available in these pickers (group-by, filter, measure, heatmap axes, stat-tile aggregate) even though they aren't in the left filter panel. Sizing is automatic &mdash; there is no slot or size picker; placement and stretch are set in the layout manager, not here.</p>
 
     <h4>Colors</h4>
-    <p>Color controls are a <strong>swatch</strong> paired with a <strong>hex</strong> box &mdash; click the swatch to pick from the system color picker, or type a hex value &mdash; alongside <strong>Summit preset</strong> swatches for the standard palette. Every color defaults to the current Summit colors, so an unedited visual looks exactly as it does today.</p>
+    <p>Each color control is a <strong>swatch</strong> paired with a <strong>hex</strong> box. Click the swatch to open the Windows color picker (spectrum, RGB values, and eyedropper), or type a hex value directly &mdash; the two stay in sync. Every color defaults to the current Summit colors, so an unedited visual looks exactly as it does today.</p>
     <figure class="manual-shot">
         <div class="shot-frame">
-            <img src="../Assets/Images/Sidebar/pd-editor-colorpicker.png" alt="A color control showing a swatch, a hex input, and a row of Summit preset swatches" />
+            <img src="../Assets/Images/Sidebar/pd-editor-colorpicker.png" alt="The Windows color picker open from a swatch, showing the spectrum, an RGB readout, and an eyedropper" />
         </div>
-        <figcaption>Color controls: swatch + hex + Summit presets.</figcaption>
+        <figcaption>Clicking a color swatch opens the Windows color picker; the hex box stays in sync.</figcaption>
     </figure>
 
     <h4>What each editor offers</h4>
@@ -2475,12 +2478,6 @@
     <h3 id="pd-pdf">PDF Export</h3>
     <p><strong>Export PDF</strong> (on both the main toolbar and the Customize manager toolbar) saves the report as a <strong>landscape</strong> PDF. The export shows the report content only &mdash; the left filter panel and any edit controls are left out &mdash; at full width. You choose where to save it (the file is named <code>ProjectDashboard_&lt;project&gt;_&lt;date&gt;.pdf</code> by default), and you're offered the option to open it afterward.</p>
     <p>Rows are kept whole: a row that would straddle a page break moves entirely to the next page rather than splitting across pages. (A single visual taller than one page is the one unavoidable exception.)</p>
-    <figure class="manual-shot">
-        <div class="shot-frame">
-            <img src="../Assets/Images/Sidebar/pd-pdf-export.png" alt="A landscape PDF of the dashboard report with no filter panel, rows kept whole across page breaks" />
-        </div>
-        <figcaption>The landscape PDF export &mdash; report only, no filter panel, rows never split.</figcaption>
-    </figure>
 
     <!-- ============================================ -->
     <h2 id="progress-books">7. Progress Books</h2>

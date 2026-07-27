@@ -6,6 +6,14 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 27, 2026 (Project Dashboard — manual screenshots + PDF scale-to-fit)
+
+**Captured and wired all 24 Project Dashboard manual screenshots, and fixed the PDF export squeezing row-1 visuals.**
+
+- **24 screenshots captured** into `Assets/Images/Sidebar/` (`project-dashboard.png` + the `pd-*.png` set) and wired into the new manual chapter's `<img>` tags. Several were cropped from a single full-window capture (header, filter panel, toolbar, and the ring / stat-tiles / donut / table / horizontal bar list / heatmap visuals); the trend, vertical bar list, customize-mode, editor, layout-dropdown, and cloud dialogs were captured individually. `pd-col-resize.png` carries a numbered `.callout-pin` pointing at the column divider (the drag handles don't survive a screenshot). The optional PDF-export shot was skipped and its figure removed.
+- **Manual color-control wording corrected.** Clicking a color swatch opens the **Windows color picker** (spectrum / RGB / eyedropper) beside a synced hex box; the earlier "Summit preset swatches" description was removed to match the actual UI.
+- **PDF export no longer squeezes/clips the row-1 columns.** `ProjectDashboardWindow.ExportPdfAsync` now sets `CoreWebView2PrintSettings.ScaleFactor = 0.68`. The report is designed at ~1400px wide but landscape Letter only gives ~975px printable, so at scale 1.0 the four row-1 columns clipped (Component Type / Area tables, ROC bars). Because the print content (`.printwrap`) is fluid width, a sub-1 scale factor hands Chromium a wider logical canvas (~1435px) to lay out in, then shrinks the finished page to fit — proportional and vector-crisp, no font hacks. The scale value is tunable.
+
 ### July 27, 2026 (Phase Code Analysis — standalone window replaces the Analysis tab)
 
 **Extracted the Analysis summary grid into its own Tools window and hid the Analysis nav tab.** The summary roll-up (the piece crews use for Viewpoint entry) now lives at **Tools → Phase Code Analysis**; the charts/chart-filter panel are not carried over. The Analysis nav button is hidden pending a full removal of the module.

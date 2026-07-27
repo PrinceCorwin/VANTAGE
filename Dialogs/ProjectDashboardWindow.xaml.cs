@@ -591,6 +591,14 @@ namespace VANTAGE.Dialogs
                     var settings = webView.CoreWebView2.Environment.CreatePrintSettings();
                     settings.Orientation = CoreWebView2PrintOrientation.Landscape;
                     settings.ShouldPrintBackgrounds = true;
+                    // The report is designed at ~1400px wide but a landscape Letter page only
+                    // gives ~975px printable, so row 1's four columns would clip at scale 1.0.
+                    // The print content is fluid (width:100%), so a sub-1 scale factor hands
+                    // Chromium a wider logical canvas (~975 / 0.68 ≈ 1435px) to lay out in, then
+                    // shrinks the finished page to fit the paper — proportional, vector-crisp,
+                    // no squeeze. PrintToPdf runs headless with fixed default margins, so this
+                    // maps consistently regardless of the user's installed printers.
+                    settings.ScaleFactor = 0.68;
                     await webView.CoreWebView2.PrintToPdfAsync(saveDialog.FileName, settings);
                 }
 

@@ -301,6 +301,11 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** Full-width stretch made tables/heatmaps with a few columns spread unnaturally wide, and the fixed-fill column made a short bar list waste space while a tall one was clipped. Content sizing with flex surplus redistribution matches "each visual takes what it needs," and the per-row toggle preserves full-bleed layouts (e.g. the Default's trend rows ship stretched).
 **Date:** July 2026
 
+### The Project Dashboard PDF Export Scales the Whole Report to Fit the Page
+**Rule:** `ProjectDashboardWindow.ExportPdfAsync` prints the dashboard landscape with `CoreWebView2PrintSettings.ScaleFactor` below 1.0 (currently 0.68). The print DOM (`.printwrap`) is fluid `width:100%`, so the sub-1 scale factor hands Chromium a wider logical canvas (~1435px) to lay the ~1400px-wide report out in, then shrinks the finished page to fit. Report width is not reduced by scaling fonts or padding per visual.
+**Why:** Landscape Letter offers only ~975px printable width, so printing the four fixed row-1 columns at scale 1.0 clipped table columns and squeezed the bars. Scaling the entire report proportionally at the print-engine level keeps text vector-crisp and avoids per-visual font/padding hacks that would still clip wide tables. `PrintToPdfAsync` runs headless with fixed default margins, so one scale value maps consistently regardless of the user's installed printers.
+**Date:** 2026-07-27
+
 ---
 
 ## Progress Module
