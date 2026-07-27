@@ -235,6 +235,23 @@ namespace VANTAGE
             }
         }
 
+        // Opens the Analysis summary table in its own window. The Projects picker inside
+        // uses plain-WPF multi-select (not Syncfusion ComboBoxAdv), so it works standalone.
+        private void MenuPhaseCodeAnalysis_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var window = new Dialogs.PhaseCodeAnalysisWindow { Owner = this };
+                window.Show();
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.MenuPhaseCodeAnalysis_Click");
+                AppMessageBox.Show("Could not open Phase Code Analysis — see log.",
+                    "Phase Code Analysis", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         // Open the help sidebar at a specific anchor in manual.html.
         // Called by HelpService.OpenAt() — info icons throughout the app route here.
         public void OpenHelpAt(string anchor)

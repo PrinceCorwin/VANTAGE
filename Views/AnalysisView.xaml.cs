@@ -69,11 +69,12 @@ namespace VANTAGE.Views
             try
             {
                 PopulateGroupByDropdown();
-                PopulateProjectsDropdown();
                 // Chart filter dropdowns are populated lazily on first open
                 // (see ChartFilter_DropDownOpened) — avoids 12 DISTINCT scans on tab load.
                 InitializeSection_1_1();
                 RestoreSettings();
+                // Populate projects from whichever source RestoreSettings restored.
+                PopulateProjectsDropdown(rbSourceSnapshot.IsChecked == true ? "SnapshotAnalysis" : "Activities", true);
                 RestoreGridLayout();
             }
             catch (Exception ex)
@@ -122,27 +123,53 @@ namespace VANTAGE.Views
             cmbGroupBy.ItemsSource = allFields;
         }
 
-        // Populate projects dropdown from local Activities table
-        private void PopulateProjectsDropdown()
+        // Rebuild the projects dropdown from the given source table (Activities for Local,
+        // SnapshotAnalysis for Snapshot). Called on load, on source switch, and after a new
+        // snapshot selection — the two tables hold different project sets, so the list (and
+        // any stale selection) must be refetched, not carried over.
+        private void PopulateProjectsDropdown(string sourceTable, bool autoSelectFirst)
         {
+            // Whitelist the table name — never interpolate user input into a table identifier.
+            if (sourceTable != "Activities" && sourceTable != "SnapshotAnalysis")
+            {
+                AppLogger.Error(new InvalidOperationException($"Invalid source table: {sourceTable}"),
+                    "AnalysisView.PopulateProjectsDropdown");
+                return;
+            }
+
             try
             {
-                using var connection = DatabaseSetup.GetConnection();
-                connection.Open();
-
-                var cmd = connection.CreateCommand();
-                cmd.CommandText = "SELECT DISTINCT ProjectID FROM Activities WHERE ProjectID IS NOT NULL AND ProjectID != '' ORDER BY ProjectID";
-
                 var projects = new List<string>();
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+                using (var connection = DatabaseSetup.GetConnection())
                 {
-                    var projectId = reader.GetString(0);
-                    if (!string.IsNullOrWhiteSpace(projectId))
-                        projects.Add(projectId);
+                    connection.Open();
+                    var cmd = connection.CreateCommand();
+                    cmd.CommandText = $"SELECT DISTINCT ProjectID FROM {sourceTable} WHERE ProjectID IS NOT NULL AND ProjectID != '' ORDER BY ProjectID";
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var projectId = reader.GetString(0);
+                        if (!string.IsNullOrWhiteSpace(projectId))
+                            projects.Add(projectId);
+                    }
                 }
 
-                cmbProjects.ItemsSource = projects;
+                // Rebuild under the init guard so resetting ItemsSource/selection doesn't
+                // re-trigger CmbProjects_SelectionChanged (the caller re-aggregates explicitly).
+                bool prevInit = _isInitializing;
+                _isInitializing = true;
+                try
+                {
+                    cmbProjects.ItemsSource = projects;
+                    var selectedItems = cmbProjects.SelectedItems as System.Collections.IList;
+                    selectedItems?.Clear();
+                    if (autoSelectFirst && selectedItems != null && projects.Count > 0)
+                        selectedItems.Add(projects[0]);
+                }
+                finally
+                {
+                    _isInitializing = prevInit;
+                }
             }
             catch (Exception ex)
             {
@@ -183,12 +210,7 @@ namespace VANTAGE.Views
                 btnReSelectSnapshots.IsEnabled = false;
             }
 
-            // Auto-select first project from whatever is currently in local
-            var selectedItems = cmbProjects.SelectedItems as System.Collections.IList;
-            if (selectedItems != null && cmbProjects.ItemsSource is List<string> projects && projects.Count > 0)
-            {
-                selectedItems.Add(projects[0]);
-            }
+            // Project selection is set up by PopulateProjectsDropdown after this returns.
 
             // Chart filter selections are intentionally NOT restored across sessions.
             // At 100k-record scale a single filter could persist thousands of values, and
@@ -424,6 +446,10 @@ namespace VANTAGE.Views
                 txtSnapshotStatus.Text = string.Empty;
             }
 
+            // The two sources hold different project sets — refetch the list (and reset
+            // the stale selection) so the picker reflects the source now in effect.
+            PopulateProjectsDropdown(isSnapshot ? "SnapshotAnalysis" : "Activities", true);
+
             LoadSummaryData();
             UpdateVisual_1_1();
         }
@@ -456,6 +482,8 @@ namespace VANTAGE.Views
 
                     if (rbSourceSnapshot.IsChecked == true)
                     {
+                        // Snapshot table contents changed — refetch the project list from it.
+                        PopulateProjectsDropdown("SnapshotAnalysis", true);
                         LoadSummaryData();
                         UpdateVisual_1_1();
                     }

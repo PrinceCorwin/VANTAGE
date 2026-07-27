@@ -6,6 +6,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 27, 2026 (Phase Code Analysis — standalone window replaces the Analysis tab)
+
+**Extracted the Analysis summary grid into its own Tools window and hid the Analysis nav tab.** The summary roll-up (the piece crews use for Viewpoint entry) now lives at **Tools → Phase Code Analysis**; the charts/chart-filter panel are not carried over. The Analysis nav button is hidden pending a full removal of the module.
+
+- **New `Dialogs/PhaseCodeAnalysisWindow` (`.xaml` + `.xaml.cs`)** — standalone window with the same summary toolbar (Group By, My Records / All Users, Projects, Source: Local/Snapshot + Select, Export) and the color-coded summary grid. Reuses the existing `Get/SetAnalysis*` settings keys, `SnapshotAnalysisRepository`, `SelectAnalysisSnapshotsDialog`, `AnalysisSummaryRow`, and `PercentToColorConverter`. Opened from a new **Tools → Phase Code Analysis** menu item (`MenuPhaseCodeAnalysis_Click` in `MainWindow`).
+- **Projects multi-select rebuilt in plain WPF** (`ToggleButton` + `Popup` + checkbox `ListBox`, backed by a `ProjectSelection` wrapper). Root cause it solves: a Syncfusion multi-select `ComboBoxAdv` (`AllowMultiSelect="True"`) renders its checkbox dropdown from a theme template that only resolves inside `MainWindow`'s visual tree — in a standalone `Window` the dropdown comes up blank/white and won't open, even with `SfSkinManager.SetTheme` applied. Single-select `ComboBoxAdv` is unaffected; the multi-select variant is the only one in the app and it lives in the (hosted) Analysis tab.
+- **Bug fix — project list now refetches per source** (in both `PhaseCodeAnalysisWindow` and the existing `Views/AnalysisView`). `PopulateProjects*` is now source-aware and re-runs on load, on Local↔Snapshot toggle, and after a snapshot selection, resetting the stale selection. Previously the list was queried once from `Activities`, so switching to Snapshot kept the Local project IDs and silently filtered the grid to nothing until the user manually cleared the picks.
+- **Analysis nav button hidden** — its wrapper grid in `MainWindow.xaml` is `Visibility="Collapsed"`; `AnalysisView` and its cache remain in place. Nav toolbar now shows five module buttons.
+- **Docs** — `Help/manual.html` section 5 rewritten from "Analysis Module" to "Phase Code Analysis" (chart/layout/chart-filter content removed, TOC + module-nav table + Tools-menu + Reset-settings references updated, both screenshots re-wired: nav toolbar re-captured without ANALYSIS, new `phase-code-analysis.png` window shot). `README.md` (Phase Code Analysis moved to Current Features / Module Status → Production), `Plans/Decisions.md` (new window + the `ComboBoxAdv`-in-standalone-Window gotcha + per-source project refetch), and `Plans/Project_Status.md` (Scheduled Cleanup todo to delete the Analysis module ~2026-08-10).
+
 ### July 26, 2026 (Project Dashboard — user manual chapter)
 
 **Documented the Project Dashboard and its Customize feature in the user manual** (`Help/manual.html`). No code changes — help content only.

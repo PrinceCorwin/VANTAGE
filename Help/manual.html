@@ -475,12 +475,12 @@
                     <li><a href="#sched-shortcuts">Keyboard Shortcuts</a></li>
                 </ul>
             </li>
-            <li><a href="#analysis-module">5. Analysis Module</a>
+            <li><a href="#phase-code-analysis">5. Phase Code Analysis</a>
                 <ul>
-                    <li><a href="#analysis-overview">Overview</a></li>
-                    <li><a href="#analysis-layout">Layout</a></li>
-                    <li><a href="#analysis-chart-filters">Chart Filters</a></li>
-                    <li><a href="#analysis-summary-grid">Summary Grid</a></li>
+                    <li><a href="#pca-overview">Overview</a></li>
+                    <li><a href="#pca-filters">Filter Controls</a></li>
+                    <li><a href="#pca-snapshot">Source: Snapshot</a></li>
+                    <li><a href="#pca-columns">Grid Columns</a></li>
                 </ul>
             </li>
             <li><a href="#project-dashboard">6. Project Dashboard</a>
@@ -610,7 +610,7 @@
     </figure>
 
     <h3 id="ui-navigation">Navigation</h3>
-    <p>Six module buttons are displayed in the center of the toolbar. The active module is highlighted with a colored underline.</p>
+    <p>Five module buttons are displayed in the center of the toolbar. The active module is highlighted with a colored underline.</p>
     <figure class="manual-shot">
         <div class="shot-frame">
             <img src="../Assets/Images/Sidebar/start-toolbar-detail.png" alt="Module navigation buttons in the toolbar" />
@@ -640,10 +640,6 @@
         <tr>
             <td><strong>WORK PKGS</strong></td>
             <td>Create PDF work packages with forms and drawings</td>
-        </tr>
-        <tr>
-            <td><strong>ANALYSIS</strong></td>
-            <td>Visualize and aggregate progress data — metrics grouped by field, filtered by project or user</td>
         </tr>
         <tr>
             <td><strong>TAKEOFFS</strong></td>
@@ -676,6 +672,7 @@
     <ul>
         <li><strong>Help Sidebar</strong> — Open the help documentation sidebar (also F1)</li>
         <li><strong>Project Dashboard</strong> — Opens a live, one-screen progress report for your local data in its own window: overall percent complete, breakdown tiles and tables, an Area/Module-by-phase heatmap, and week-over-week trend charts. You can filter it, click charts to drill in, and fully customize the report — add, remove, and rearrange visuals, save named layouts, and share them with your team through the cloud. See the <a href="#project-dashboard">Project Dashboard</a> chapter for the full walkthrough.</li>
+        <li><strong>Phase Code Analysis</strong> — Opens the aggregated summary table in its own window: your activities rolled up by any field (PhaseCode, WorkPackage, CompType, etc.) with Budget/Earned man-hours, quantities, and a color-coded weighted % Complete. Grouping by PhaseCode gives the per-phase-code percent complete crews read off when entering progress into Viewpoint. See the <a href="#phase-code-analysis">Phase Code Analysis</a> chapter for the full walkthrough.</li>
         <li><strong>Prorate MHs</strong> — Distribute budgeted man-hours across filtered activities</li>
         <li><strong>Schedule Change Log</strong> — View and apply changes made in the Schedule detail grid to live Activities</li>
         <li><strong>Schedule UDF Mapping...</strong> — Configure custom P6 column mappings for the Schedule module UDF columns</li>
@@ -753,7 +750,7 @@
         <li><strong>Feedback Board</strong> — Submit ideas or report bugs to the development team. The grid supports sorting and filtering on all columns. A Notes column shows admin status updates visible to all users. The Notes field is only editable by admins.</li>
         <li><strong>Import Settings</strong> — Load saved application settings from a file</li>
         <li><strong>Export Settings</strong> — Save your current settings to a file for backup or transfer</li>
-        <li><strong>Reset User Settings...</strong> — Clear selected user preferences back to defaults. Opens a dialog with checkbox groups: Help sidebar width, Progress grid preferences, Schedule grid preferences, Analysis grid layout, Progress Books / Work Package splitters, Progress Scan dialog size, and "Re-show <em>don't show again</em> dialogs" (re-enables dismissed reminder dialogs like the VP vs Vtg prep screen). A Yes/No confirmation appears before any setting is cleared. Settings managed elsewhere (themes, saved grid layouts, import profiles, saved filters, Analysis chart filter Reset button, Schedule UDF Mappings dialog, Manage UDF Names dialog, and in-view toggles) are intentionally excluded — use the corresponding manager for those. Grid layout resets reload the affected grid immediately; other settings take effect on next view open or app restart.</li>
+        <li><strong>Reset User Settings...</strong> — Clear selected user preferences back to defaults. Opens a dialog with checkbox groups: Help sidebar width, Progress grid preferences, Schedule grid preferences, Progress Books / Work Package splitters, Progress Scan dialog size, and "Re-show <em>don't show again</em> dialogs" (re-enables dismissed reminder dialogs like the VP vs Vtg prep screen). A Yes/No confirmation appears before any setting is cleared. Settings managed elsewhere (themes, saved grid layouts, import profiles, saved filters, Schedule UDF Mappings dialog, Manage UDF Names dialog, and in-view toggles) are intentionally excluded — use the corresponding manager for those. Grid layout resets reload the affected grid immediately; other settings take effect on next view open or app restart.</li>
         <li><strong>Grid Layouts</strong> — Save, load, or manage named column layouts for data grids</li>
         <li><strong>Manage UDF Names...</strong> — Rename UDF1–UDF17 and UDF20 column headers on the Progress grid. Per-user, per-machine. Includes Export / Import to share labels across machines. See <a href="#prog-udf-names">UDF Column Names</a> for details.</li>
         <li><strong>Plugin Manager...</strong> - View installed plugins, browse available plugins from the configured feed, install, uninstall, and refresh plugin listings</li>
@@ -2122,64 +2119,30 @@
     </table>
 
     <!-- ============================================ -->
-    <h2 id="analysis-module">5. Analysis Module</h2>
+    <h2 id="phase-code-analysis">5. Phase Code Analysis</h2>
     <!-- ============================================ -->
 
-    <h3 id="analysis-overview">Overview</h3>
-    <p>The Analysis module provides data visualization and aggregation tools for exploring your progress data. Use this module to analyze metrics grouped by different fields and filter by project or user.</p>
+    <h3 id="pca-overview">Overview</h3>
+    <p>Open <strong>Phase Code Analysis</strong> from <strong>Tools &rarr; Phase Code Analysis</strong>; it opens in its own resizable window. It rolls your activities up by a field you choose and shows, per group, the summed Budget and Earned man-hours, Quantity and Earned Quantity, and a weighted, color-coded % Complete. You can group by any field, scope the roll-up to your own records or everyone's, filter to one or more projects, and aggregate from your live local data or from selected weekly snapshots.</p>
 
     <div class="note">
-        <div class="note-title">In Development</div>
-        <p>The Analysis module is actively being developed. Currently, section (2,2) contains a summary grid for aggregated metrics. Additional analysis tools will be added in future releases.</p>
+        <div class="note-title">Entering Progress into Viewpoint</div>
+        <p>Grouping by <strong>PhaseCode</strong> gives the weighted percent complete for each phase code. This is the figure crews read off when entering progress into Viewpoint, so this window is the fastest way to get per-phase-code progress for that entry.</p>
     </div>
 
-    <h3 id="analysis-layout">Layout</h3>
-    <p>The Analysis view uses a 4&times;2 resizable grid layout with independent splitters for each row:</p>
-    <ul>
-        <li><strong>Vertical splitters</strong> — Drag to resize columns within a row. Top and bottom rows resize independently.</li>
-        <li><strong>Horizontal splitter</strong> — Drag to resize the height ratio between the top and bottom rows.</li>
-    </ul>
-    <p>All splitter positions are saved automatically and restored when you return to the Analysis module.</p>
-
-    <h3 id="analysis-chart-filters">Chart Filters</h3>
-    <p>The Chart Filters panel on the left of the Analysis tab applies to the chart visualizations only. It does <strong>not</strong> filter the Summary Grid, which has its own independent filter controls.</p>
-
-    <h4>How filters apply</h4>
-    <ul>
-        <li><strong>Session-only.</strong> Selections persist while you navigate between the Analysis tab and other modules, but are cleared when VANTAGE closes. This matches the way Progress column filters work.</li>
-        <li><strong>Lazy-loaded.</strong> Each filter dropdown's list of available values is only queried the first time you open that specific dropdown — opening the Analysis tab itself is fast even on large datasets.</li>
-        <li><strong>Reset button</strong> at the top of the panel clears every filter at once.</li>
-    </ul>
-
-    <h4>(Select All) toggle</h4>
-    <p>Every populated filter dropdown shows <strong>(Select All)</strong> as the first item, Excel-style. Click it once to select every value in that filter; click it again to clear every value. Note that on filters with thousands of items (such as SchedActNO on large projects), the first Select All click may pause briefly while the dropdown updates — this is expected.</p>
-
-    <h4>ALL / [N] count badges</h4>
-    <p>The dim text to the right of each filter label tells you what that filter is currently doing:</p>
-    <ul>
-        <li><strong>ALL</strong> — No narrowing is being applied. This is the state when no items are checked <em>and</em> when every item is checked, because both produce the same chart result (all data is shown).</li>
-        <li><strong>[N]</strong> — The filter is actively narrowing the chart to N selected items.</li>
-    </ul>
-
-    <h3 id="analysis-summary-grid">Summary Grid</h3>
-    <p>The summary grid in section (2,1) displays aggregated metrics from your Activities data (or from selected snapshots — see Source: Snapshot below), grouped by a selected field.</p>
     <figure class="manual-shot">
         <div class="shot-frame">
-            <img src="../Assets/Images/Sidebar/analysis-summary-grid.png" alt="Summary grid grouped by PhaseCode showing Budget/Earned MHs, Quantity, and color-coded % Complete" />
-            <span class="callout-pin" style="top:9%; left:15%;">1</span>
-            <span class="callout-pin" style="top:30%; left:88%;">2</span>
+            <img src="../Assets/Images/Sidebar/phase-code-analysis.png" alt="Phase Code Analysis window: summary grid grouped by PhaseCode showing Budget/Earned MHs, Quantity, and color-coded % Complete" />
+            <span class="callout-pin" style="top:8%; left:11.5%;">1</span>
+            <span class="callout-pin" style="top:40.5%; left:90%;">2</span>
         </div>
         <ol class="callout-legend">
             <li><span class="num">1</span><span><strong>Group By: PhaseCode</strong> — rolls every activity up by phase code.</span></li>
             <li><span class="num">2</span><span><strong>% Complete per phase code</strong> — weighted (EarnedMHs / BudgetMHs), color-coded from red to green.</span></li>
         </ol>
     </figure>
-    <div class="note">
-        <div class="note-title">Entering Progress into Viewpoint</div>
-        <p>Grouping by <strong>PhaseCode</strong> gives the weighted percent complete for each phase code. This is the figure crews read off when entering progress into Viewpoint, so this grid is the fastest way to get per-phase-code progress for that entry.</p>
-    </div>
 
-    <h4>Filter Controls</h4>
+    <h3 id="pca-filters">Filter Controls</h3>
     <table>
         <tr>
             <th>Control</th>
@@ -2195,7 +2158,7 @@
         </tr>
         <tr>
             <td><strong>Projects</strong></td>
-            <td>Multi-select dropdown to filter by one or more projects.</td>
+            <td>Click to open a checklist and tick one or more projects to include; the button caption shows the current state (a single project ID, <em>N selected</em>, or <em>(all)</em>). The list reflects whichever <strong>Source</strong> is active — switching between Local and Snapshot refreshes it to the projects actually present in that dataset.</td>
         </tr>
         <tr>
             <td><strong>Source: Local / Snapshot</strong></td>
@@ -2211,18 +2174,18 @@
         </tr>
     </table>
 
-    <h4>Source: Snapshot</h4>
+    <h3 id="pca-snapshot">Source: Snapshot</h3>
     <p>Switching the Source to <strong>Snapshot</strong> tells the summary grid to aggregate from a local cache of selected snapshots rather than from your live Activities table. The cache persists across app restarts — the first time you launch the app with Source set to Snapshot, the grid populates instantly from whatever's already in the cache.</p>
     <p>Click <strong>Select</strong> to open the snapshot picker. It lists every submission group across all users, projects, and weeks (grouped by user, project, and week-ending date), with row counts. Check the snapshots you want and click Apply. The cache is then wiped and refilled from Azure with just those rows — a busy overlay appears on the grid during the pull. Cancelling the dialog leaves the current cache untouched; applying with no rows checked clears the cache.</p>
     <p>Notes:</p>
     <ul>
         <li>The label next to the Select button shows <strong>none</strong> or <strong>N selected</strong> so you can see the cache state at a glance.</li>
-        <li>The Group By, My Records / All Users, and Projects filters still apply in Snapshot mode — they intersect with the cached snapshot rows.</li>
+        <li>The Group By, My Records / All Users, and Projects filters still apply in Snapshot mode — they intersect with the cached snapshot rows. The Projects checklist re-reads the projects present in the cache whenever you switch to Snapshot or apply a new selection.</li>
         <li>Picking multiple snapshots that share the same Activity (e.g., the same project across two weeks) will sum that Activity's BudgetMHs / EarnedMHs / Quantity / QtyEarned twice. Pick deliberately.</li>
         <li>Empty cache + Source = Snapshot will show an empty grid. Click Select to fill the cache.</li>
     </ul>
 
-    <h4>Grid Columns</h4>
+    <h3 id="pca-columns">Grid Columns</h3>
     <table>
         <tr>
             <th>Column</th>
@@ -2254,7 +2217,7 @@
         </tr>
     </table>
 
-    <p>The grid supports sorting (double-click column headers), filtering, column resizing, and column reordering. All settings are saved automatically.</p>
+    <p>The grid supports sorting (double-click column headers), filtering, column resizing, and column reordering within the current session.</p>
 
     <!-- ============================================ -->
     <h2 id="project-dashboard">6. Project Dashboard</h2>

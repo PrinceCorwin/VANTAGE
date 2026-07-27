@@ -529,15 +529,25 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 
 ## Analysis Module
 
+### Phase Code Analysis Is a Standalone Window; the Analysis Nav Tab Is Hidden
+**Rule:** The summary roll-up is available as a standalone window, `Dialogs/PhaseCodeAnalysisWindow`, opened from **Tools → Phase Code Analysis**. It carries only the summary-grid half of the old Analysis tab (Group By, My/All Users, Projects, Local/Snapshot source, Export) — no charts, no chart-filter panel. The Analysis nav button is hidden (`Visibility="Collapsed"` in `MainWindow.xaml`); the `AnalysisView` module still exists behind it, scheduled for full removal (~August 2026). The window reuses the same `Get/SetAnalysis*` settings keys (GroupField, CurrentUserOnly, SourceMode), `SnapshotAnalysisRepository`, `SelectAnalysisSnapshotsDialog`, `AnalysisSummaryRow`, and `PercentToColorConverter`.
+**Why:** The summary grid is the piece crews actually use — grouping by PhaseCode gives the weighted % they read into Viewpoint — while the charts were never finished. Splitting the grid into its own window lets the Analysis tab be retired without losing it, and a standalone window is more useful than a nav tab for a reference table kept open beside the Progress grid.
+**Date:** July 2026
+
+### The Standalone Analysis Window's Project Multi-Select Is Plain-WPF, Not Syncfusion `ComboBoxAdv`
+**Rule:** In `PhaseCodeAnalysisWindow` the Projects multi-select is a plain-WPF `ToggleButton` + `Popup` + checkbox `ListBox` (backed by a `ProjectSelection` wrapper list), not a Syncfusion `ComboBoxAdv` with `AllowMultiSelect="True"`. Single-select `ComboBoxAdv` is fine in a standalone `Window`; the multi-select variant is not.
+**Why:** A multi-select `ComboBoxAdv` renders its checkbox dropdown from a Syncfusion theme template that only resolves inside `MainWindow`'s visual tree. In a standalone `Window` — even with `SfSkinManager.SetTheme` applied — the dropdown comes up blank/white and won't open. The Analysis tab's own multi-select works only because it's a `UserControl` hosted in `MainWindow`. Plain-WPF primitives theme reliably in any window, so any future standalone window needing multi-select should avoid multi-select `ComboBoxAdv`.
+**Date:** July 2026
+
 ### Chart Filters Are Independent From the Summary Grid
 **Rule:** The chart-filter panel applies to charts only. The summary grid has its own independent filters (Group By, My Records / All Users, Projects).
 **Why:** Different analytical needs — charts for visual exploration across many dimensions, summary grid for its own grouping context. A shared filter set would force one to compromise.
 **Date:** April 2026
 
-### Project Selection Is Not Persisted
-**Rule:** Analysis auto-selects the first project from current local data on every load. No saved/restored selection.
-**Why:** Stale saved selections pointed to projects no longer in local DB after clear/re-sync, leaving the table empty with no obvious cause.
-**Date:** April 2026
+### Project Filter Auto-Selects the First Project and Refetches Per Source
+**Rule:** The Analysis project filter — in both the `AnalysisView` tab and `PhaseCodeAnalysisWindow` — auto-selects the first project from the active source's data on load, and re-queries its project list from the active source table (`Activities` for Local, `SnapshotAnalysis` for Snapshot) whenever the source is switched or a new snapshot selection is applied, resetting the selection. No saved/restored project selection.
+**Why:** Stale saved selections pointed to projects no longer in local DB after clear/re-sync, leaving the table empty with no obvious cause. Refetching per source fixes a further bug where switching to Snapshot kept the Local project IDs, silently filtering the grid to nothing until the user manually cleared the stale picks.
+**Date:** July 2026 (per-source refetch); April 2026 (no persistence)
 
 ### Chart Filters Are Session-Only and Lazy-Populated
 **Rule:** The 12 chart-filter `ComboBoxAdv` dropdowns on the Analysis tab hold their selections only as long as the cached `AnalysisView` instance lives. Selections survive Progress ↔ Analysis nav (via view caching) and die at app close. Each dropdown's items are populated by a `SELECT DISTINCT` against `Activities` only on first `DropDownOpened` for that filter, tracked via a `_populatedFilters` HashSet. No `UserSettings` row is read or written for chart filter state.

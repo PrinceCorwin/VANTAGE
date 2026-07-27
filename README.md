@@ -109,6 +109,7 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 
 ### Tools & Utilities
 - Project Dashboard — WebView2-hosted, theme-neutral progress report (donut, breakdown tiles, Area/Module-by-phase heatmap, week-over-week trend) fed live from the local database, with Refresh and Open-in-Browser snapshot; customizable report layouts (in-page visual editors, saved layouts, landscape PDF export) that can be published to and imported from a shared cloud library
+- Phase Code Analysis — standalone window that rolls activities up by any field (Budget/Earned man-hours, quantities, color-coded weighted % Complete), with Group By, My Records / All Users, multi-project filter, Local or Snapshot source, and Excel export
 - Export logs with optional email attachment
 - Export/Import UserSettings for PC migration
 - Clear Local Activities / Clear Local Schedule
@@ -118,13 +119,6 @@ VANTAGE: Milestone provides activity tracking, P6 Primavera schedule integration
 ---
 
 ## In Development / Planned
-
-### Analysis Module (In Progress)
-- 3x1+3 grid layout with chart filters panel (session-only, lazy-populated on first open), Reset button, Excel-style (Select All) toggle, and ALL/[N] count badges per filter
-- Dynamic chart sections with selectable visual type, X axis, Y axis
-- Pie / doughnut labels and legends
-- Summary grid with independent filters
-- Excel export
 
 ### Procore Integration (In Development)
 - OAuth 2.0 authentication with token management (auth dialog and services in place)
@@ -245,5 +239,5 @@ VANTAGE/
 | **Help Sidebar** | Production | Multi-section manual with screenshots |
 | **Themes** | Production | Dark, Light, Orchid, Dark Forest |
 | **Installer / Updater** | Production | Auto-update validated |
-| **Analysis** | In Development | Charts, summary grid, Excel export |
+| **Phase Code Analysis** | Production | Summary roll-up window (Tools menu); legacy Analysis nav tab hidden, pending removal |
 | **Procore** | In Development | OAuth + service layer scaffolded |

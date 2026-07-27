@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:syncfusion="http://schemas.syncfusion.com/wpf"
         Title="Tutorials"
-        Height="560"
+        Height="785"
         Width="520"
         MinHeight="320"
         MinWidth="400"
