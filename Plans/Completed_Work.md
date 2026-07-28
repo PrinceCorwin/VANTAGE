@@ -6,6 +6,15 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### July 27, 2026 (Project Dashboard — value-checklist filters + two visual bug fixes)
+
+**Per-visual filters are now a Power BI-style value checklist**, and two rendering bugs are fixed (`Dashboards/vantage-dashboard.html`).
+
+- **Filters (value checklist).** Each visual editor's old operator-based *Exclude rows* builder is replaced with a value checklist: pick a **column** and its distinct values appear as checkboxes with **everything checked** (nothing hidden); uncheck values to hide those rows from just that visual. Each filter has a **Search** box and a **(Select all)** toggle, and **+ Add filter** lets you filter on multiple columns (a row must pass all of them). Stored compactly as `{field, exclude:[unchecked values]}`, so values that appear later default to shown. New `applyValueFilters` + `edFilters`; the operator `filterBuilder` is retained only for the stat-tile **Complete / Total** criteria, which define a metric and genuinely need operators like `Contains` / `Greater Than`.
+- **Fix — empty groups after filtering.** `groupAgg` built its group list from the *global* dataset, so a bar list / donut / summary table showed an empty **0%** entry for a value that had no rows left after filtering or exclusion. It now derives the groups from the rows actually passed in, so those empty groups drop out entirely.
+- **Fix — vertical bar list blank in a stacked row.** A vertical bar list added to a row below row 1 rendered only its `%` labels with no bars: the bars use `height:100%`, which needs a definite parent height that a content-sized stacked panel didn't provide. A `.dashstack .panel.barlist-v{height:225px}` rule gives it the same 1H height it gets in a row-1 column, so the bars render.
+- **Manual updated** (`Help/manual.html`): the dashboard's Filters subsection now describes the value checklist and separately documents the stat-tile where-clause builder. A new screenshot (`pd-editor-filters.png`) is pending.
+
 ### July 27, 2026 (Manual — pre-release screenshot refresh)
 
 - **Manage My Snapshots figure re-captured** (`progress-manage-snapshots.png`) to show the new **Export** button; alt text updated. The section's prose already documented Export.

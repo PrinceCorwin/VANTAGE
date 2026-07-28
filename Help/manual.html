@@ -2411,7 +2411,7 @@
     <ul>
         <li><strong>Label</strong> &mdash; the visual's title.</li>
         <li><strong>Measure</strong> &mdash; the numeric column the visual aggregates. The default is <em>Inherit report basis</em> (follow the filter panel's Progress basis); you can instead pin a specific measure (BudgetMHs, ClientBudget, EarnMHsCalc, Quantity, EarnQtyEntry, ROCBudgetQTY, and the rest of the numeric set).</li>
-        <li><strong>Exclude rows</strong> &mdash; a filter builder that drops matching rows from just this visual (see below).</li>
+        <li><strong>Filters</strong> &mdash; a value checklist that limits which rows this visual uses: pick a column, then uncheck the values you don't want to include (see below).</li>
         <li><strong>Revert to default</strong> &mdash; reset this visual to its shipped configuration (shown only for visuals that exist in the Default).</li>
         <li><strong>Preview</strong>, <strong>Cancel</strong>, and <strong>Save</strong>.</li>
     </ul>
@@ -2442,13 +2442,20 @@
         <figure class="manual-shot"><div class="shot-frame"><img src="../Assets/Images/Sidebar/pd-editor-stattiles.png" alt="Stat tiles editor" /></div><figcaption>Stat tiles editor</figcaption></figure>
     </div>
 
-    <h4>The Exclude-rows filter builder</h4>
-    <p>Every editor has an <strong>Exclude rows</strong> section, and the stat-tile editor uses the same builder for its <em>Complete</em> and <em>Total</em> criteria. It works exactly like the saved filters in the Progress module: add one or more conditions, each a <em>field</em>, an <em>operator</em>, and a <em>value</em>, joined with <strong>AND</strong> / <strong>OR</strong>. The operators are the same twelve as the Progress filters (Equals, Not Equals, Contains, Does Not Contain, Starts With, Ends With, Is Empty, Is Not Empty, Greater Than, Greater Than or Equal, Less Than, Less Than or Equal), matching is case-insensitive, and the full column list is available (<em>Is Empty</em> / <em>Is Not Empty</em> take no value). Conditions are evaluated left to right, honoring each row's AND/OR.</p>
+    <h4>Filters</h4>
+    <p>Every editor has a <strong>Filters</strong> section that limits which rows the visual uses &mdash; and it works like the filters in Power BI. Pick a <strong>column</strong> and its distinct values appear as a checklist with <strong>every value checked</strong> (nothing hidden). Uncheck any value to hide those rows from this visual only; a value with no rows left simply drops out of the chart instead of showing as an empty 0%. Each filter has a <strong>Search</strong> box and a <strong>(Select all)</strong> toggle, and you can click <strong>+ Add filter</strong> to filter on more than one column (a row must pass every filter). Values you don't touch stay included, so new values that show up in the data later are shown by default.</p>
     <figure class="manual-shot">
         <div class="shot-frame">
-            <img src="../Assets/Images/Sidebar/pd-editor-filterbuilder.png" alt="The exclude-rows filter builder with two conditions joined by AND/OR, each with a field, operator, and value" />
+            <img src="../Assets/Images/Sidebar/pd-editor-filters.png" alt="A visual's Filters section: a column dropdown with a searchable checklist of that column's values, all checked by default" />
         </div>
-        <figcaption>The filter builder &mdash; the same where-clause UI as the Progress module's saved filters.</figcaption>
+        <figcaption>Filters &mdash; pick a column, then check/uncheck its values (Power BI style).</figcaption>
+    </figure>
+    <p><strong>Stat tiles are different.</strong> The stat-tile editor's <em>Complete</em> and <em>Total</em> sections don't use the value checklist &mdash; they define <em>which rows count</em> using a small where-clause builder: one or more conditions, each a <em>field</em>, an <em>operator</em>, and a <em>value</em>, joined with <strong>AND</strong> / <strong>OR</strong>. The operators are the same twelve as the Progress module's saved filters (Equals, Not Equals, Contains, Does Not Contain, Starts With, Ends With, Is Empty, Is Not Empty, Greater Than, Greater Than or Equal, Less Than, Less Than or Equal), matching is case-insensitive, and <em>Is Empty</em> / <em>Is Not Empty</em> take no value. This lets a metric be defined precisely (for example, Total = <code>ROCStep Contains CON</code>, Complete = that <strong>and</strong> <code>Status Equals Complete</code>).</p>
+    <figure class="manual-shot">
+        <div class="shot-frame">
+            <img src="../Assets/Images/Sidebar/pd-editor-filterbuilder.png" alt="The stat-tile Complete/Total where-clause builder with conditions joined by AND/OR, each a field, operator, and value" />
+        </div>
+        <figcaption>Stat tiles define <em>Complete</em> and <em>Total</em> with a where-clause builder (field / operator / value).</figcaption>
     </figure>
 
     <h3 id="pd-layouts">Saved Layouts</h3>

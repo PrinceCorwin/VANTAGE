@@ -31,6 +31,9 @@
      (.ewrap-bl-* are the edit-mode wrappers so the same sizing shows while customizing.) */
   .dashrow1 .panel.barlist-h,.dashrow1 .ewrap-bl-h{flex:1 1 0;min-height:0;overflow-y:auto;max-height:max-content;}
   .dashrow1 .panel.barlist-v,.dashrow1 .ewrap-bl-v{flex:1 1 0;min-height:0;max-height:225px;display:flex;flex-direction:column;}
+  /* A vertical bar list in a stacked row (below row 1) has no fixed-height column to inherit, so give it an
+     explicit 1H height — otherwise the bars' height:100% resolves against an indefinite parent and collapses. */
+  .dashstack .panel.barlist-v{height:225px;}
   /* Universal click feedback: any button or inline cursor:pointer element dims (and buttons nudge down) while pressed. */
   button,[style*="cursor:pointer"]{transition:opacity .07s ease,transform .07s ease;}
   button:active{transform:translateY(1px);opacity:.85;}
@@ -228,12 +231,14 @@
     for(var i=1;i<conds.length;i++){ var c=conds[i], m=condOne(r[c.field],c.op,c.value); res=((c.logic||'AND')==='OR')?(res||m):(res&&m); }
     return res; }
   // Drop rows matching a visual's exclude conditions (none on the Default).
-  function applyExclude(rows,ex){ if(!ex||!ex.length) return rows; return rows.filter(function(r){ return !rowMatches(r,ex); }); }
+  // Per-visual value filters: each is {field, exclude:[values]}. A row passes if, for every filter, its
+  // value for that field is NOT in the excluded list (unchecked values). Empty/absent = show everything.
+  function applyValueFilters(rows,vfs){ if(!vfs||!vfs.length) return rows; return rows.filter(function(r){ for(var i=0;i<vfs.length;i++){ var ex=vfs[i].exclude; if(ex&&ex.length&&ex.indexOf(String(r[vfs[i].field]))>=0) return false; } return true; }); }
 
   // ---- engine: dispatcher ----
   var RENDERERS={};
   function renderVisual(def,rows){
-    var r=applyExclude(rows,def.excludeFilters), fn=RENDERERS[def.type];
+    var r=applyValueFilters(rows,def.valueFilters), fn=RENDERERS[def.type];
     if(!fn) return '<div class="panel"><div class="ttl">'+esc(def.title||'')+'</div><div style="font-size:11px;color:#9a9aa6;">Unsupported visual: '+esc(def.type||'?')+'</div></div>';
     return fn(def,r);
   }
@@ -296,8 +301,12 @@
   // Group set matches the legacy groupPct() — distinct values over ALL rows, then
   // aggregated over the passed (filtered) rows with the visual's measure.
   function groupAgg(rows,key,measure){
-    var mf=measureField(measure), labels=distinct(key);
-    return labels.map(function(L){ var a=aggWith(rows.filter(function(r){return r[key]===L;}),mf); return {label:L,pct:a.pct,budget:a.budget,earn:a.earn}; });
+    // Groups come from the rows actually passed in (after report filters + this visual's exclusions), so a
+    // value with no remaining rows is dropped entirely rather than shown as an empty 0% group.
+    var mf=measureField(measure), seen={}, labels=[];
+    for(var i=0;i<rows.length;i++){ var v=rows[i][key]; if(v!==''&&v!=null&&!seen[v]){ seen[v]=1; labels.push(String(v)); } }
+    labels.sort();
+    return labels.map(function(L){ var a=aggWith(rows.filter(function(r){return String(r[key])===L;}),mf); return {label:L,pct:a.pct,budget:a.budget,earn:a.earn}; });
   }
   function sortGroups(groups,sort){
     if(sort==='labelAsc') return groups.slice().sort(function(a,b){return a.label<b.label?-1:(a.label>b.label?1:0);});
@@ -799,7 +808,30 @@
     h+='<span data-condadd="'+path+'" style="font-size:10.5px;color:#1e1b6b;cursor:pointer;font-weight:600;">+ Add condition</span>';
     return h;
   }
-  function edExclude(def){ return '<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edFld('Exclude rows where','— optional')+filterBuilder(def,'excludeFilters')+'</div>'; }
+  // Power BI-style value filters: pick a column, then check/uncheck its values (all checked = show all).
+  function edFilters(def){
+    var fs=def.valueFilters||[];
+    var h='<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edFld('Filters','— uncheck values to hide those rows (all shown by default)');
+    fs.forEach(function(f,i){
+      var vals=distinct(f.field), ex=f.exclude||[];
+      h+='<div style="border:1px solid #e6e6ee;border-radius:6px;padding:8px;margin-bottom:8px;background:#fbfbfe;">'
+        +'<div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">'
+          +'<select data-vf="'+i+'" data-vfp="field" style="flex:1;min-width:0;font-size:11.5px;padding:5px 4px;border:1px solid #d3d3dc;border-radius:4px;background:#fff;color:#26262e;">'+edSel(f.field,FIELD_OPTS)+'</select>'
+          +'<span data-vfrem="'+i+'" title="Remove filter" style="cursor:pointer;color:#c05a5a;font-size:12px;border:1px solid #e6c2c2;border-radius:4px;padding:3px 7px;">&#10005;</span>'
+        +'</div>'
+        +'<input data-vfsearch="'+i+'" placeholder="Search values…" style="width:100%;font-size:11px;padding:5px 7px;border:1px solid #d3d3dc;border-radius:4px;box-sizing:border-box;margin-bottom:5px;color:#26262e;background:#fff;">'
+        +'<label style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:#3a3a46;padding:3px 2px;cursor:pointer;border-bottom:1px solid #eceef2;margin-bottom:3px;"><input type="checkbox" data-vfall="'+i+'"'+(ex.length===0?' checked':'')+'> (Select all)</label>'
+        +'<div data-vflist="'+i+'" style="max-height:170px;overflow-y:auto;">';
+      vals.forEach(function(v){ var checked=ex.indexOf(v)<0;
+        h+='<label style="display:flex;align-items:center;gap:7px;font-size:11px;color:#3a3a46;padding:3px 2px;cursor:pointer;"><input type="checkbox" data-vfitem="'+i+'" data-val="'+esc(v)+'"'+(checked?' checked':'')+'> '+esc(v)+'</label>';
+      });
+      if(!vals.length) h+='<div style="font-size:10.5px;color:#9a9aa6;padding:3px 2px;">No values.</div>';
+      h+='</div></div>';
+    });
+    h+='<span data-vfadd="1" style="font-size:10.5px;color:#1e1b6b;cursor:pointer;font-weight:600;">+ Add filter</span>';
+    h+='</div>';
+    return h;
+  }
 
   // Per-type editor bodies (built one type at a time).
   var GROUPBY_OPTS=[['phase','PhaseCategory'],['comp','CompType'],['area','Area'],['roc','ROCStep'],['shop','ShopField'],['wp','WorkPackage'],['module','UDF2'],['status','Status'],['dwg','DwgNO'],['phaseCode','PhaseCode'],['projectId','ProjectID'],['aux1','Aux1'],['aux2','Aux2'],['aux3','Aux3'],['schedActNo','SchedActNO'],['earnQtyEntry','EarnQtyEntry']].concat(UDF_OPTS);
@@ -826,7 +858,7 @@
       +edSelect('Center value','center',def.center||'pct',[['pct','% complete'],['earned','Total earned'],['budget','Total budget'],['count','Row count']])
       +edToggle('Show Earned &amp; Total beneath','showTiles',def.showTiles)
       +'<div style="border-top:1px solid #eceef2;padding-top:10px;">'+edColor('Progress color','colorProgress',def,'#1e1b6b')+edColor('Remaining color','colorRemaining',def,'#e6e6ee')+'</div>'
-      +edExclude(def);
+      +edFilters(def);
   };
   VEDITORS.donut=function(def){
     return edInput('Label','title',def.title)
@@ -840,7 +872,7 @@
         +edSelectR('Slice colors','colorMode',def.colorMode||'palette',[['palette','Summit palette (default)'],['spread','Spread between two colors']])
         +(def.colorMode==='spread'?edColor('Start color','spreadFrom',def,'#1e1b6b')+edColor('End color','spreadTo',def,'#a49fd8'):'<div style="font-size:10px;color:#9a9aa6;margin:-4px 0 8px;">Uses the default Summit palette — switch to “Spread” to pick two colors.</div>')
       +'</div>'
-      +edExclude(def);
+      +edFilters(def);
   };
   VEDITORS.barList=function(def){
     var vert=(def.orientation==='vertical');
@@ -856,7 +888,7 @@
         +edToggleR('Highlight complete (100%)','highlightComplete',def.highlightComplete!==false)
         +(def.highlightComplete!==false?edColor('Complete color','completeColor',def,'#2bb24c'):'')
       +'</div>'
-      +edExclude(def);
+      +edFilters(def);
   };
   VEDITORS.table=function(def){
     return edInput('Label','title',def.title)
@@ -868,7 +900,7 @@
         +(def.highlightComplete!==false?edColor('Complete % color','completeColor',def,'#2bb24c'):'')
       +'</div>'
       +edColsToggles(def)
-      +edExclude(def);
+      +edFilters(def);
   };
   VEDITORS.heatmap=function(def){
     return edInput('Label','title',def.title)
@@ -881,7 +913,7 @@
         +edColor('No data','colorNoData',def,'#666666')
       +'</div>'
       +edColsToggles(def)
-      +edExclude(def);
+      +edFilters(def);
   };
   VEDITORS.trend=function(def){
     var isCum=(def.mode||'cumulative')==='cumulative';
@@ -893,7 +925,7 @@
         +edColor('Bar color','barColor',def,'#1e1b6b')
         +(isCum?edToggleR('Highlight complete','highlightComplete',def.highlightComplete!==false)+(def.highlightComplete!==false?edColor('Complete color','completeColor',def,'#2bb24c'):''):'<div style="font-size:10px;color:#9a9aa6;margin:2px 0;">Highlight-complete applies to Cumulative mode only.</div>')
       +'</div>'
-      +edExclude(def);
+      +edFilters(def);
   };
   VEDITORS.statTiles=function(def){
     return edInput('Title','title',def.title)
@@ -1028,6 +1060,20 @@
     if(add&&_editId){ var da=findDef(_editId); if(da){ condArr(da,add.getAttribute('data-condadd')).push({field:'roc',op:'Equals',value:'',logic:'AND'}); buildEditorPanel(da); } return; }
     var rem=e.target.closest?e.target.closest('[data-condrem]'):null;
     if(rem&&_editId){ var dr=findDef(_editId); if(dr){ condArr(dr,rem.getAttribute('data-condrem')).splice(+rem.getAttribute('data-ci'),1); buildEditorPanel(dr); } return; }
+  });
+  // Value-filter (Power BI style) events: field change / value check / select-all / search / add-remove.
+  function edVfEvt(e){ var t=e.target; if(!t||!t.getAttribute||!_editId) return; var def=findDef(_editId); if(!def) return; if(!def.valueFilters) def.valueFilters=[]; var vfs=def.valueFilters, host=document.getElementById('vEditor');
+    if(t.getAttribute('data-vfp')==='field'){ var fi=+t.getAttribute('data-vf'); if(vfs[fi]){ vfs[fi].field=t.value; vfs[fi].exclude=[]; buildEditorPanel(def); } return; }
+    var vi=t.getAttribute('data-vfitem'); if(vi!=null){ var i=+vi, val=t.getAttribute('data-val'), f=vfs[i]; if(!f) return; if(!f.exclude) f.exclude=[]; var idx=f.exclude.indexOf(val); if(t.checked){ if(idx>=0) f.exclude.splice(idx,1); } else if(idx<0){ f.exclude.push(val); } var all=host&&host.querySelector('[data-vfall="'+i+'"]'); if(all) all.checked=(f.exclude.length===0); return; }
+    var av=t.getAttribute('data-vfall'); if(av!=null){ var ai=+av, af=vfs[ai]; if(!af||!host) return; var items=host.querySelectorAll('[data-vfitem="'+ai+'"]'); af.exclude=[]; [].forEach.call(items,function(cb){ cb.checked=t.checked; if(!t.checked) af.exclude.push(cb.getAttribute('data-val')); }); return; }
+  }
+  document.addEventListener('change',edVfEvt);
+  document.addEventListener('input',function(e){ var t=e.target; if(!t||!t.getAttribute||t.getAttribute('data-vfsearch')==null) return; var i=t.getAttribute('data-vfsearch'), q=t.value.toLowerCase(), host=document.getElementById('vEditor'), list=host&&host.querySelector('[data-vflist="'+i+'"]'); if(!list) return; [].forEach.call(list.querySelectorAll('label'),function(lab){ lab.style.display=lab.textContent.toLowerCase().indexOf(q)>=0?'':'none'; }); });
+  document.addEventListener('click',function(e){
+    var add=e.target.closest?e.target.closest('[data-vfadd]'):null;
+    if(add&&_editId){ var da=findDef(_editId); if(da){ if(!da.valueFilters) da.valueFilters=[]; da.valueFilters.push({field:'comp',exclude:[]}); buildEditorPanel(da); } return; }
+    var rem=e.target.closest?e.target.closest('[data-vfrem]'):null;
+    if(rem&&_editId){ var dr=findDef(_editId); if(dr&&dr.valueFilters){ dr.valueFilters.splice(+rem.getAttribute('data-vfrem'),1); buildEditorPanel(dr); } return; }
   });
   document.addEventListener('click',function(e){ var el=e.target.closest?e.target.closest('[data-vp]'):null; if(!el) return; czPromptClose(el.getAttribute('data-vp')==='ok'); });
 

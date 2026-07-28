@@ -306,6 +306,11 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** Landscape Letter offers only ~975px printable width, so printing the four fixed row-1 columns at scale 1.0 clipped table columns and squeezed the bars. Scaling the entire report proportionally at the print-engine level keeps text vector-crisp and avoids per-visual font/padding hacks that would still clip wide tables. `PrintToPdfAsync` runs headless with fixed default margins, so one scale value maps consistently regardless of the user's installed printers.
 **Date:** 2026-07-27
 
+### Per-Visual Row Filters Are Value Checklists; Only Stat-Tile Metrics Use Operator Where-Clauses
+**Rule:** In the Project Dashboard's visual editors, the per-visual **Filters** section is a Power BI-style value checklist — pick a column, uncheck values to hide those rows (stored as `def.valueFilters = [{field, exclude:[unchecked values]}]`, applied by `applyValueFilters`). Empty/absent excludes = show all, and unlisted (new) values are shown by default. The operator-based where-clause builder (`filterBuilder`, twelve operators, AND/OR) is used **only** for the stat-tile **Complete** and **Total** criteria. A group with no rows after filtering is dropped, not shown as an empty 0% entry (`groupAgg` derives groups from the filtered rows).
+**Why:** The per-visual filter is an *exclusion* (start with everything, hide a few) — a checklist that defaults to all-checked fits that exactly and is more discoverable than typing conditions. The stat-tile Complete/Total is the opposite: a narrow *definition* of which rows count, which operators (`Contains`, `Greater Than`, …) express concisely where a checklist would force unchecking most values and can't express numeric thresholds at all.
+**Date:** 2026-07-27
+
 ---
 
 ## Progress Module
