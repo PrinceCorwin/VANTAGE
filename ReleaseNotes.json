@@ -1,6 +1,15 @@
 {
   "releases": [
     {
+      "version": "26.3.5",
+      "date": "2026-07-28",
+      "highlights": [
+        "Improved — Filtering a visual while customizing the Project Dashboard is now a simple checklist, like Power BI: pick a column and uncheck the values you don't want to include (with a search box and Select all), and add more columns as needed. (Stat tiles still use the where-clause builder to define their Complete and Total counts.)",
+        "Fix — A bar chart, donut, or summary table no longer shows an empty 0% entry for a value that has no rows left after filtering — those values simply drop out of the visual.",
+        "Fix — A vertical bar list added to a row beneath the top band now shows its bars instead of just the labels."
+      ]
+    },
+    {
       "version": "26.3.4",
       "date": "2026-07-27",
       "highlights": [

@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.3.4",
-  "releaseDate": "2026-07-27T16:35:10Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.3.4/VANTAGE-26.3.4.zip",
-  "zipSizeBytes": 156528681,
-  "sha256": "F63B9CCC325325CA892A057B3D6B600EE810FA0B98A2A2E462C7D2F6A7DA64C1",
-  "releaseNotes": "New Project Dashboard: a live, customizable progress report with cloud-shareable layouts and PDF export. New Phase Code Analysis window for Viewpoint entry. Tutorials now available to everyone. Export snapshots to Excel from Manage My Snapshots."
+  "currentVersion": "26.3.5",
+  "releaseDate": "2026-07-28T18:50:20Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.3.5/VANTAGE-26.3.5.zip",
+  "zipSizeBytes": 156566713,
+  "sha256": "A9EBCC5576A7C89B2EFF042D7BC431011EC88959602E86F38A478FA527F78518",
+  "releaseNotes": "Project Dashboard: filtering a visual while customizing is now a Power BI-style value checklist, plus fixes for empty 0% entries after filtering and vertical bar lists in lower rows."
 }
