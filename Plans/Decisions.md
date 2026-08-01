@@ -844,6 +844,16 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 
 ## Admin Tools
 
+### Tutorial Videos Are Managed In-App via Admin > Manage Tutorials
+**Rule:** Admins upload, edit, and delete the tutorial videos in the private `summit-vantage-tutorials` bucket from `Admin > Manage Tutorials` (`Dialogs/TutorialManagerDialog`), not by hand via the AWS CLI, and not from a plugin or a separate personal app. Uploads are gated to H.264/AAC MP4 (the app can't transcode), auto-remuxed for faststart, and rejected on a duplicate filename or title. `Services/TutorialService` holds the S3 write methods; the `vantage-takeoff-user` credential's `TakeoffAppAccess` policy grants Get/Put/Delete/List on the bucket. The menu is admin-only and Delete re-verifies admin against Azure.
+**Why:** Managing company tutorial content is an admin function that must outlive any one employee. Living in the main app every admin already runs — gated by the Azure Admins table — is the most durable succession path: a successor just sees the menu item, no feed install or tribal knowledge. A VANTAGE-Plugins plugin was built first then abandoned (it exposed the tool in every user's plugin feed and forced a ~194 MB auto-download); a personal miniapp was rejected because it would die with the author's tenure.
+**Date:** 2026-08-01
+
+### The Manage Tutorials Tool Lazy-Downloads ffmpeg From S3, Never Bundles It
+**Rule:** ffmpeg/ffprobe are not shipped in the installer. `Utilities/FfmpegProvider` downloads `tools/ffmpeg-tools.zip` (~73 MB) from the tutorials bucket into `%LocalAppData%\VANTAGE\tools\` on the first upload, SHA-256-verifies it, and extracts it once; `Utilities/Mp4Tooling` then shells out to those binaries to inspect codecs and faststart-remux before upload. To change the ffmpeg build, re-upload the zip and update `FfmpegProvider.ExpectedSha256`.
+**Why:** The binaries are ~194 MB unpacked — far too large to add to every field user's installer for an admin-only tool used by a handful of people. Hosting them in the bucket we already control and fetching on demand keeps the installer lean while giving admins full ffmpeg parity; the SHA check stops a tampered or truncated download from running.
+**Date:** 2026-08-01
+
 ### Bulk Restore/Purge Uses Temp Table + SqlBulkCopy + INNER JOIN
 **Rule:** `BtnRestore_Click` and `BtnPurge_Click` in `Views/DeletedRecordsView.xaml.cs` create a session-scoped `#RestoreBatch` / `#PurgeBatch` temp table, bulk-copy UniqueIDs in via `SqlBulkCopy`, and run a single `UPDATE ... INNER JOIN` (or `DELETE ... INNER JOIN`). Same pattern as `Utilities/SyncManager.cs`. No chunked loops; no transaction wrapping multiple statements.
 **Why:** Earlier `WHERE UniqueID IN (@uid0..@uid999)` chunked design hit SQL Server's 2100-parameter ceiling, produced terrible query plans (large IN lists become OR-trees with unreliable plan reuse), and held write locks across all batches in one transaction blocking concurrent user sync. SqlBulkCopy + INNER JOIN is one round-trip with a clean index-seek plan. A 5,783-record restore that used to take minutes now runs in seconds.

@@ -693,5 +693,29 @@ namespace VANTAGE.Utilities
                 AppLogger.Error(ex, "SettingsManager.MarkTutorialWatched");
             }
         }
+
+        // Drop watched keys that no longer exist in the manifest (e.g. an admin deleted
+        // the video). Self-heals each user's set on Tutorials open: keeps it from
+        // accumulating orphans and stops a re-used filename from inheriting a stale
+        // "watched" flag. Persists only when something actually changed.
+        public static void PruneWatchedTutorials(IEnumerable<string> validKeys)
+        {
+            try
+            {
+                var set = GetWatchedTutorials();
+                if (set.Count == 0) return;
+
+                var valid = new HashSet<string>(validKeys, StringComparer.OrdinalIgnoreCase);
+                int before = set.Count;
+                set.IntersectWith(valid);
+
+                if (set.Count != before)
+                    SetUserSetting(TutorialsWatchedKey, System.Text.Json.JsonSerializer.Serialize(set), "json");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.PruneWatchedTutorials");
+            }
+        }
     }
 }

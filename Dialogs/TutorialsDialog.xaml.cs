@@ -37,7 +37,9 @@ namespace VANTAGE.Dialogs
                     return;
                 }
 
-                // Flag videos this user has opened before so the "Watched" badge shows.
+                // Drop watched keys for videos that no longer exist (deleted by an admin),
+                // then flag videos this user has opened before so the "Watched" badge shows.
+                SettingsManager.PruneWatchedTutorials(items.Select(i => i.Key));
                 var watched = SettingsManager.GetWatchedTutorials();
                 foreach (var item in items)
                     item.Watched = watched.Contains(item.Key);

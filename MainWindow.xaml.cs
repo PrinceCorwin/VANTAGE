@@ -1634,6 +1634,32 @@ namespace VANTAGE
             dialog.ShowDialog();
         }
 
+        private void MenuManageTutorials_Click(object sender, RoutedEventArgs e)
+        {
+            // Check admin status
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
+            {
+                AppMessageBox.Show("You do not have admin privileges.", "Access Denied",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Check Azure connection first (upload/delete write to S3 and re-verify admin)
+            if (!AzureDbManager.CheckConnection(out string errorMessage))
+            {
+                AppMessageBox.Show(
+                    $"Cannot connect to Azure database:\n\n{errorMessage}\n\nThis feature requires an active connection.",
+                    "Connection Required",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new Dialogs.TutorialManagerDialog();
+            dialog.Owner = this;
+            dialog.ShowDialog();
+        }
+
         // === TOOLS DROPDOWN ===
 
         private void BtnTools_Click(object sender, RoutedEventArgs e)

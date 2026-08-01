@@ -544,6 +544,7 @@
                     <li><a href="#admin-progress-log">Manage Progress Log</a></li>
                     <li><a href="#admin-deleted-records">Deleted Records</a></li>
                     <li><a href="#admin-project-rates">Project Rates</a></li>
+                    <li><a href="#admin-tutorials">Manage Tutorials</a></li>
                     <li><a href="#admin-sync">Database Sync</a></li>
                 </ul>
             </li>
@@ -744,6 +745,7 @@
         <li><strong>Edit Snapshots</strong> — Manage weekly data snapshots across all users, upload to Progress Log</li>
         <li><strong>Manage Progress Log</strong> — View and delete batches previously uploaded to the Progress Log</li>
         <li><strong>Deleted Records UI</strong> — View and restore soft-deleted records</li>
+        <li><strong>Manage Tutorials</strong> — Upload, edit, and delete the how-to videos shown in the Tutorials library. See <a href="#admin-tutorials">Manage Tutorials</a>.</li>
         <li><strong>Audit All Records</strong> — Read-only validation report across every active activity. Opens a project selection dialog with checkboxes (all checked by default; the Excel-style header checkbox toggles all) and a <strong>Source: Azure / Local</strong> radio. Azure mode lists every project on the server and scans <code>VMS_Activities</code> directly — full coverage but the <em>Show in ProgressView</em> button only finds rows already in your local cache. Local mode lists only projects you have synced down and scans the local <code>Activities</code> table — narrower scope, but Show in ProgressView surfaces every offender because they're all loaded. The results grid includes an <strong>AssignedTo</strong> column you can drag to the group drop area to see per-user issue counts. Read-only — no records are modified. Export Report writes the full list to <code>.xlsx</code>.</li>
     </ul>
 
@@ -3907,6 +3909,17 @@
 
     <p>Rate sets uploaded here appear in the <strong>Unit Rates</strong> dropdown on the AI Takeoff view. This dialog is also accessible from the "Upload New..." option in that dropdown.</p>
 
+
+    <h3 id="admin-tutorials">Manage Tutorials (Admin > Manage Tutorials)</h3>
+    <p>Manage the how-to videos shown in the <a href="#ui-tutorials">Tutorials</a> library. The dialog lists every tutorial (file name, title, and description) and shows a count, with a warning if the video storage and the list ever disagree. Changes are live immediately — the Tutorials library reads the current list each time it opens, so there is no app release or update needed to add or change a video.</p>
+    <ul>
+        <li><strong>Upload New...</strong> — Choose an <code>.mp4</code> file, then enter a filename, title, and description. The app checks the video automatically: it must be H.264 video with AAC audio (re-export from your editor if not), and it is optimized for smooth streaming before upload. Filenames are number-prefixed (e.g. <code>10-Vantage-Topic.mp4</code>) so the list stays in order. Both the filename and the title must be unique.</li>
+        <li><strong>Edit Details...</strong> — Change the selected video's title or description without re-uploading the video.</li>
+        <li><strong>Delete</strong> — Permanently remove the selected video and its list entry. This cannot be undone.</li>
+        <li><strong>Refresh</strong> — Reload the list from storage.</li>
+    </ul>
+    <p><strong>First-time setup:</strong> the first time you upload a video, the app performs a one-time download of the small video-processing tools it needs (about 70&nbsp;MB), stored on your machine for future use. This only happens once and only for admins who upload.</p>
+    <p><strong>Watched badges:</strong> each user's &ldquo;Watched&rdquo; markers are tied to the video's file name. Deleting a video automatically clears its stale markers the next time a user opens the Tutorials library, so a later video re-using the same file name never appears pre-watched.</p>
 
     <h3 id="admin-sync">Database Sync</h3>
     <p>All users sync their local data with the central Azure database using the <strong>SYNC</strong> button in the Progress module (see <a href="#prog-syncing">Syncing Data</a>). Key points for administrators:</p>
