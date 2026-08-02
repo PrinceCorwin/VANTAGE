@@ -16,7 +16,7 @@
 | Module | Status | Notes |
 |--------|--------|-------|
 | Analysis | HIDDEN — superseded | Nav button hidden 2026-07-27; the PhaseCode Summary Grid now lives standalone at **Tools → Phase Code Analysis** (`Dialogs/PhaseCodeAnalysisWindow`). The old view still exists behind the hidden button. **Scheduled for full removal ~2026-08-10** (see todo below). Old feature set: 3x1+3 grid layout, chart filters panel, dynamic chart sections, summary grid with independent filters, Excel export |
-| Procore | IN PROGRESS | OAuth + auth dialog + service layer scaffolded; targeted at WP DWG Log fetch |
+| Procore | IN PROGRESS — BLOCKED on Procore-side install | Design settled + auth validated end-to-end (read-only live test: token, companies, project mapping `25.005`→`3199727` confirmed). App "Vantage: Milestone" Version 0.1.0 promoted to Production with a service account (DMSA) granted Project→Drawings=Read-only. **Blocked:** the app must be installed on Summit's company (3480) via Company Admin → App Management, which needs "Admin" on the Company Directory tool (Steve lacks it — permission-request drafted). Feature design = fetch-to-folder sync into the WP Drawings form. Full detail + hand-off: `Plans/Procore_Plan.md` + gitignored `Procore_Admin_Install_Instructions.md`. May sit for days/indefinitely. |
 | AI Features (other) | NOT STARTED | Error Assistant, Description Analysis, etc. |
 
 ## Scheduled Cleanup

@@ -6,6 +6,18 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### August 1, 2026 (Procore Drawings — design, auth validation, and hand-off docs; not shipped)
+
+**Groundwork for the "Fetch Drawings from Procore" Work Packages feature. No app code shipped — planning + a live read-only auth test + hand-off docs.**
+
+- **Design settled:** service-account (DMSA / client_credentials) auth for all-users, no per-user login; fetch-as-a-sync-step that fills the Drawings form's per-WP folders (generation unchanged, reuses `DrawingsRenderer`); current-revision-only default with an optional all-revisions toggle; match on `DwgNO`; per-Vantage-ProjectID → Procore-project mapping to handle name mismatches. Chosen over the old plan's generation-time fetch.
+- **Auth validated live (read-only):** proved token exchange, `/rest/v1.0/me` and `/companies` (Summit Industrial 3480, Hoffman 41665), and confirmed the mapping **Vantage `25.005` = Procore project `3199727` ("Fluor Lilly Pipe Racks")**. Corrected host facts (dev sandbox uses `sandbox.procore.com` for both OAuth+API, not `login-sandbox`; redirect is `urn:ietf:wg:oauth:2.0:oob`).
+- **Procore app configured:** "Vantage: Milestone" Version 0.1.0 promoted to Production with a service account granted Project→Drawings=Read-only.
+- **Blocked (Procore-side, may sit for days/indefinitely):** the app must be installed on Summit's company (3480) via Company Admin → App Management, which requires "Admin" on the Company Directory tool — Steve lacks it. A permission-request + full admin-install instructions are drafted.
+- **Docs:** rewrote `Plans/Procore_Plan.md` (current design, findings, blocker, build plan); added gitignored `Plans/Procore_Admin_Install_Instructions.md` (hand-off with the production App Version Key). `.gitignore` now excludes `Plans/ProcoreInfo.txt` + the install-instructions doc (both hold keys/secrets).
+
+**Key files:** `Plans/Procore_Plan.md`, `.gitignore` (Procore secret/key exclusions).
+
 ### August 1, 2026 (Tutorials — in-app Admin "Manage Tutorials" tool)
 
 **New Admin → Manage Tutorials — admins upload, edit, and delete tutorial videos from inside the app** (previously videos were managed by hand via the AWS CLI). Changes are live immediately; the Tutorials library reads the manifest each time it opens, so no app release is needed to add or change a video.

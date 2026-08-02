@@ -1,169 +1,61 @@
-# Procore Drawings Integration Plan
+# Procore Drawings Integration — Plan & Status
 
-## Overview
-Integrate Procore API to fetch project drawings for Work Package generation. Drawings are added to WPs via a new "Drawings" form template type with Procore or Local source options.
+**Goal:** Add "Fetch Drawings from Procore" to the Work Packages module. For each Work Package, pull the matching drawing PDFs from Procore (matched by `DwgNO`) into the Drawings form's per-WP folders; PDF generation then runs unchanged.
 
-## Requirements Summary
-- OAuth 2.0 authentication (sandbox + production)
-- New "Drawings" form template type (like Cover, List, Form, Grid)
-- Source options: Procore (fetch via API) or Local (browse folder)
-- Default source in template, override at generation time
-- Fetch ALL revisions for each drawing from Procore
-- Match drawings by DwgNO field (user-configurable column)
-- Alert user if Procore source selected but not connected
-- Embed drawings in WP PDF; save separately if checkbox selected
+**Status (2026-08-01): BLOCKED on a Procore company-admin action** — the app must be connected to Summit's Procore company before any drawing data is readable. Everything else is designed and the auth/mapping is proven. See "Blocker" + "Next steps".
 
 ---
 
-## Phase 1: Procore Service Infrastructure
+## Design decisions (settled 2026-08-01)
+- **Auth = service account (DMSA / `client_credentials`).** One credential, all users, no per-user browser login. (All users generate WPs, so per-user OAuth is the wrong model.)
+- **Integration = fetch-to-folder sync step, NOT generation-time.** A "Fetch from Procore" action downloads matched PDFs into the Drawings form's `{ParentFolderPath}\{WorkPackage}\` folders; the existing `DrawingsRenderer` merges them unchanged. Decoupled from generation → offline-safe at generate time, reviewable before generating, reuses all existing code. (This supersedes the old plan's generation-time fetch.)
+- **Revisions = current revision only**, with an optional "include all revisions" toggle (default OFF).
+- **Match on `DwgNO` only** for now, normalized (trim/case).
+- **Project name mismatch** solved by a persisted **per-Vantage-ProjectID → Procore-project** mapping (a dictionary, not one global project — WP generation spans many projects). Store shared in Azure (pattern of `AzureReportLayoutRepository`) so any user benefits once a project is linked; the service-account credential is central.
 
-### New Files
-| File | Purpose |
-|------|---------|
-| `Services/Procore/ProcoreAuthService.cs` | OAuth flow, token storage/refresh |
-| `Services/Procore/ProcoreApiService.cs` | API calls: companies, projects, drawings |
-| `Models/Procore/ProcoreCompany.cs` | Company model |
-| `Models/Procore/ProcoreProject.cs` | Project model |
-| `Models/Procore/ProcoreDrawing.cs` | Drawing + revisions model |
+## Existing code (scaffolding — present, NOT wired to any UI)
+- `Services/Procore/ProcoreAuthService.cs`, `ProcoreApiService.cs`, `ProcoreToken.cs`, `Dialogs/ProcoreAuthDialog.xaml(.cs)`.
+  - Namespace inconsistency to fix: `MILESTONE.Services.Procore` vs `VANTAGE.Services.Procore`.
+  - Current auth = authorization-code OOB (per-user). Will be replaced/augmented by `client_credentials` (DMSA) for production.
+  - `ProcoreApiService` has `GetCompaniesAsync`, `GetProjectsAsync`, `GetDrawingsAsync` (→ `/projects/{id}/drawing_revisions`). No PDF-download method yet. Not sending `Procore-Company-Id` header yet (required).
+- Creds via `CredentialService` (sandbox/prod toggle) + `AppConfig.ProcoreConfig`, loaded from `appsettings.json`/`appsettings.enc`.
+- Drawings form: `Models/FormTemplate.DrawingsStructure {Title, ParentFolderPath}`; `Services/PdfRenderers/DrawingsRenderer` merges `{ParentFolderPath}\{WorkPackage}\*.pdf`; fetch decoupled from generation (`WorkPackageGenerator` just needs PDFs on disk).
+- Activity fields: `DwgNO`, `SecondDwgNO`, `RevNO`, `ShtNO`, `WorkPackage`. A `SELECT DISTINCT DwgNO WHERE WorkPackage=@wp` query is new work (doesn't exist yet).
 
-### OAuth Flow (OOB for Desktop)
-1. Build auth URL → open in browser
-2. User logs in, authorizes app
-3. User copies auth code back to app
-4. Exchange code for access_token + refresh_token
-5. Store tokens via SettingsManager
-6. Auto-refresh before expiry
+## What we proved — live read-only test, 2026-08-01 (via Steve's user login)
+- Client-credentials token mint works at the OAuth layer (sandbox app).
+- Production authorization-code login works: `/rest/v1.0/me` → `samalfitano@summit.us` (id 8067289); `/rest/v1.0/companies` → **Summit Industrial Construction LLC (company 3480)** and Hoffman Corporation (41665).
+- **Project mapping confirmed:** Vantage `25.005` = Procore project **3199727** ("Fluor Lilly Pipe Racks"). (Drawing area 3119466; sample drawing/revision 386068887; test `DwgNO = LP1Y-APL(100)-034001-02`.)
+- Drawings endpoint to use: `GET /rest/v1.0/projects/{project_id}/drawing_revisions` with `Procore-Company-Id` header. Each revision carries `number` (= DwgNO), `revision`, `current`, plus a PDF file/url field (exact field name TBD — confirm once a project is readable).
 
-### Settings Keys (via SettingsManager)
-```
-Procore.AccessToken
-Procore.RefreshToken
-Procore.TokenExpiry
-Procore.CompanyId / CompanyName
-Procore.ProjectId / ProjectName
-Procore.DrawingColumn (default: "DwgNO")
-```
+## Environment / host facts (corrected — `Credentials.cs` is partly wrong)
+- **Production:** OAuth `https://login.procore.com/oauth`, API `https://api.procore.com`.
+- **Developer sandbox:** OAuth AND API are BOTH `https://sandbox.procore.com` (NOT `login-sandbox.procore.com`, which is what `Credentials.cs` currently hardcodes — fix this). Monthly sandbox OAuth is `https://login-sandbox-monthly.procore.com/oauth`.
+- Tokens are NOT shared across environments; the token issuer host must match the API host.
+- App's registered OAuth **redirect URI = `urn:ietf:wg:oauth:2.0:oob`** (redirectless), not `http://localhost`.
+- App id (dev portal): `feddff3a-4692-43b2-9fe4-e72dbcfb3dcf`. Production client_id `BQBoIYM6cE_...` (secret in gitignored `Plans/ProcoreInfo.txt`).
 
----
+## BLOCKER (2026-08-01)
+Every company-scoped call returns **403 `{"errors":["App is not connected to this company."]}`**. The "Vantage: Milestone" app has never been installed/connected to Summit's Procore company (3480). This blocks BOTH the service-account and the user-login paths. Connecting the app needs **Company Admin / App Management** rights, which Steve does NOT have (his Company Tools show only Portfolio + Planroom). This is an organizational/permissions step, not a code problem.
 
-## Phase 2: Procore Settings UI
+## Next steps to unblock (see `Plans/Procore_Admin_Install_Instructions.md` for the hand-off)
+1. **App owner (Steve, Developer Portal): ✅ DONE 2026-08-01.** App is a Data Connection App with a service-account (client_credentials) component, **Project → Drawings = Read-only**; **Version 0.1.0 promoted to Production**. Production App Version Key is in `Plans/ProcoreInfo.txt` + the (gitignored) `Procore_Admin_Install_Instructions.md`. Gotcha found: Procore's **Save Component** only enables when BOTH Component Type boxes (User Level + Service Account) are checked — both are enabled (we use only the service account).
+2. **Company Admin (Summit Procore):** install the custom app on company 3480 (Admin → App Management → Install Custom App → App Version ID). This auto-creates the **DMSA** (a service-account user in the Company Directory) and its **client_id/secret**; then set **Permitted Projects** (include `25.005`). Return the **DMSA client_id + client_secret** → add to `Plans/ProcoreInfo.txt` (gitignored) labeled "DMSA production".
+3. Re-run the read test (DMSA token → project 3199727 `drawing_revisions` → confirm `LP1Y-APL(100)-034001-02` + capture the PDF-url field name).
 
-### New Files
-| File | Purpose |
-|------|---------|
-| `Dialogs/ProcoreSettingsDialog.xaml` | Connection, company/project selection |
-| `Dialogs/ProcoreSettingsDialog.xaml.cs` | Dialog logic |
+## Build plan (after unblock) — folder-sync model
+- `ProcoreApiService`: add `Procore-Company-Id` header; add `client_credentials` token path; add `GetDrawingRevisionsAsync(projectId)` + `DownloadDrawingPdfAsync(url, destPath)` (HttpClient stream-to-file, `PluginInstallService` pattern).
+- New `SELECT DISTINCT DwgNO ... WHERE WorkPackage=@wp` (respecting current ProjectID).
+- Project-mapping store (Azure table `Vantage ProjectID → {company_id, procore_project_id}`), with a one-time "Link Procore Project" picker (companies → projects).
+- WP module: a **"Fetch Drawings from Procore"** action for the selected WPs → for each WP: distinct DwgNOs → match against the project's current drawing revisions → download PDFs into `{ParentFolderPath}\{WorkPackage}\` → report misses. Config toggle for current-only vs all-revisions.
+- Fix `Credentials.cs`/config sandbox host; unify the `MILESTONE`/`VANTAGE` namespace.
 
-### Features
-- Connect/Disconnect button (opens browser for OAuth)
-- Paste auth code textbox
-- Company dropdown (fetched after auth)
-- Project dropdown (fetched when company selected)
-- Drawing column mapping dropdown (DwgNO, SecondDwgNO, etc.)
-- Connection status indicator
-- Test Connection button
+## Security notes
+- `Plans/ProcoreInfo.txt` holds Procore client secrets — **gitignored** (added 2026-08-01). Never commit.
+- Fetch is **read-only** against Procore (GET only). The live test touched no data.
 
-### MainWindow Integration
-- Add "Procore Settings" to Tools menu
-
----
-
-## Phase 3: Drawings Form Template Type
-
-### Database Changes
-- Add "Drawings" as valid TemplateType in FormTemplates table
-- Built-in "Drawings" template seeded in DatabaseSetup.cs
-
-### New Renderer
-| File | Purpose |
-|------|---------|
-| `Services/PdfRenderers/DrawingsRenderer.cs` | Handles drawing PDF assembly |
-
-### Form Template Structure (JSON)
-```json
-{
-  "source": "Procore",        // "Procore" or "Local"
-  "localFolderPath": null,    // For Local source
-  "includeAllRevisions": true
-}
-```
-
-### WorkPackageView Changes
-- When WP template contains Drawings form and source is Procore:
-  - Check if connected → if not, show alert with link to settings
-- At generation time:
-  - If Procore: collect DwgNO values from activities, fetch from API
-  - If Local: prompt for folder, include all PDFs from folder
-
----
-
-## Phase 4: Generation Integration
-
-### WorkPackageGenerator.cs Modifications
-1. Detect "Drawings" form in WP template
-2. If source = "Procore":
-   - Query activities for unique DwgNO values (using configured column)
-   - Call `ProcoreApiService.SearchDrawingByNumberAsync()` for each
-   - Fetch all revisions for each drawing
-   - Download PDFs, add to document list
-3. If source = "Local":
-   - Get folder path (from template or user prompt)
-   - Load all PDFs from folder
-4. Merge drawings into WP PDF at the Drawings form's position
-5. If "individual PDFs" checked, save drawings separately
-
-### Error Handling
-| Error | Action |
-|-------|--------|
-| Procore not connected | Alert user, offer to open settings |
-| Drawing not found | Log warning, skip, continue with others |
-| 401 Unauthorized | Attempt refresh, then re-auth prompt |
-| 429 Rate Limited | Exponential backoff, retry 3x |
-| Download failed | Log error, skip revision, continue |
-
----
-
-## Phase 5: Polish & Testing
-
-- Progress indicator: "Fetching drawing 3 of 7..."
-- Generation result includes drawing count and any failures
-- Sandbox testing with test drawings
-- Production testing
-
----
-
-## Implementation Order
-
-1. **Phase 1** - ProcoreAuthService + ProcoreApiService (foundation)
-2. **Phase 2** - ProcoreSettingsDialog + Tools menu item
-3. **Phase 3** - Drawings form template type + DrawingsRenderer
-4. **Phase 4** - WorkPackageGenerator integration
-5. **Phase 5** - Error handling, progress, polish
-
----
-
-## Critical Files to Modify
-
-| File | Changes |
-|------|---------|
-| `Credentials.cs` | Already has Procore creds (no changes) |
-| `DatabaseSetup.cs` | Seed built-in Drawings template |
-| `MainWindow.xaml.cs` | Add Procore Settings to Tools menu |
-| `WorkPackageGenerator.cs` | Handle Drawings form type |
-| `WorkPackageView.xaml.cs` | Alert if Procore needed but not connected |
-| `TokenResolver.cs` | Possibly add drawing-related tokens |
-
----
-
-## API Endpoints
-
-| Endpoint | Purpose |
-|----------|---------|
-| `POST /oauth/token` | Exchange code / refresh token |
-| `GET /rest/v1.0/companies` | List companies |
-| `GET /rest/v1.0/projects?company_id=X` | List projects |
-| `GET /rest/v1.0/projects/{id}/drawings` | List drawings |
-| `GET /rest/v1.0/drawings/{id}/revisions` | Get all revisions |
-| Drawing PDF URL from revision data | Download PDF |
-
-All API calls require header: `Authorization: Bearer {token}`, `Procore-Company-Id: {id}`
+## References (Procore docs)
+- Developer Managed Service Accounts: https://procore.github.io/documentation/developer-managed-service-accounts
+- Install a Custom App: https://support.procore.com/products/online/user-guide/company-level/admin/tutorials/install-a-custom-app
+- Install a Data Connection App: https://support.procore.com/products/online/user-guide/company-level/admin/tutorials/Install-data-connection-app
+- Configure Service Account Permissions: https://support.procore.com/products/online/user-guide/company-level/admin/tutorials/configure-service-account-permissions
