@@ -101,12 +101,14 @@ Why: the sheet is already ~116k rows and expected to at least double. Downloadin
 
 | Bucket | Rows | Shape | Status |
 |---|---|---|---|
-| A — already per-end | ~38,404 (after B only; C reverted) | sizes = tokens = qty | final key rebuild only |
+| A — already per-end | 64,341 (after B + flange normalization; C reverted) — re-verified vs live r3 2026-08-04 | sizes = tokens = qty | final key rebuild only |
 | B — type collapsed | 31,183 | all sizes listed, 1 uniform token | ✅ DONE 2026-07-10 |
 | C — sizes collapsed | 6,976 | all tokens listed, 1 distinct size listed once | ⚠️ was applied then REVERTED — r3 rolled back to `before_sizeexpand` 2026-07-10; NOT currently applied for non-flange rows |
 | D — both collapsed | 25,051 | 1 size, 1 token, qty > 1 | **NEXT — awaiting approval** |
 | F — irregular | 216 | counts disagree in other ways | user review: `output/irregular_rows_review.csv` |
-| no-joint | 45,368 | qty 0/blank, no tokens | untouched |
+| no-joint | 14,071 (live 2026-08-04; was 45,368 pre-flange — the ~25.9k flanges moved into A) | qty 0/blank, no tokens | untouched |
+
+_Live re-verification against `output/cdx_rates_review_FinalMerged-r3.xlsx` (2026-08-04): A=64,341, B=0 (done), C=6,976 (reverted/pending), D=25,051 (next), F-irregular=216, PIPE/TUBE blank-qty=5,360, no-joint=14,071 — sums to 116,015. Confirms B/C/D counts to the row and that all 25,937 `FLG` rows are now per-end (bucket A)._
 
 - [x] **Cut-row material expansion + TUBE-as-property — DONE 2026-07-09.** See the "Cut-row handling" section above.
 - [x] **Bucket B expansion — DONE 2026-07-10.** 31,183 rows: single uniform token replicated to qty (`BW` → `BW,BW`), `lookup_key` rebuilt from segment columns. **Verify-first mechanic:** a row was only touched if the key recomposed from its columns byte-matched the stored key — 0 mismatches across all 31k, which also validated the LOCKED key recipe sheet-wide. Post-write re-profile: B=0, bucket A grew exactly +31,183. Backup: `output/backups/FinalMerged-r3_BACKUP_before_connexpand.xlsx`. Mechanics: Excel COM via PowerShell — closed-file guard, whole-column array read/write, save; workbook must be closed in Excel during the run.

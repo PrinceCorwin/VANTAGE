@@ -15,6 +15,18 @@ This document tracks completed features and fixes. Items are moved here from Pro
 - **Docs updated** (`Plans/Procore_Plan.md`): status flipped to UNBLOCKED; Blocker section marked RESOLVED with history preserved; added a self-contained **"RESUME HERE (work PC)"** section (pull first, key values inline, Step 1 install + capture DMSA creds, Step 2 prove the read path + capture the still-unknown PDF-url field name, Step 3 code touches). `Plans/Project_Status.md` Procore row updated to match.
 
 **Key files:** `Plans/Procore_Plan.md`, `Plans/Project_Status.md`.
+### August 4, 2026 (Email service migration — AWS SES infrastructure; no app code shipped)
+
+**Stood up AWS SES to replace the Azure Communication Services email service, which was discovered to be running on Steve's personal Azure account. No app code shipped — the live `Utilities/EmailService.cs` (ACS) is untouched; this session is the company-side AWS setup plus a pre-written rewrite ready to drop in.**
+
+- **Registered a company-owned sending domain, `summitapps.net`,** via Route 53 (Summit Industrial company asset, 1yr + auto-renew, WHOIS privacy; hosted zone `Z01697882XFI70LHLYFEE`). Neutral name so other in-house apps (REQit, etc.) can share the one SES sender.
+- **Created the SES v2 domain identity** for `summitapps.net` (us-east-1) with Easy DKIM (RSA 2048) and a custom MAIL FROM (`mail.summitapps.net`); wrote all sending records into the Route 53 zone — 3 DKIM CNAMEs, root SPF (`-all`), DMARC (`p=none`), and the MAIL-FROM MX + SPF.
+- **Parked a second SES identity for `summit.us`** for the eventual switch-over. The internal IT admin approved sending from `summit.us`, but final Comfort Systems blessing is ~2 months out (Comfort acquired Summit; `summit.us` DNS is in Comfort-managed Azure DNS). Plan: run on `summitapps.net` now, flip the sender to `@summit.us` later — a config change, not a rebuild.
+- **Chose AWS SES over repairing the Azure path:** it gets a live all-users feature off personal infrastructure and onto the company AWS account (`430392373397`, already used for S3/tutorials/AI-Takeoff), and dodges the pending Summit→Comfort Azure-tenant migration entirely.
+- **Pre-wrote the SES v2 rewrite of `EmailService.cs`** (`Plans/EmailService_SES_draft.txt`, kept as `.txt` so the build ignores it): same four public method signatures (zero call-site changes), identical email HTML/text, attachments via MimeKit raw-MIME. Drop-in at swap time.
+- **Remaining before go-live:** Chris Aberly clicks the ICANN domain-verification email (check Mimecast quarantine), request SES production access, create the send-only `vantage-email-user` IAM key, add `AWSSDK.SimpleEmailV2` + `MimeKit` NuGets, wire config, swap the file, build, test.
+
+**Key files:** `Plans/Email_SES_Migration_Plan.md` (full state + remaining steps), `Plans/EmailService_SES_draft.txt` (pre-written rewrite), `Plans/Project_Status.md`.
 
 ### August 1, 2026 (Procore Drawings — design, auth validation, and hand-off docs; not shipped)
 

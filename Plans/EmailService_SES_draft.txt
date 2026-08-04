@@ -1,0 +1,373 @@
+// PRE-WRITTEN DRAFT - NOT COMPILED (.txt on purpose so the SDK build ignores it).
+// SES v2 rewrite of Utilities/EmailService.cs. Drop-in at swap time; see
+// Plans/Email_SES_Migration_Plan.md for the full migration state and remaining steps.
+// Requires NuGets AWSSDK.SimpleEmailV2 + MimeKit, plus CredentialService.Email* config members.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Amazon;
+using Amazon.Runtime;
+using Amazon.SimpleEmailV2;
+using Amazon.SimpleEmailV2.Model;
+using MimeKit;
+using VANTAGE.Utilities;
+
+namespace VANTAGE.Utilities
+{
+    // Amazon SES v2 implementation. Public method signatures are unchanged from the
+    // previous Azure Communication Services version, so no call sites change.
+    // Sends from the SES-verified sender (app-notifications.summit.us) using the
+    // send-only vantage-email-user credential.
+    //
+    // Note on delivery semantics: SES confirms it ACCEPTED the message (returns a
+    // MessageId); it does not block for final delivery the way ACS WaitUntil.Completed
+    // did. Bounce/complaint tracking, if wanted later, is done via SNS event
+    // notifications - not by polling here. A successful SendEmailAsync (no exception)
+    // is treated as sent.
+    public static class EmailService
+    {
+        private static AmazonSimpleEmailServiceV2Client? _client;
+
+        // Lazy client init - mirrors TutorialService's AWS client pattern.
+        private static AmazonSimpleEmailServiceV2Client GetClient()
+        {
+            if (_client == null)
+            {
+                var region = RegionEndpoint.GetBySystemName(CredentialService.EmailRegion);
+                _client = new AmazonSimpleEmailServiceV2Client(
+                    new BasicAWSCredentials(CredentialService.EmailAccessKey, CredentialService.EmailSecretKey),
+                    region);
+            }
+            return _client;
+        }
+
+        private static string Sender => CredentialService.EmailSenderAddress;
+
+        // Shared send for the no-attachment case (HTML + optional plain text).
+        private static async Task SendSimpleAsync(string recipient, string subject, string htmlBody, string? plainTextBody)
+        {
+            var body = new Body
+            {
+                Html = new Content { Data = htmlBody, Charset = "UTF-8" }
+            };
+            if (!string.IsNullOrWhiteSpace(plainTextBody))
+            {
+                body.Text = new Content { Data = plainTextBody, Charset = "UTF-8" };
+            }
+
+            var request = new SendEmailRequest
+            {
+                FromEmailAddress = Sender,
+                Destination = new Destination { ToAddresses = new List<string> { recipient } },
+                Content = new EmailContent
+                {
+                    Simple = new Message
+                    {
+                        Subject = new Content { Data = subject, Charset = "UTF-8" },
+                        Body = body
+                    }
+                }
+            };
+
+            await GetClient().SendEmailAsync(request);
+        }
+
+        // Send assignment notification email
+        // Returns true if sent successfully, false otherwise (does not throw)
+        public static async Task<bool> SendAssignmentNotificationAsync(
+            string recipientEmail,
+            string recipientName,
+            string assignedByUsername,
+            int recordCount,
+            List<string> projectIds)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(recipientEmail))
+                {
+                    AppLogger.Warning("Cannot send assignment email - recipient email is empty",
+                        "EmailService.SendAssignmentNotificationAsync");
+                    return false;
+                }
+
+                string projectList = projectIds.Count > 0
+                    ? string.Join(", ", projectIds.Distinct())
+                    : "Unknown";
+
+                string subject = $"VANTAGE: MS: {recordCount} record(s) assigned to you";
+
+                string htmlBody = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #0078D7; color: white; padding: 15px 20px; border-radius: 4px 4px 0 0; }}
+        .content {{ background-color: #f5f5f5; padding: 20px; border-radius: 0 0 4px 4px; }}
+        .highlight {{ font-size: 24px; font-weight: bold; color: #0078D7; }}
+        .details {{ margin-top: 15px; }}
+        .detail-row {{ padding: 8px 0; border-bottom: 1px solid #ddd; }}
+        .label {{ font-weight: 600; color: #555; }}
+        .footer {{ margin-top: 20px; font-size: 12px; color: #888; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2 style='margin: 0;'>VANTAGE: MS Assignment Notification</h2>
+        </div>
+        <div class='content'>
+            <p>Hello {recipientName},</p>
+            <p>You have been assigned new records in VANTAGE: MS:</p>
+            <p class='highlight'>{recordCount} record(s)</p>
+            <div class='details'>
+                <div class='detail-row'>
+                    <span class='label'>Assigned by:</span> {assignedByUsername}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Project(s):</span> {projectList}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Date:</span> {DateTime.Now:MMMM d, yyyy h:mm tt}
+                </div>
+            </div>
+            <p style='margin-top: 20px;'>Please open VANTAGE: MS and SYNC now to see your records.</p>
+            <div class='footer'>
+                <p>This is an automated message from VANTAGE: MS. Please do not reply to this email.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+
+                string plainTextBody = $@"VANTAGE: MS Assignment Notification
+
+Hello {recipientName},
+
+You have been assigned {recordCount} record(s) in VANTAGE: MS.
+
+Assigned by: {assignedByUsername}
+Project(s): {projectList}
+Date: {DateTime.Now:MMMM d, yyyy h:mm tt}
+
+Please open VANTAGE: MS and SYNC now to see your records.
+
+This is an automated message from VANTAGE: MS. Please do not reply to this email.";
+
+                await SendSimpleAsync(recipientEmail, subject, htmlBody, plainTextBody);
+
+                AppLogger.Info(
+                    $"Assignment email sent to {recipientEmail} ({recordCount} records from {assignedByUsername})",
+                    "EmailService.SendAssignmentNotificationAsync",
+                    assignedByUsername);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "EmailService.SendAssignmentNotificationAsync");
+                return false;
+            }
+        }
+
+        // Send access request email to all administrators
+        public static async Task<bool> SendAccessRequestEmailAsync(
+            string windowsUsername,
+            string fullName,
+            string email)
+        {
+            try
+            {
+                // Get admin email addresses from Azure
+                var adminEmails = await AzureDbManager.GetAdminEmailsAsync();
+                if (adminEmails.Count == 0)
+                {
+                    AppLogger.Warning("No admin emails found - cannot send access request",
+                        "EmailService.SendAccessRequestEmailAsync");
+                    return false;
+                }
+
+                string subject = $"VANTAGE: MS Access Request - {windowsUsername}";
+
+                string htmlBody = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background-color: #0078D7; color: white; padding: 15px 20px; border-radius: 4px 4px 0 0; }}
+        .content {{ background-color: #f5f5f5; padding: 20px; border-radius: 0 0 4px 4px; }}
+        .details {{ margin-top: 15px; }}
+        .detail-row {{ padding: 10px 0; border-bottom: 1px solid #ddd; }}
+        .label {{ font-weight: 600; color: #555; display: inline-block; width: 140px; }}
+        .footer {{ margin-top: 20px; font-size: 12px; color: #888; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2 style='margin: 0;'>VANTAGE: MS Access Request</h2>
+        </div>
+        <div class='content'>
+            <p>A user is requesting access to VANTAGE: MS:</p>
+            <div class='details'>
+                <div class='detail-row'>
+                    <span class='label'>Windows Username:</span> {windowsUsername}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Full Name:</span> {fullName}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Email:</span> {email}
+                </div>
+                <div class='detail-row'>
+                    <span class='label'>Request Date:</span> {DateTime.Now:MMMM d, yyyy h:mm tt}
+                </div>
+            </div>
+            <p style='margin-top: 20px;'>Please add this user to the Users table in VANTAGE: MS Admin if approved.</p>
+            <div class='footer'>
+                <p>This is an automated message from VANTAGE: MS.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
+
+                string plainTextBody = $@"VANTAGE: MS Access Request
+
+A user is requesting access to VANTAGE: MS:
+
+Windows Username: {windowsUsername}
+Full Name: {fullName}
+Email: {email}
+Request Date: {DateTime.Now:MMMM d, yyyy h:mm tt}
+
+Please add this user to the Users table in VANTAGE: MS Admin if approved.
+
+This is an automated message from VANTAGE: MS.";
+
+                // Send to each admin. SES accepts per-message; a failure to one admin
+                // does not stop the others.
+                bool allSent = true;
+                foreach (var adminEmail in adminEmails)
+                {
+                    try
+                    {
+                        await SendSimpleAsync(adminEmail, subject, htmlBody, plainTextBody);
+                        AppLogger.Info($"Access request email sent to admin: {adminEmail}",
+                            "EmailService.SendAccessRequestEmailAsync");
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLogger.Error(ex, $"EmailService.SendAccessRequestEmailAsync - Failed to send to {adminEmail}");
+                        allSent = false;
+                    }
+                }
+
+                return allSent;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "EmailService.SendAccessRequestEmailAsync");
+                return false;
+            }
+        }
+
+        // Generic send email method for future use
+        public static async Task<bool> SendEmailAsync(
+            string recipientEmail,
+            string subject,
+            string htmlBody,
+            string? plainTextBody = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(recipientEmail))
+                {
+                    AppLogger.Warning("Cannot send email - recipient email is empty",
+                        "EmailService.SendEmailAsync");
+                    return false;
+                }
+
+                await SendSimpleAsync(recipientEmail, subject, htmlBody, plainTextBody);
+
+                AppLogger.Info($"Email sent to {recipientEmail}: {subject}", "EmailService.SendEmailAsync");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "EmailService.SendEmailAsync");
+                return false;
+            }
+        }
+
+        // Send email with file attachment.
+        // SES v2 has no attachment field on the Simple content type, so an attachment
+        // requires a raw MIME message. MimeKit builds it correctly (encoding,
+        // boundaries, headers) rather than hand-rolling MIME.
+        public static async Task<bool> SendEmailWithAttachmentAsync(
+            string recipientEmail,
+            string recipientName,
+            string subject,
+            string htmlBody,
+            string attachmentName,
+            byte[] attachmentData,
+            string contentType = "text/plain")
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(recipientEmail))
+                {
+                    AppLogger.Warning("Cannot send email - recipient email is empty",
+                        "EmailService.SendEmailWithAttachmentAsync");
+                    return false;
+                }
+
+                var message = new MimeMessage();
+                message.From.Add(MailboxAddress.Parse(Sender));
+                message.To.Add(string.IsNullOrWhiteSpace(recipientName)
+                    ? MailboxAddress.Parse(recipientEmail)
+                    : new MailboxAddress(recipientName, recipientEmail));
+                message.Subject = subject;
+
+                var builder = new BodyBuilder { HtmlBody = htmlBody };
+
+                // Parse the caller-supplied content type; fall back to octet-stream.
+                if (!ContentType.TryParse(contentType, out ContentType parsedType))
+                {
+                    parsedType = new ContentType("application", "octet-stream");
+                }
+                builder.Attachments.Add(attachmentName, attachmentData, parsedType);
+                message.Body = builder.ToMessageBody();
+
+                using var ms = new MemoryStream();
+                message.WriteTo(ms);
+                ms.Position = 0;
+
+                var request = new SendEmailRequest
+                {
+                    FromEmailAddress = Sender,
+                    Destination = new Destination { ToAddresses = new List<string> { recipientEmail } },
+                    Content = new EmailContent { Raw = new RawMessage { Data = ms } }
+                };
+
+                await GetClient().SendEmailAsync(request);
+
+                AppLogger.Info($"Email with attachment sent to {recipientEmail}: {subject}",
+                    "EmailService.SendEmailWithAttachmentAsync", App.CurrentUser?.Username ?? "Unknown");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "EmailService.SendEmailWithAttachmentAsync");
+                return false;
+            }
+        }
+    }
+}
