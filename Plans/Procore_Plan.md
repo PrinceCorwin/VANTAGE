@@ -2,7 +2,7 @@
 
 **Goal:** Add "Fetch Drawings from Procore" to the Work Packages module. For each Work Package, pull the matching drawing PDFs from Procore (matched by `DwgNO`) into the Drawings form's per-WP folders; PDF generation then runs unchanged.
 
-**Status (2026-08-01): BLOCKED on a Procore company-admin action** — the app must be connected to Summit's Procore company before any drawing data is readable. Everything else is designed and the auth/mapping is proven. See "Blocker" + "Next steps".
+**Status (2026-08-02): BLOCKED on Procore Support — custom-app installation is disabled at the company-account level.** Steve now HAS Procore company-admin rights (including Directory-Admin), but the **"Install App" button never renders** in Company Admin → App Management. Verified it's not a permission gap (can edit Directory fieldsets/users) and not a viewport/width issue (zoomed out + maximized, still absent). Per Procore's own docs the button should be there — its absence means custom-app installs are not enabled for company 3480, which only Procore can turn on. Emailed sysadmin (also named Steve) on 2026-08-02 to flip the account setting or open a Procore ticket. Everything else is designed and the auth/mapping is proven. See "Blocker" + "Next steps".
 
 ---
 
@@ -35,13 +35,26 @@
 - App's registered OAuth **redirect URI = `urn:ietf:wg:oauth:2.0:oob`** (redirectless), not `http://localhost`.
 - App id (dev portal): `feddff3a-4692-43b2-9fe4-e72dbcfb3dcf`. Production client_id `BQBoIYM6cE_...` (secret in gitignored `Plans/ProcoreInfo.txt`).
 
-## BLOCKER (2026-08-01)
-Every company-scoped call returns **403 `{"errors":["App is not connected to this company."]}`**. The "Vantage: Milestone" app has never been installed/connected to Summit's Procore company (3480). This blocks BOTH the service-account and the user-login paths. Connecting the app needs **Company Admin / App Management** rights, which Steve does NOT have (his Company Tools show only Portfolio + Planroom). This is an organizational/permissions step, not a code problem.
+## BLOCKER
+
+### Current (2026-08-02) — custom-app installs disabled at the account level
+Every company-scoped call still returns **403 `{"errors":["App is not connected to this company."]}`** because the app is not yet installed on company 3480 — and we **cannot install it** because the **"Install App" button does not appear** in Company Admin → App Management.
+
+What we ruled out on 2026-08-02 (walked the UI live):
+- **Not a user-permission gap.** Steve now has company-admin rights incl. Directory-Admin — confirmed by being able to open Directory → Fieldsets and Create/Edit fieldsets and users. Procore's stated requirement (Admin on the Company Directory tool) is met.
+- **Not a viewport/rendering issue.** The orange "Install App" button lives at the top-right of the App Management header; it stayed absent after zooming out to ~67% and maximizing the window.
+- **Not the app's service-account permission grid.** The Developer-Portal "Data Connector Components" permission radios (None/Read-only/Standard/Admin per tool) only define what the service account can do *after* install; they have zero effect on whether the company-side Install button renders. (Note: do NOT grant the service account Admin on App Management/Directory — over-privileged; we need only Project → Drawings = Read-only.)
+
+Conclusion: the generic "Install Custom App" entry point is gated by a **company-account setting that must be enabled by Procore** (or a Procore account rep). This is a support/account action, not something Steve can self-serve. **Emailed sysadmin Steve on 2026-08-02** to enable custom-app installs for company 3480 or open a Procore ticket.
+
+### Prior framing (2026-08-01) — superseded
+Originally believed the blocker was that Steve lacked Company-Admin / App-Management rights (his Company Tools showed only Portfolio + Planroom). He has since been granted company-admin, which advanced the blocker to the account-level setting described above rather than resolving it.
 
 ## Next steps to unblock (see `Plans/Procore_Admin_Install_Instructions.md` for the hand-off)
 1. **App owner (Steve, Developer Portal): ✅ DONE 2026-08-01.** App is a Data Connection App with a service-account (client_credentials) component, **Project → Drawings = Read-only**; **Version 0.1.0 promoted to Production**. Production App Version Key is in `Plans/ProcoreInfo.txt` + the (gitignored) `Procore_Admin_Install_Instructions.md`. Gotcha found: Procore's **Save Component** only enables when BOTH Component Type boxes (User Level + Service Account) are checked — both are enabled (we use only the service account).
-2. **Company Admin (Summit Procore):** install the custom app on company 3480 (Admin → App Management → Install Custom App → App Version ID). This auto-creates the **DMSA** (a service-account user in the Company Directory) and its **client_id/secret**; then set **Permitted Projects** (include `25.005`). Return the **DMSA client_id + client_secret** → add to `Plans/ProcoreInfo.txt` (gitignored) labeled "DMSA production".
-3. Re-run the read test (DMSA token → project 3199727 `drawing_revisions` → confirm `LP1Y-APL(100)-034001-02` + capture the PDF-url field name).
+2. **Procore Support / account rep (via sysadmin Steve — emailed 2026-08-02):** enable **custom-app installation** for company 3480 so the "Install App → Install Custom App" button appears in Company Admin → App Management. This is the current gating action.
+3. **Then (Steve, now has company-admin):** Admin → App Management → Install App → Install Custom App → paste Production App Version Key `3af7e34e-b8d9-485b-8522-8546b16b8955`. This auto-creates the **DMSA** (service-account user in the Company Directory) and its **client_id/secret**; then set **Permitted Projects** (include `25.005`). Save the **DMSA client_id + client_secret** → add to `Plans/ProcoreInfo.txt` (gitignored) labeled "DMSA production". (Secret is shown once at creation — copy immediately.)
+4. Re-run the read test (DMSA token → project 3199727 `drawing_revisions` → confirm `LP1Y-APL(100)-034001-02` + capture the PDF-url field name).
 
 ## Build plan (after unblock) — folder-sync model
 - `ProcoreApiService`: add `Procore-Company-Id` header; add `client_credentials` token path; add `GetDrawingRevisionsAsync(projectId)` + `DownloadDrawingPdfAsync(url, destPath)` (HttpClient stream-to-file, `PluginInstallService` pattern).
