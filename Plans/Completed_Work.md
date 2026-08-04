@@ -6,6 +6,16 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### August 4, 2026 (Procore Drawings — blocker cleared, install-ready; docs only)
+
+**No app code — the Procore-side install blocker was worked through live in the browser and the plan docs were updated to a cold-start-ready state for the work PC.**
+
+- **Blocker resolved:** custom-app installation is now enabled for Summit's Procore company (3480) and Steve has the required permissions, so the **"Install Custom App" button now renders** in Company Admin → App Management. Walked the UI to confirm — earlier the button was absent even with Directory-Admin and after ruling out viewport/width, which traced to an account-level setting only Procore could enable (requested via sysadmin on 2026-08-02).
+- **Clarified a false lead:** the Developer-Portal "Data Connector Components" service-account permission grid does NOT gate the company-side Install button; it only scopes what the service account can do after install (keep it at Project→Drawings=Read-only, no Admin).
+- **Docs updated** (`Plans/Procore_Plan.md`): status flipped to UNBLOCKED; Blocker section marked RESOLVED with history preserved; added a self-contained **"RESUME HERE (work PC)"** section (pull first, key values inline, Step 1 install + capture DMSA creds, Step 2 prove the read path + capture the still-unknown PDF-url field name, Step 3 code touches). `Plans/Project_Status.md` Procore row updated to match.
+
+**Key files:** `Plans/Procore_Plan.md`, `Plans/Project_Status.md`.
+
 ### August 1, 2026 (Procore Drawings — design, auth validation, and hand-off docs; not shipped)
 
 **Groundwork for the "Fetch Drawings from Procore" Work Packages feature. No app code shipped — planning + a live read-only auth test + hand-off docs.**
