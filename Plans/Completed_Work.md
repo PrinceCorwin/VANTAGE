@@ -26,6 +26,8 @@ This document tracks completed features and fixes. Items are moved here from Pro
 - **Pre-wrote the SES v2 rewrite of `EmailService.cs`** (`Plans/EmailService_SES_draft.txt`, kept as `.txt` so the build ignores it): same four public method signatures (zero call-site changes), identical email HTML/text, attachments via MimeKit raw-MIME. Drop-in at swap time.
 - **Remaining before go-live:** Chris Aberly clicks the ICANN domain-verification email (check Mimecast quarantine), request SES production access, create the send-only `vantage-email-user` IAM key, add `AWSSDK.SimpleEmailV2` + `MimeKit` NuGets, wire config, swap the file, build, test.
 
+- **Update (same day) — code swap applied, tested, then REVERTED; parked.** The SES rewrite was dropped in and **sending was proven end-to-end** as `vantage-email-user` from `DoNotReply@summitapps.net` (MessageIds returned; IAM policy had to be broadened to `identity/*` because SES sandbox also authorizes against the recipient identity). Then **reverted to the personal-Azure ACS**. **Blocker (delivery, not sending):** `summit.us` receives through Mimecast, which quarantines the brand-new `summitapps.net` domain until an org-wide allowlist entry is added — and that needs Comfort IT (~months). AWS infra left fully intact; flip is a ~10-min pre-written swap once Comfort allowlists it.
+
 **Key files:** `Plans/Email_SES_Migration_Plan.md` (full state + remaining steps), `Plans/EmailService_SES_draft.txt` (pre-written rewrite), `Plans/Project_Status.md`.
 
 ### August 1, 2026 (Procore Drawings — design, auth validation, and hand-off docs; not shipped)

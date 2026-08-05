@@ -84,14 +84,6 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - ALWAYS run `dotnet build` after code changes and fix any errors before reporting completion
 - Do NOT add AI attribution comments in code
 
-### Help Sidebar Maintenance
-- When features are added, deleted, or modified, update `Help/manual.html` to keep documentation current
-- Add new features to the appropriate section and update the Table of Contents if adding new sections
-- Remove documentation for deleted features
-- Update existing documentation when feature behavior changes
-- Alert user to update or add screenshots if UI changes affect or would benefit from visual updates in the help manual
-- (Note: `/finisher` handles this at commit time — proactive mid-session updates are welcome but not required)
-
 ## C# Code Conventions
 
 ### Comments
