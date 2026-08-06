@@ -6,6 +6,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### August 6, 2026 (MCAA Ratesheet — length-unit normalization, key-recipe finalization, flange status correction; producer-side data + docs, no app code)
+
+**Producer-side rate-sheet work in the external SkySkraper `output/cdx_rates_review_FinalMerged-r3.xlsx` (not in this repo) plus VANTAGE planning docs. No app code shipped.**
+
+- **`length` column unit-normalized.** Profiled r3: 2,670 bare-numeral `length` values (all `PIPE` components) had no unit; appended `FT` to every one (uppercase, matching the existing `20FT`/`6IN` convention — pipe joint lengths are priced in feet). Verify-first mechanic recomposed each row's key byte-for-byte before writing (2,670/2,670 matched); post-write 0 bare numerals remain and 0 new key mismatches sheet-wide. Backup `output/backups/FinalMerged-r3_BACKUP_before_lengthunits.xlsx`.
+- **PIPE/TUBE connection-qty rule confirmed.** Exec rule set: all PIPE and TUBE rows carry no connection quantity. Profiling showed all 5,801 PIPE + 250 TUBE rows already have blank `connection_qty` — already satisfied, no change.
+- **Lookup-key recipe finalized (two changes):** (1) `connection_type` moved to immediately **before the sizes** (was after `connection_qty`); (2) `connection_qty` **dropped from the key** entirely — redundant once connections are listed one token per end (verified lossless: qty == token count on all 96,584 keyed rows, zero rows where qty carried extra info). The `connection_qty` column is retained for validation / AI-reference use. Steve rebuilt `Merged_Props` + keys with the new formulas in Excel and pasted as values (kept static for performance at ~116k rows).
+- **New canonical doc `Plans/MCAA_Key_Composition.md`** — single source of truth for the lookup-key recipe: segment order, the exact `TEXTJOIN` formulas, header→column-letter map (with a "resolve by name, not letter" caveat), the formula-vs-static operational note (C/M kept as pasted values by design), and the C# byte-match contract. Replaces the non-versioned `SkySkraper/output/new_key_formulas.txt` scratch note. Linked from the PRD and CLAUDE.md "See also".
+- **Corrected a false "TIG-row" alarm.** An openpyxl recompose flagged 148 `TIG`/WAM rows as key mismatches; root cause was that `NewMaterial` is a live `=XLOOKUP` and openpyxl can't evaluate formulas, so it read blank and dropped the material token. Not bad data — the stored keys were correct. Documented the real lesson: rebuild keys in Excel (where XLOOKUP resolves), never via an openpyxl static recompose.
+- **Flange status corrected — flagged as NOT complete.** Steve found many `FLG` rows with incorrect/missing properties; since properties feed the key, those flanges will mis-key. Downgraded the "flanges DONE 2026-07-10" claim to PARTIAL in the PRD and Project_Status, added a `⚠️` immediate to-do to finish flange properties, and noted the final key rebuild must not run over flanges until their properties are corrected. (Flange work continues at home.)
+
+**Key files:** `Plans/MCAA_Key_Composition.md` (new), `Plans/MCAA_Ratesheet_Plan.md`, `Plans/Project_Status.md`, `Plans/Decisions.md`, `CLAUDE.md`. Data changes are in the external SkySkraper workbook (not git-tracked).
+
 ### August 4, 2026 (Procore Drawings — blocker cleared, install-ready; docs only)
 
 **No app code — the Procore-side install blocker was worked through live in the browser and the plan docs were updated to a cold-start-ready state for the work PC.**
