@@ -183,7 +183,7 @@ namespace VANTAGE.Utilities
         //   ImportProfiles.Index           — Import from AI Takeoff dialog
         //   ImportProfile.{name}           — Import from AI Takeoff dialog
         //   Takeoff.LastConfigKey          — config dropdown in the AI Takeoff view
-        //   Takeoff.RateMode               — Summit/MCAA radio group in the AI Takeoff view (default "Summit"; MCAA gated to specific users)
+        //   Takeoff.RateMode               — Summit/MCAA-Claude/MCAA-Codex radio group in the AI Takeoff view (values "Summit"/"MCAA"(=Claude)/"MCAA-Codex"; default "Summit"; both MCAA modes gated to specific users)
         //   UserFilters.Progress           — Manage Filters dialog
         //   (AnalysisFilter_* keys removed — chart filters are session-only, not persisted)
         //   Schedule.UDFMappings           — Schedule UDF Column Mappings dialog

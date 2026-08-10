@@ -297,14 +297,23 @@
                          Margin="0,0,16,0"
                          Checked="RbRateMode_Checked"
                          ToolTip="Use the embedded Summit Industrial rate sheet"/>
-            <RadioButton x:Name="rbMcaaRates"
-                         Content="MCAA Rates"
+            <RadioButton x:Name="rbMcaaClaude"
+                         Content="MCAA-Claude"
+                         GroupName="RateMode"
+                         FontSize="12"
+                         VerticalAlignment="Center"
+                         Foreground="{DynamicResource ForegroundColor}"
+                         Margin="0,0,16,0"
+                         Checked="RbRateMode_Checked"
+                         ToolTip="Use the MCAA WebLEM rate sheet via the Claude takeoff backend (gated to specific users while in development)"/>
+            <RadioButton x:Name="rbMcaaCodex"
+                         Content="MCAA-Codex"
                          GroupName="RateMode"
                          FontSize="12"
                          VerticalAlignment="Center"
                          Foreground="{DynamicResource ForegroundColor}"
                          Checked="RbRateMode_Checked"
-                         ToolTip="Use the MCAA WebLEM rate sheet (gated to specific users while in development)"/>
+                         ToolTip="Use the MCAA WebLEM rate sheet via the Codex takeoff backend (under construction — gated to specific users while in development)"/>
         </StackPanel>
 
         <!-- Options -->

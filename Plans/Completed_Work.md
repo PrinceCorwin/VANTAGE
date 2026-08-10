@@ -6,6 +6,21 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### August 10, 2026 (MCAA takeoff — two-backend toggle, drawing-first design direction, reference contract + synonym enrichment; app code + producer-side data + docs)
+
+**App code:**
+- **MCAA-Codex rate-mode radio added.** The Takeoffs rate-mode toggle is now three radios: `Summit Rates`, `MCAA-Claude` (renamed from `MCAA Rates`; `rbMcaaClaude`), and new `MCAA-Codex` (`rbMcaaCodex`). Both MCAA modes gated to the existing `McaaAllowedUsers` allowlist. Persisted values: `"Summit"`, `"MCAA"` (=Claude, legacy value kept for backward compat), `"MCAA-Codex"`. `TakeoffPostProcessor`/`RateMode` enum untouched — MCAA-Codex routes through an isolated UI-call-site guard (`IsCodexRateModeSelected()` + `ShowCodexNotImplemented()`) that skips labor generation with a message, giving Codex a clean seam to attach his own backend without touching the Claude/Summit paths. `GetSelectedRateMode()` helper; three-way gating/restore/persist in `LoadRateModeSetting`/`RbRateMode_Checked`. `UserSettingsRegistry.cs` `Takeoff.RateMode` comment updated. Builds clean (0 errors); not yet UI-tested.
+
+**Producer-side (external SkySkraper, not git-tracked) + planning:**
+- **Reference contract confirmed in r3** (`cdx_rates_review_FinalMerged-r3.xlsx`): 4 AI-facing tabs — CompDefs, ComponentProps (authoritative allowed-props-per-component allowlist), PropDefs, conTypes. ComponentProps supersedes the standalone/Applicability property files; flange body-styles are props of FLG (flange subtype needs no special handling). Fixed a data bug via Excel COM (preserves the XLOOKUP cache): `PropDefs` `MI` corrected from "Miami" to **Malleable Iron**.
+- **Synonym enrichment pass** across all 3 vocab dimensions (36 conn types + 135 props + 120 comps) via citation-grounded research agents (pilot on conn types validated first, then 6 batched agents). ~340 web-cited synonyms + 173 format-variants, 163 collision flags; every synonym carries a source URL + verbatim quote (anti-hallucination). Output review CSVs written to the non-synced `SkySkraper\output\` for Steve's review before any merge into r3.
+
+**Docs / repo:**
+- **New `Plans/MCAA-Takeoff/` folder** consolidates MCAA takeoff docs (`MCAA_Ratesheet_Plan.md`, `MCAA_Key_Composition.md`, `MCAA_Property_Applicability.xlsx`, the `vantage_handoff/` package, `Extracted_Properties_Standalone.xlsx`); `codex_takeoff/` left as-is. Path references fixed in `CLAUDE.md` and `Project_Status.md`.
+- **Design direction recorded:** MCAA-Claude takeoff restructures to drawing-first connection counting (material from BOM, connections/welds/bolt-ups from the isometric); one-pass multimodal extraction with a new Drawing-Body crop box; low-confidence rows flagged not gated. Deferred TODO logged: deterministic parse path from native CAD/PCF when structured source data is available.
+
+**Key files:** `Views/TakeoffView.xaml`, `Views/TakeoffView.xaml.cs`, `Utilities/UserSettingsRegistry.cs`, `Plans/MCAA-Takeoff/` (new), `Plans/Project_Status.md`, `Plans/Decisions.md`, `CLAUDE.md`. Producer-side data changes are in the external SkySkraper workbook + review CSVs (not git-tracked).
+
 ### August 6, 2026 (MCAA Ratesheet — length-unit normalization, key-recipe finalization, flange status correction; producer-side data + docs, no app code)
 
 **Producer-side rate-sheet work in the external SkySkraper `output/cdx_rates_review_FinalMerged-r3.xlsx` (not in this repo) plus VANTAGE planning docs. No app code shipped.**

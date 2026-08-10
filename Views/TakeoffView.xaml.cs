@@ -29,12 +29,14 @@ namespace VANTAGE.Views
         private List<(string ProjectID, string SetName)> _rateSets = new();
         private bool _isLoadingRateDropdowns;
 
-        // Rate mode: Summit (default, all users) or MCAA (gated). Guard prevents the
-        // Checked handler from writing back the value while the radios are being set
-        // programmatically during view load.
+        // Rate mode: Summit (default, all users), MCAA-Claude or MCAA-Codex (both
+        // gated). Persisted values: "Summit", "MCAA" (Claude — legacy value kept for
+        // backward compat), "MCAA-Codex". Guard prevents the Checked handler from
+        // writing back the value while the radios are being set programmatically
+        // during view load.
         private bool _isLoadingRateMode;
 
-        // Allowlist of usernames permitted to select MCAA mode while the MCAA
+        // Allowlist of usernames permitted to select either MCAA mode while the MCAA
         // implementation is partial. Case-insensitive. Will move to admin-only
         // (or be removed) once MCAA goes GA.
         private static readonly HashSet<string> McaaAllowedUsers =
@@ -353,11 +355,18 @@ namespace VANTAGE.Views
                 // Prompt for any blank Component values before processing
                 PromptForBlankComponents(dialog.FileName);
 
+                // MCAA-Codex backend not implemented yet — skip labor generation.
+                // Codex replaces this guard with his own post-processor call.
+                if (IsCodexRateModeSelected())
+                {
+                    ShowCodexNotImplemented();
+                    SetStatus("MCAA-Codex not implemented — labor step skipped.");
+                    return;
+                }
+
                 // Load project rate cache if selected
                 var projectRateCache = await GetSelectedProjectRateCacheAsync();
-                var rateMode = rbMcaaRates.IsChecked == true
-                    ? TakeoffPostProcessor.RateMode.MCAA
-                    : TakeoffPostProcessor.RateMode.Summit;
+                var rateMode = GetSelectedRateMode();
                 var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
                     TakeoffPostProcessor.GenerateLaborAndSummary(dialog.FileName, projectRateCache, rateMode));
 
@@ -483,21 +492,29 @@ namespace VANTAGE.Views
         private void LoadRateModeSetting()
         {
             bool allowed = IsCurrentUserMcaaAllowed();
-            rbMcaaRates.IsEnabled = allowed;
+            rbMcaaClaude.IsEnabled = allowed;
+            rbMcaaCodex.IsEnabled = allowed;
             if (!allowed)
             {
-                rbMcaaRates.ToolTip = "MCAA Rates is restricted while the MCAA integration is in development.";
+                rbMcaaClaude.ToolTip = "MCAA-Claude is restricted while the MCAA integration is in development.";
+                rbMcaaCodex.ToolTip = "MCAA-Codex is restricted while the MCAA integration is in development.";
             }
 
             string? saved = SettingsManager.GetUserSetting("Takeoff.RateMode");
-            bool wantMcaa = string.Equals(saved, "MCAA", StringComparison.OrdinalIgnoreCase) && allowed;
+            // Legacy "MCAA" maps to the Claude backend (the original MCAA path).
+            bool wantClaude = string.Equals(saved, "MCAA", StringComparison.OrdinalIgnoreCase) && allowed;
+            bool wantCodex = string.Equals(saved, "MCAA-Codex", StringComparison.OrdinalIgnoreCase) && allowed;
 
             _isLoadingRateMode = true;
             try
             {
-                if (wantMcaa)
+                if (wantClaude)
                 {
-                    rbMcaaRates.IsChecked = true;
+                    rbMcaaClaude.IsChecked = true;
+                }
+                else if (wantCodex)
+                {
+                    rbMcaaCodex.IsChecked = true;
                 }
                 else
                 {
@@ -512,7 +529,9 @@ namespace VANTAGE.Views
             // Force-reset stored value to Summit if the saved value was MCAA but
             // the current user isn't allowed. Keeps the storage in sync with the
             // effective UI state so the next launch starts clean.
-            if (string.Equals(saved, "MCAA", StringComparison.OrdinalIgnoreCase) && !allowed)
+            bool savedIsMcaa = string.Equals(saved, "MCAA", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(saved, "MCAA-Codex", StringComparison.OrdinalIgnoreCase);
+            if (savedIsMcaa && !allowed)
             {
                 SettingsManager.SetUserSetting("Takeoff.RateMode", "Summit", "string");
             }
@@ -522,8 +541,37 @@ namespace VANTAGE.Views
         {
             if (_isLoadingRateMode) return;
             if (sender is not RadioButton rb) return;
-            string mode = rb.Name == "rbMcaaRates" ? "MCAA" : "Summit";
+            // "MCAA" (not "MCAA-Claude") is the persisted Claude value for backward compat.
+            string mode = rb.Name switch
+            {
+                "rbMcaaClaude" => "MCAA",
+                "rbMcaaCodex" => "MCAA-Codex",
+                _ => "Summit"
+            };
             SettingsManager.SetUserSetting("Takeoff.RateMode", mode, "string");
+        }
+
+        // Rate mode for the Claude/Summit post-processor (TakeoffPostProcessor).
+        // MCAA-Codex is NOT represented here — it routes to a separate backend; see
+        // IsCodexRateModeSelected and the call sites in BtnDownload/BtnRecalcExcel.
+        private TakeoffPostProcessor.RateMode GetSelectedRateMode()
+            => rbMcaaClaude.IsChecked == true
+                ? TakeoffPostProcessor.RateMode.MCAA
+                : TakeoffPostProcessor.RateMode.Summit;
+
+        // MCAA-Codex backend attachment point. When true, the caller must skip the
+        // Claude/Summit labor generation. Codex replaces the guarded stub at each
+        // call site with his own post-processor (e.g. McaaCodexPostProcessor) call.
+        private bool IsCodexRateModeSelected() => rbMcaaCodex.IsChecked == true;
+
+        // Placeholder shown until the Codex backend is wired in. Codex removes this
+        // and the guard that calls it once his labor generation exists.
+        private void ShowCodexNotImplemented()
+        {
+            AppMessageBox.Show(
+                "The MCAA-Codex takeoff backend is not implemented yet.\n\n" +
+                "Select Summit or MCAA-Claude to generate labor.",
+                "MCAA-Codex", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void BtnEditConfig_Click(object sender, RoutedEventArgs e)
@@ -601,14 +649,21 @@ namespace VANTAGE.Views
                 btnRecalcExcel.IsEnabled = false;
                 SetStatus("Recalculating Excel...");
 
+                // MCAA-Codex backend not implemented yet — skip recalculation.
+                // Codex replaces this guard with his own post-processor call.
+                if (IsCodexRateModeSelected())
+                {
+                    ShowCodexNotImplemented();
+                    SetStatus("MCAA-Codex not implemented — recalculation skipped.");
+                    return;
+                }
+
                 // Prompt for any blank Component values before recalculating
                 PromptForBlankComponents(filePath);
 
                 // Load project rate cache if selected
                 var projectRateCache = await GetSelectedProjectRateCacheAsync();
-                var rateMode = rbMcaaRates.IsChecked == true
-                    ? TakeoffPostProcessor.RateMode.MCAA
-                    : TakeoffPostProcessor.RateMode.Summit;
+                var rateMode = GetSelectedRateMode();
 
                 var (missedMakeups, missedRates) = await System.Threading.Tasks.Task.Run(() =>
                     TakeoffPostProcessor.GenerateLaborAndSummary(filePath, projectRateCache, rateMode));

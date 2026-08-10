@@ -9,7 +9,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 - **Company name:** Summit Industrial — the ONLY correct form. Never "Summit Constructors", "Summit Industrial Constructors", or any other variation. Applies everywhere: code, UI, docs, installer.
 - **App name in text:** always "VANTAGE: Milestone" (formal) or "Vantage" (casual). Never "Milestone" alone — conflicts with the schedule module and generic milestones.
 
-**See also:** `Plans/Project_Status.md` (todos, backlog), `Plans/Completed_Work.md` (changelog), `Plans/Milestone_Project_plan.md` (architecture), `Plans/Decisions.md` (design decisions), `Plans/MCAA_Ratesheet_Plan.md` (MCAA integration PRD), `Plans/MCAA_Key_Composition.md` (canonical lookup-key recipe + Excel formulas)
+**See also:** `Plans/Project_Status.md` (todos, backlog), `Plans/Completed_Work.md` (changelog), `Plans/Milestone_Project_plan.md` (architecture), `Plans/Decisions.md` (design decisions), `Plans/MCAA-Takeoff/MCAA_Ratesheet_Plan.md` (MCAA integration PRD), `Plans/MCAA-Takeoff/MCAA_Key_Composition.md` (canonical lookup-key recipe + Excel formulas)
 
 ## Session start
 - **Pull latest first.** Steve works across two PCs (work + personal) and may start any session on the opposite machine from the last one. Run `git pull --rebase` in this repo at the start of EVERY session — including doc-only or "just one quick fix" sessions — to avoid having to resolve conflicts at commit time. The VANTAGE-Plugins sibling repo follows the same rule. **SkySkraper is NOT a Git repo** — it's a Synology-Drive-synced folder — so the equivalent there is confirming the SDrive client has finished catching up before working in that folder.
@@ -26,7 +26,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
 
   The parent path AND the internal layout differ per machine. Never suggest moving it into the VANTAGE tree, copying its files here, git-tracking it, or adding it to `.gitignore`.
 - **Purpose:** Python pipeline that scrapes MCAA WebLEM and produces the local SQLite ratesheet that VANTAGE will consume to replace `Resources/RateSheet.json`. **Before any work in that folder, read its own `CLAUDE.md` first** — it carries the workflow specifics (file-ownership rules, raw-cache guardrails, Synology Drive bulk-op gotcha).
-- **Canonical PRD lives in this repo:** `Plans/MCAA_Ratesheet_Plan.md`. SkySkraper-side status and completed work are tracked in this repo's `Plans/Project_Status.md` and `Plans/Completed_Work.md` (the SkySkraper folder's `Plans/cdx_*.md` files are Codex's authoritative journal — read for reference, do not modify).
+- **Canonical PRD lives in this repo:** `Plans/MCAA-Takeoff/MCAA_Ratesheet_Plan.md`. SkySkraper-side status and completed work are tracked in this repo's `Plans/Project_Status.md` and `Plans/Completed_Work.md` (the SkySkraper folder's `Plans/cdx_*.md` files are Codex's authoritative journal — read for reference, do not modify).
 
 ## Sister Project: VANTAGE-Plugins
 - **External folder (per-machine — NOT in this Git repo):**
@@ -65,7 +65,7 @@ WPF application for Summit Industrial replacing the legacy MS Access system ("Ol
   - CompRefTable: `summit-takeoff-poc\CompRefTable.xlsx`
   - MatRefTable: `summit-takeoff-poc\MatRefTable.xlsx`
 
-  **MCAA (active development — initial copies of the Summit files; OUTPUT side diverges, INPUT side stays functionally identical so drawn-boxes configs keep working — see `Plans/MCAA_Ratesheet_Plan.md`):**
+  **MCAA (active development — initial copies of the Summit files; OUTPUT side diverges, INPUT side stays functionally identical so drawn-boxes configs keep working — see `Plans/MCAA-Takeoff/MCAA_Ratesheet_Plan.md`):**
   - Extraction prompt: `mcaa-takeoff-poc\extraction_prompt.txt`
   - Extraction Lambda: `mcaa-takeoff-poc\lambda_function.py`
   - Aggregation Lambda: `mcaa-aggregate-deploy\lambda_function.py`

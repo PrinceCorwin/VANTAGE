@@ -749,13 +749,13 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 
 ### MCAA Rate Mode
 
-#### MCAA-vs-Summit Divergence Is Gated by an In-App Toggle
-**Rule:** Summit-vs-MCAA divergence at takeoff time is gated by a user-selectable rate mode (`Takeoff.RateMode` UserSetting). The toggle is a radio control on `TakeoffView` between the Action Buttons row and the Options checkboxes row.
-**Why:** A toggle is needed long-term anyway — Summit ratesheet is supposed to remain selectable for 6–12 months after MCAA parity is proven across 5 real projects, then sunset. Toggle puts both code paths on a single trunk and gates the divergence at runtime, instead of maintaining a parallel branch with constant merge work and divergent docs.
-**Date:** May 5, 2026
+#### Rate Mode Is a Three-Way In-App Toggle (Summit / MCAA-Claude / MCAA-Codex)
+**Rule:** Rate mode at takeoff time is the user-selectable `Takeoff.RateMode` UserSetting, surfaced as three radios on `TakeoffView` between the Action Buttons row and the Options checkboxes row: `Summit Rates`, `MCAA-Claude`, and `MCAA-Codex`. Persisted values are `"Summit"`, `"MCAA"` (the Claude backend — legacy value kept for backward compat), and `"MCAA-Codex"`. MCAA-Claude and MCAA-Codex are two independent takeoff backends built side by side for comparison; MCAA-Codex routes to a separate backend seam (an isolated UI-call-site guard) and does not run the Claude/Summit `TakeoffPostProcessor` path.
+**Why:** A toggle is needed long-term anyway — Summit ratesheet stays selectable for 6–12 months after MCAA parity is proven across 5 real projects, then sunsets. A toggle puts the code paths on a single trunk and gates divergence at runtime instead of maintaining parallel branches. Adding MCAA-Codex as a third mode (rather than a config flag or fork) lets Steve run Claude's and Codex's takeoff designs independently, compare output, and merge the best format — while keeping Codex's in-progress backend fully isolated from the working Claude/Summit paths.
+**Date:** May 5, 2026 (MCAA-Codex third mode added August 10, 2026)
 
 #### MCAA Mode Is Restricted to a Hardcoded Username Allowlist
-**Rule:** `Takeoff.RateMode = "MCAA"` is restricted to usernames in the `McaaAllowedUsers` HashSet (`"steve"`, `"steve.amalfitano"`, case-insensitive). Even an admin not in the allowlist cannot select MCAA. The dialog forces the setting back to Summit on load if a non-allowlisted user has somehow set it (export/import, registry edit). After GA the gate moves to admin-only or is removed entirely.
+**Rule:** Both MCAA modes (`Takeoff.RateMode = "MCAA"` [Claude] and `"MCAA-Codex"`) are restricted to usernames in the `McaaAllowedUsers` HashSet (`"steve"`, `"steve.amalfitano"`, case-insensitive). Even an admin not in the allowlist can select neither. The dialog forces the setting back to Summit on load if a non-allowlisted user has somehow set either value (export/import, registry edit). After GA the gate moves to admin-only or is removed entirely.
 **Why:** Tightest possible lock during the partial-implementation window. Half-finished MCAA logic on main means selecting MCAA could ship inflated/wrong numbers. An admin-table check would still let any admin flip it. The HashSet form (vs single string) covers both username spellings the same person logs in under and future-proofs adding a second tester during Phase 3.
 **Date:** May 5, 2026
 
@@ -795,10 +795,10 @@ Sections follow VANTAGE's nav structure top to bottom. See `.claude/skills/finis
 **Why:** CompRefTable's job is to drive AI drawing-item recognition. Polluting it with action/connection codes (BW, SW, THRD, BEV, CUT, HYDRO) bloats the prompt and confuses the recognition task — those concepts don't appear as items on drawing BOMs. A separate post-processing step handles "BOM has SCRD on CS pipe → emit a THRD labor row" and queries the ratesheet directly using the action's abbreviation.
 **Date:** April 2026
 
-#### MCAA Schema Is Bounded by AI Takeoff's Input Scope
-**Rule:** All MCAA schema and lookup design choices must fit what AI Takeoff actually produces. AI Takeoff extracts only two surfaces from each drawing PDF: the BOM table and the title block. There is no line-drawing scan and no line list anywhere in the pipeline. Material lives in the BOM description. Component code, body style, size, connection type, schedule, class — anything VANTAGE wants for rate lookup must be extractable from the BOM description plus the title block.
-**Why:** Designing for an extraction surface that doesn't exist would invalidate every other MCAA decision. Recording this as a bound (not just a fact) so future MCAA work doesn't reason from a phantom line list. CompRefTable is also injected into every extraction prompt — token cost scales with its row count, which separately bounds how big CompRefTable can get and rules out one-key-per-rate-row schemes that would balloon it.
-**Date:** April 2026
+#### MCAA-Claude Takeoff Reads Material From the BOM and Connections From the Line Drawing
+**Rule:** The deployed AI Takeoff (Summit path) extracts two surfaces from each drawing PDF — the BOM table and the title block — with no line-drawing scan. The in-development MCAA-Claude takeoff adds a THIRD surface: it takes MATERIAL from the BOM but COUNTS CONNECTIONS (welds + bolt-ups) from the line drawing itself. Rate-lookup keys still draw material/size/schedule/class from the BOM description + title block; connection tokens now come from the drawing, not from BOM fitting-end inference. (Implementation pending — see Project_Status "Takeoff restructure — drawing-first" and the drawing-first spec + weld-symbol references under `Plans/MCAA-Takeoff/vantage_handoff/`.)
+**Why:** Counting fitting ends off the BOM double-counts fitting-to-fitting welds (two elbows welded together are 3 welds, not 4) — the drawing disambiguates, the BOM cannot. The earlier "design only for BOM + title block, no line-drawing scan" bound was set in April 2026 when models couldn't reliably read isometric connection symbols; that's no longer true. Material stays BOM-sourced because it's authoritative there and not always legible on the drawing. Note: CompRefTable is injected into every extraction prompt, so token cost scales with reference-table size — a real constraint that still bounds the MCAA reference contract's size.
+**Date:** August 10, 2026 (supersedes the April 2026 "no line-drawing scan" bound)
 
 #### SR / LR Modifiers Fold Into the Component Code
 **Rule:** Short Radius (`SR`) and Long Radius (`LR`) for elbows are folded into the component code itself: `EL90SR`, `EL90LR`. Any other modifier the abbreviation can absorb without exploding the keyspace is treated the same.
