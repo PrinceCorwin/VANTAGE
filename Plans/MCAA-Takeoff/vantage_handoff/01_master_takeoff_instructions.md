@@ -371,7 +371,8 @@ If requested, also provide the connection-by-connection breakdown.
 10. Depending on weld numbers — they are often absent; read symbols.
 11. Forgetting stock-length welds after the drawn takeoff.
 12. Adding an SW stock-length joint without its coupling.
-13. Assuming the material system instead of verifying per drawing.
+13. Assuming one material system for the sheet instead of verifying material
+    per BOM item (a single drawing routinely carries multiple materials).
 
 ## WORKING PHILOSOPHY
 
