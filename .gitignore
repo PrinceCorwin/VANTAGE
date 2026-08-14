@@ -45,3 +45,6 @@ UpgradeLog*.htm
 
 # MCAA rate DB — regenerable build artifact (Scripts/export_rates_to_sqlite.py); S3-delivered, not bundled
 Resources/cdx_weblem_rates.db
+
+# Client/test isometrics live on the G drive, not in git
+Plans/MCAA-Takeoff/vantage_handoff/drawings/**/*.pdf
