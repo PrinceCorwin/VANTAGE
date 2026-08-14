@@ -6,6 +6,19 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### August 13, 2026 (MCAA takeoff — extraction approach investigated & costed; rate-DB exporter built; producer-side flanges/valves done; docs)
+
+**Investigation session — settled how the MCAA takeoff will read connections and what it costs. No app code shipped; produced a rate-DB exporter, the shipped SQLite DB, and design docs.**
+
+- **Settled: MCAA connection counting must be a single-pass LLM-vision read of the drawing PDF.** Ruled out the alternatives with evidence: BOM-only miscounts (misses pipe-to-pipe, doubles fitting-to-fitting); pure computer-vision dot detection can't isolate weld marks (blob detection found 2,800–5,100 ink marks/sheet → 0 or 3–5× the true weld count) and can't type/size them; CAD/PCF parse is off the table (client drawings are always PDFs).
+- **Validated the agentic per-drawing takeoff** (render → zoom into each node → read symbols → cross-check BOM), Opus 4.8, no answers given: 4/5 exact on the 5 regression drawings (the 5th drawn-perfect, +1 on a self-flagged stock-length slip). On 3 unseen different-client drawings (ADA/Intel), agentic and one-shot agreed within ±1 — every diff a scope call, not a misread. Finding: the one-shot generalizes better than feared on carbon-steel/butt-weld-dominant sheets; the socket-tick resolution weakness bites only on socket-weld-dense small-bore stainless.
+- **Measured real costs.** Summit today ~$251/2,000 (CloudWatch: ~31k in / ~2.2k out per drawing, Sonnet, on-demand). Agentic ~$1,200–2,600/2,000 (multi-turn → can't batch). Single-pass Opus ~$575–730/2,000 on-demand. **Bedrock Batch Inference verified 50% off** (AWS pricing page) → single-pass ~$575/2,000 batch. Decision: batch path accepted (≤24 h turnaround OK); no Anthropic API account (Summit declined) — everything stays on the existing AWS/Bedrock account.
+- **Built the rate-DB exporter + shipped DB.** `Scripts/export_rates_to_sqlite.py` reads the r3 rate sheet's `lookup_key` + `manhours` (by header name) → `Resources/cdx_weblem_rates.db`: two columns, `lookup_key` as PRIMARY KEY (key = row identity; `rate_id`/`weblem_data_id` both unsuitable), 134,417 unique-key rows, pre-flight duplicate guard. DB gitignored (regenerable ~13 MB artifact, slated for S3 delivery not bundling).
+- **Producer-side r3 finished (per Steve): flanges corrected + valve rows appended** (~+18k → 134,417 rows). `MCAA_Key_Composition.md` updated for the workbook's new column layout (`newManHours` deleted from H; B repurposed to a `DUPES` COUNTIF; column-C conditional formatting discontinued) and the two-column export contract.
+- **Prompt-design note captured:** field-weld "X-through-dot" symbols DO count as welds (both methods wrongly excluded them) → build a comprehensive connection-symbol legend (all weld/threaded/grooved/flanged/olet types) for the extractor, and read each sheet's own legend.
+
+**New docs:** `Plans/MCAA-Takeoff/MCAA_Extraction_Design.md` (full investigation record, options + prices, recommended design, build steps), `Plans/MCAA-Takeoff/Phase1_Weldcount_Findings.md`. **Updated:** `Plans/MCAA-Takeoff/MCAA_Key_Composition.md`, `Plans/Project_Status.md`, `Plans/Decisions.md`. **New code:** `Scripts/export_rates_to_sqlite.py`.
+
 ### August 10, 2026 (MCAA takeoff — two-backend toggle, drawing-first design direction, reference contract + synonym enrichment; app code + producer-side data + docs)
 
 **App code:**

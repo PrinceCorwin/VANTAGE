@@ -33,26 +33,13 @@ Also read when relevant:
 
 -   Plans/Decisions.md for settled design decisions.
 -   Plans/Security_Guidelines.md before touching security-sensitive paths.
--   Plans/MCAA_Ratesheet_Plan.md and Plans/MCAA_Key_Composition.md
+-   Plans/MCAA-Takeoff/MCAA_Ratesheet_Plan.md and
+    Plans/MCAA-Takeoff/MCAA_Key_Composition.md
     before MCAA rate/takeoff work.
 -   Plans/claude-code-aws-deployment-guide.md before any AWS, Lambda,
     S3, ECR, or Step Functions work.
--   Plans/vantage_handoff/01_master_takeoff_instructions.md before
+-   Plans/MCAA-Takeoff/vantage_handoff/01_master_takeoff_instructions.md before
     drawing-first weld takeoff work.
-
-------------------------------------------------------------------------
-
-# Session Start
-
-Steve works across two PCs. At the start of every session, including
-doc-only sessions, run:
-
-    git pull --rebase
-
-If the sandbox or network blocks it, request approval rather than
-skipping it silently. The VANTAGE-Plugins sibling repo follows the same
-rule. SkySkraper is not a Git repo; before working there, confirm the
-Synology Drive client has finished syncing.
 
 ------------------------------------------------------------------------
 
@@ -69,7 +56,7 @@ synced, not part of this Git repository.
 Before work in that folder, read its own CLAUDE.md / local guidance.
 Never suggest moving it into VANTAGE, copying its files here, adding it
 to .gitignore, or git-tracking it. The canonical PRD for its VANTAGE
-integration lives here in Plans/MCAA_Ratesheet_Plan.md. SkySkraper
+integration lives here in Plans/MCAA-Takeoff/MCAA_Ratesheet_Plan.md. SkySkraper
 status in this repo is tracked in Plans/Project_Status.md and
 Plans/Completed_Work.md. SkySkraper files prefixed cdx_ are Codex's
 working journal; read them for context and do not modify them unless
@@ -367,8 +354,9 @@ Only output-side schema, extracted properties, and vocabularies diverge.
 
 ## MCAA Rate-Key Contract
 
-Plans/MCAA_Key_Composition.md is canonical. It supersedes older
-ordering language in Plans/MCAA_Ratesheet_Plan.md and scratch notes.
+Plans/MCAA-Takeoff/MCAA_Key_Composition.md is canonical. It supersedes
+older ordering language in Plans/MCAA-Takeoff/MCAA_Ratesheet_Plan.md
+and scratch notes.
 
 Current key rules:
 
@@ -385,8 +373,8 @@ Current key rules:
 -   C# key composition must be byte-identical to the SkySkraper producer.
 
 Before MCAA producer or consumer work, read the current MCAA section in
-Plans/Project_Status.md, Plans/MCAA_Ratesheet_Plan.md, and
-Plans/MCAA_Key_Composition.md.
+Plans/Project_Status.md, Plans/MCAA-Takeoff/MCAA_Ratesheet_Plan.md, and
+Plans/MCAA-Takeoff/MCAA_Key_Composition.md.
 
 ------------------------------------------------------------------------
 
@@ -395,11 +383,18 @@ Plans/MCAA_Key_Composition.md.
 For the AWS AI Take-Off Agent / future drawing-reading workflow, the
 current authoritative handoff is:
 
-    Plans/vantage_handoff/01_master_takeoff_instructions.md
+    Plans/MCAA-Takeoff/vantage_handoff/01_master_takeoff_instructions.md
 
 Plans/codex_takeoff contains earlier ChatGPT handoff material and is
-useful context, but Plans/vantage_handoff is newer and takes precedence
-where the two disagree.
+useful context, but Plans/MCAA-Takeoff/vantage_handoff is newer and
+takes precedence where the two disagree.
+
+The reference drawings in the handoff are regression fixtures only.
+Production MCAA-Claude and MCAA-Codex takeoffs must preserve the existing
+Summit workflow: the user selects an arbitrary group of drawing files in
+VANTAGE, uploads that batch, and the selected backend analyzes those files.
+Never hard-code the reference drawings or restrict production processing
+to a static drawing set.
 
 Core rules:
 
@@ -434,7 +429,7 @@ Core rules:
     user explicitly asks.
 
 Reference regression drawings and symbol crops live under
-Plans/vantage_handoff/.
+Plans/MCAA-Takeoff/vantage_handoff/.
 
 ------------------------------------------------------------------------
 
@@ -456,3 +451,7 @@ If any user-visible change occurs:
 -   Present one logical change at a time.
 -   Wait for confirmation before large refactors.
 -   Challenge architectural decisions if necessary.
+-   Do not announce internal skill names, tool names, or workflow mechanics
+    unless they materially affect Steve. When a higher-level instruction
+    requires disclosure, describe the user-facing action briefly and
+    naturally without boilerplate.

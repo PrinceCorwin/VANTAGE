@@ -1,6 +1,6 @@
 # MCAA-Codex AI Takeoff Plan
 
-**Status:** Planning only. No VANTAGE app code, AWS resources, prompts, or Lambdas are to be edited until Steve explicitly approves implementation.
+**Status:** Backend planning only. The VANTAGE UI attachment seam now exists (`MCAA-Claude` and `MCAA-Codex` radios), but no MCAA-Codex AWS resources, production prompts, Lambdas, model calls, or labor-generation backend have been implemented. Do not begin those implementation steps until Steve explicitly approves them.
 **Owner:** Steve Amalfitano / Codex
 **Created:** 2026-08-09
 **Working folder:** `Plans/codex_takeoff/`
@@ -18,6 +18,22 @@ The VANTAGE Takeoff UI will eventually expose two MCAA choices:
 
 The two paths must run side by side without overwriting each other's prompts, Lambdas, reference files, S3 keys, batch outputs, or deployment artifacts.
 
+This is intentionally a competitive parallel build. Claude develops and maintains the **MCAA-Claude** version; Codex develops and maintains the **MCAA-Codex** version. Both run against the same agreed regression drawings and comparison dimensions. The goal is not to declare a permanent winner in advance: retain the strongest prompt, extraction, audit, orchestration, and output ideas from each implementation, then merge only the parts Steve validates.
+
+In this plan, "backend" or "agent" means the complete drawing-takeoff path (model + prompt + extraction Lambda + aggregation Lambda + orchestration + C# compiler seam). It does not require using the managed Amazon Bedrock Agents service. The first implementation should stay Lambda/Step-Functions-driven unless testing establishes a concrete reason to add a managed agent layer.
+
+---
+
+## Source Context Already Transferred Into VANTAGE
+
+The originating ChatGPT conversation is **Drawing Analysis Capabilities**, thread `6a774d3e-c034-8328-b5bd-fa4dd232422d`. Its substantive transcript, operating prompt, decision log, and handoff package are tracked under `Plans/codex_takeoff/VANTAGE_Piping_Isometric_Weld_Takeoff_Handoff_Package/`.
+
+The later Claude/Cowork refinement is tracked under `Plans/MCAA-Takeoff/vantage_handoff/` and is the current operational authority. It includes the refined master instructions, session transcript, symbol crops, and five regression drawings.
+
+Known transfer gap: the original ChatGPT conversation also analyzed `LP1Y-TFA-176305-01`, but that PDF is not currently present in the repository handoff folders. Its discussion and corrections are preserved in the transcript; reacquire the source PDF before adding it to the automated regression set.
+
+The handoff drawings are regression fixtures, not production inputs. Production MCAA-Codex must mirror the existing Summit takeoff experience: the user selects an arbitrary group of drawing files in VANTAGE, submits that batch, and the backend analyzes those selected files using the applicable crop configuration. Do not hard-code the reference filenames, package the regression PDFs into the runtime, or design the pipeline around a fixed drawing set.
+
 ---
 
 ## Non-Negotiables
@@ -25,7 +41,7 @@ The two paths must run side by side without overwriting each other's prompts, La
 - Do not edit VANTAGE app code until Steve explicitly approves implementation.
 - Do not modify Claude's current prompt, Lambdas, AWS resources, or deployment path.
 - Keep Codex planning and working notes under `Plans/codex_takeoff/`.
-- Treat `Plans/vantage_handoff/01_master_takeoff_instructions.md` as the current drawing-first weld-takeoff authority.
+- Treat `Plans/MCAA-Takeoff/vantage_handoff/01_master_takeoff_instructions.md` as the current drawing-first weld-takeoff authority.
 - Preserve the existing user-drawn crop-box config workflow unless testing proves it cannot support the Codex path.
 - Prefer additive routing and new backend/profile configuration over disrupting existing Summit or MCAA-Claude behavior.
 - Every AWS deployment must follow `Plans/claude-code-aws-deployment-guide.md`: capture before state, deploy, verify after state.
@@ -34,7 +50,7 @@ The two paths must run side by side without overwriting each other's prompts, La
 
 ## Initial Model Choice
 
-Use **OpenAI GPT-5.6 Sol on Amazon Bedrock** for the first MCAA-Codex version.
+Use **OpenAI GPT-5.6 Sol on Amazon Bedrock** for the first MCAA-Codex accuracy baseline. This choice was rechecked against current AWS model documentation on 2026-08-13; Summit-account access and quotas still require a direct pre-implementation check.
 
 Rationale:
 
@@ -181,6 +197,7 @@ Names are placeholders until implementation approval.
 
 ### Stage 1: Intake
 
+- Accept the arbitrary drawing group selected by the user in the existing VANTAGE takeoff screen.
 - Receive same state-machine input shape as current VANTAGE when possible.
 - Load `CropRegionConfig` from S3.
 - Download source drawing PDF(s).
@@ -243,11 +260,17 @@ Planning decision: MCAA-Codex should not have the Lambda produce final rated `La
 
 ---
 
-## VANTAGE UI Routing Plan
+## VANTAGE UI Routing Status and Plan
 
-Future UI should not be a simple `Summit/MCAA` binary.
+The UI attachment seam was added on 2026-08-10:
 
-Recommended future shape:
+- `Summit Rates`
+- `MCAA-Claude` (persists legacy value `"MCAA"`)
+- `MCAA-Codex` (persists `"MCAA-Codex"`)
+
+The MCAA-Codex selection is deliberately guarded as not implemented and skips labor generation/recalculation. Those guards are the attachment points for the independent Codex backend. They must not be redirected through the Claude/Summit post-processor merely to make the radio appear functional.
+
+Longer-term routing should separate pricing mode from AI backend:
 
 - Keep Summit path intact until retired.
 - Replace current MCAA radio with backend-specific options:
@@ -269,9 +292,9 @@ Implementation should avoid breaking existing saved `Takeoff.RateMode` values.
 
 ## Regression and Comparison Plan
 
-Use the reference drawings under `Plans/vantage_handoff/drawings/` as the first regression set.
+Use the reference drawings under `Plans/MCAA-Takeoff/vantage_handoff/drawings/` as the first regression set.
 
-Expected round-one results from `Plans/vantage_handoff/00_HANDOFF_README.md`:
+Expected round-one results from `Plans/MCAA-Takeoff/vantage_handoff/00_HANDOFF_README.md`:
 
 | Drawing | Expected result |
 |---|---|
@@ -299,7 +322,7 @@ Comparison dimensions:
 
 ## Prompt Strategy
 
-Use `Plans/vantage_handoff/01_master_takeoff_instructions.md` as the core operating spec, but convert it into a production prompt with:
+Use `Plans/MCAA-Takeoff/vantage_handoff/01_master_takeoff_instructions.md` as the core operating spec, but convert it into a production prompt with:
 
 - Strict JSON output schema.
 - Explicit "no weld-number dependency" rule.
@@ -398,7 +421,7 @@ Do not start with that complexity unless the direct approach fails on regression
 
 ### Phase 4: VANTAGE UI Integration
 
-- Add backend selection in Takeoff UI.
+- Keep the existing backend-selection radios and replace only the guarded MCAA-Codex attachment points when the backend is ready.
 - Add credential/config support for backend-specific state machine ARNs or routes.
 - Preserve existing saved settings.
 - Build and wait for Steve's Visual Studio validation.
