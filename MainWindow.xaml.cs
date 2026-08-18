@@ -509,6 +509,17 @@ namespace VANTAGE
                 txtCurrentUser.Text = "User: Unknown";
             }
 
+            // Update active database name
+            try
+            {
+                txtCurrentDatabase.Text = $"Database: {VANTAGE.Utilities.DatabaseRegistry.GetActive().Name}";
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "MainWindow.UpdateStatusBar");
+                txtCurrentDatabase.Text = "Database: (unknown)";
+            }
+
             // Update last sync time
             UpdateLastSyncDisplay();
         }
@@ -1657,6 +1668,22 @@ namespace VANTAGE
 
             var dialog = new Dialogs.TutorialManagerDialog();
             dialog.Owner = this;
+            dialog.ShowDialog();
+        }
+
+        // Admin -> Database Manager. Create/switch/rename/delete separate local
+        // databases so a different project can be kept synced without clearing and
+        // re-downloading the current one. Switching restarts the app.
+        private void MenuDatabaseManager_Click(object sender, RoutedEventArgs e)
+        {
+            if (App.CurrentUser == null || !App.CurrentUser.IsAdmin)
+            {
+                AppMessageBox.Show("You do not have admin privileges.", "Access Denied",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var dialog = new Dialogs.DatabaseManagerDialog { Owner = this };
             dialog.ShowDialog();
         }
 

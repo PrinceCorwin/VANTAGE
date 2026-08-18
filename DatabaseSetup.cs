@@ -128,21 +128,31 @@ namespace VANTAGE
         // progressCallback is invoked with status messages for UI updates (e.g., splash screen)
         public static void InitializeDatabase(Action<string>? progressCallback = null)
         {
+            // Step 1: Resolve the active database path from the registry, then build
+            // its schema. The active database becomes DbPath for the whole session.
+            DbPath = GetOrSetDatabasePath();
+            InitializeSchemaAtPath(DbPath, progressCallback);
+        }
+
+        // Create the full schema (tables + migrations + built-in templates) in the
+        // database file at the given path. Used both for the active database at
+        // startup and for brand-new databases created from the Database Manager.
+        // Does NOT change DbPath - callers that switch the active database do that
+        // through the registry and restart.
+        public static void InitializeSchemaAtPath(string path, Action<string>? progressCallback = null)
+        {
             try
             {
-                // Step 1: Determine database path
-                DbPath = GetOrSetDatabasePath();
-
-                // Step 2: Create directory if it doesn't exist
-                string? directory = Path.GetDirectoryName(DbPath);
+                // Create directory if it doesn't exist
+                string? directory = Path.GetDirectoryName(path);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
 
-                // Step 3: Create/open database
+                // Create/open database
                 progressCallback?.Invoke("Creating database schema...");
-                using var connection = new SqliteConnection($"Data Source={DbPath}");
+                using var connection = new SqliteConnection($"Data Source={path}");
                 connection.Open();
 
                 var command = connection.CreateCommand();
@@ -721,15 +731,13 @@ namespace VANTAGE
 
         private static string GetOrSetDatabasePath()
         {
-            // ALWAYS use LocalApplicationData - ONE LOCATION ONLY
-            string defaultPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "VANTAGE",
-                "VANTAGE_Local.db"
-            );
-
-            DbPath = defaultPath;
-            return defaultPath;
+            // The active database is chosen in the Database Manager and tracked in an
+            // external manifest (databases.json) alongside the .db files in
+            // %LocalAppData%\VANTAGE. Existing users are migrated transparently: the
+            // registry seeds a "Primary" entry pointing at the legacy VANTAGE_Local.db.
+            string path = DatabaseRegistry.GetActiveDatabasePath();
+            DbPath = path;
+            return path;
         }
 
         // Ensure indexes exist on Azure tables for query performance

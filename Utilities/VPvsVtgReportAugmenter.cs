@@ -8,12 +8,15 @@ namespace VANTAGE.Utilities
     public static class VPvsVtgReportAugmenter
     {
         private const string SummarySheetName = "Summary";
+        private const string Sheet1Name = "Sheet1";
         private const string JobHeader = "Job";
         private const string PhaseHeader = "Phase";
         private const string EstHoursHeader = "Est Hours";
         private const string JtdErnHeader = "JTD ERN";
         private const string VtgBudgetHeader = "Vtg Budget";
         private const string VtgEarnedHeader = "Vtg Earned";
+        private const string BudgetDeltaHeader = "Budget Delta";
+        private const string EarnedDeltaHeader = "Earned Delta";
         private const string NotFound = "Not Found";
         private const double MismatchThreshold = 0.01; // 1%
 
@@ -36,8 +39,9 @@ namespace VANTAGE.Utilities
             var result = new Result { OutputPath = outputPath };
 
             using var workbook = new XLWorkbook(inputPath);
-            if (!workbook.Worksheets.TryGetWorksheet(SummarySheetName, out var sheet))
-                throw new InvalidOperationException($"'{SummarySheetName}' sheet not found in the workbook.");
+            var sheet = ResolveSummarySheet(workbook);
+            if (sheet == null)
+                throw new InvalidOperationException($"No worksheet containing '{SummarySheetName}' (or a '{Sheet1Name}' fallback) was found in the workbook.");
 
             int headerRow = 1;
             int jobCol = FindHeaderColumn(sheet, headerRow, JobHeader);
@@ -53,6 +57,8 @@ namespace VANTAGE.Utilities
             int lastUsedCol = sheet.LastColumnUsed()?.ColumnNumber() ?? jtdErnCol;
             int vtgBudgetCol = lastUsedCol + 1;
             int vtgEarnedCol = lastUsedCol + 2;
+            int budgetDeltaCol = lastUsedCol + 3;
+            int earnedDeltaCol = lastUsedCol + 4;
 
             var headerTemplate = sheet.Cell(headerRow, jtdErnCol);
             var budgetHeaderCell = sheet.Cell(headerRow, vtgBudgetCol);
@@ -63,8 +69,18 @@ namespace VANTAGE.Utilities
             earnedHeaderCell.Value = VtgEarnedHeader;
             earnedHeaderCell.Style = headerTemplate.Style;
 
+            var budgetDeltaHeaderCell = sheet.Cell(headerRow, budgetDeltaCol);
+            budgetDeltaHeaderCell.Value = BudgetDeltaHeader;
+            budgetDeltaHeaderCell.Style = headerTemplate.Style;
+
+            var earnedDeltaHeaderCell = sheet.Cell(headerRow, earnedDeltaCol);
+            earnedDeltaHeaderCell.Value = EarnedDeltaHeader;
+            earnedDeltaHeaderCell.Style = headerTemplate.Style;
+
             sheet.Column(vtgBudgetCol).Width = 14;
             sheet.Column(vtgEarnedCol).Width = 14;
+            sheet.Column(budgetDeltaCol).Width = 14;
+            sheet.Column(earnedDeltaCol).Width = 14;
 
             var redFill = XLColor.FromHtml("#FF8989");
             var orangeFill = XLColor.FromHtml("#FFC000");
@@ -85,6 +101,8 @@ namespace VANTAGE.Utilities
 
                 var vtgBudgetCell = sheet.Cell(row, vtgBudgetCol);
                 var vtgEarnedCell = sheet.Cell(row, vtgEarnedCol);
+                var budgetDeltaCell = sheet.Cell(row, budgetDeltaCol);
+                var earnedDeltaCell = sheet.Cell(row, earnedDeltaCol);
                 var estHoursCell = sheet.Cell(row, estHoursCol);
                 var jtdErnCell = sheet.Cell(row, jtdErnCol);
 
@@ -104,38 +122,75 @@ namespace VANTAGE.Utilities
                     double estHours = TryGetNumber(estHoursCell);
                     double jtdErn = TryGetNumber(jtdErnCell);
 
+                    // Delta = Vantage - Viewpoint: negative when Vantage is under Viewpoint, positive when over.
+                    double budgetDelta = NumericHelper.RoundToPlaces(vtgBudget - estHours);
+                    double earnedDelta = NumericHelper.RoundToPlaces(vtgEarned - jtdErn);
+
+                    budgetDeltaCell.Value = budgetDelta;
+                    budgetDeltaCell.Style.NumberFormat.Format = "#,##0.000";
+
+                    earnedDeltaCell.Value = earnedDelta;
+                    earnedDeltaCell.Style.NumberFormat.Format = "#,##0.000";
+
+                    // Delta cells share the 1% band with their source cell so the whole row stays consistent:
+                    // green when the pair reconciles within tolerance, red otherwise.
                     if (IsMismatch(vtgBudget, estHours))
                     {
                         vtgBudgetCell.Style.Fill.BackgroundColor = redFill;
+                        budgetDeltaCell.Style.Fill.BackgroundColor = redFill;
                         result.BudgetMismatchRows++;
                     }
                     else
                     {
                         vtgBudgetCell.Style.Fill.BackgroundColor = greenFill;
+                        budgetDeltaCell.Style.Fill.BackgroundColor = greenFill;
                     }
 
                     if (IsMismatch(vtgEarned, jtdErn))
                     {
                         vtgEarnedCell.Style.Fill.BackgroundColor = redFill;
+                        earnedDeltaCell.Style.Fill.BackgroundColor = redFill;
                         result.EarnedMismatchRows++;
                     }
                     else
                     {
                         vtgEarnedCell.Style.Fill.BackgroundColor = greenFill;
+                        earnedDeltaCell.Style.Fill.BackgroundColor = greenFill;
                     }
                 }
                 else
                 {
                     vtgBudgetCell.Value = NotFound;
                     vtgEarnedCell.Value = NotFound;
+                    budgetDeltaCell.Value = NotFound;
+                    earnedDeltaCell.Value = NotFound;
                     vtgBudgetCell.Style.Fill.BackgroundColor = orangeFill;
                     vtgEarnedCell.Style.Fill.BackgroundColor = orangeFill;
+                    budgetDeltaCell.Style.Fill.BackgroundColor = orangeFill;
+                    earnedDeltaCell.Style.Fill.BackgroundColor = orangeFill;
                     result.NotFoundRows++;
                 }
             }
 
             workbook.SaveAs(outputPath);
             return result;
+        }
+
+        // Resolves the worksheet to augment: first any tab whose name contains "summary"
+        // (case-insensitive, tolerates extra words/spaces), then falls back to "Sheet1".
+        // Returns null if neither is present. Preserves workbook tab order for the "summary" match.
+        private static IXLWorksheet? ResolveSummarySheet(XLWorkbook workbook)
+        {
+            foreach (var ws in workbook.Worksheets)
+            {
+                if (ws.Name.IndexOf(SummarySheetName, StringComparison.OrdinalIgnoreCase) >= 0)
+                    return ws;
+            }
+
+            if (workbook.Worksheets.TryGetWorksheet(Sheet1Name, out var sheet1))
+                return sheet1;
+
+            return null;
         }
 
         // Finds the 1-based column number whose row-`headerRow` cell matches `headerText`

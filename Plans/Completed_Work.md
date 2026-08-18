@@ -6,6 +6,30 @@ This document tracks completed features and fixes. Items are moved here from Pro
 
 ## Unreleased
 
+### August 18, 2026 (Database Manager — multiple local databases with switch/create/rename/delete, admin-gated)
+
+**New admin-only feature that lets a user keep separate local databases per project and switch between them without clearing and re-syncing the current one. Builds clean (0 errors); tested working by Steve. Gated to admins for now (effectively Steve) so it can be exercised before wider release. Developed in a parallel session alongside the VP vs Vtg Report enhancement documented below.**
+
+- **`DatabaseRegistry` (new, `Utilities/DatabaseRegistry.cs`)** — source of truth for which local databases exist and which is active, stored in an external manifest `databases.json` in `%LocalAppData%\VANTAGE`. This must live outside the database because `AppSettings` are stored *inside* each `.db`, so the active pointer can't live there. Each database has a display **Name** independent of its on-disk filename (renames never touch the file). Handles slug generation, uniqueness, single-active invariant, and best-effort file cleanup (including `-wal`/`-shm`).
+- **Seamless migration for existing users** — on first run with no manifest, a **"Primary"** entry is seeded pointing at the existing `VANTAGE_Local.db`. Nobody loses data or has to re-sync; the concept is invisible until they open the manager.
+- **Path resolution rerouted** — `DatabaseSetup.GetOrSetDatabasePath()` now resolves the active path from the registry; extracted `InitializeSchemaAtPath(path)` so a brand-new database gets the full schema + migrations + built-in templates without disturbing the active one. `App.xaml.cs` first-run check uses the same resolver (removed the duplicated hardcoded path).
+- **`DatabaseManagerDialog` (new)** — Admin > Database Manager. `SfDataGrid` of databases (active marker, name, activity count, file size, last used) with **Switch To** (sets active + restarts the app; blocked while a long-running op is in flight; reassures the leaving database is untouched), **Create New...** (prompts for a name, builds an empty schema-complete DB, offers to switch immediately), **Rename...** (display name only), and **Delete** (refuses the active DB; warns with the unsynced `LocalDirty` record count that would be lost; clears connection pools so the file isn't locked).
+- **Switching = restart, not hot-swap** — deliberate: `DbPath` is a startup-set static and views cache 100k+ rows, so a clean restart avoids fragile view-teardown while the target keeps whatever is already synced.
+- **Footer indicator** — the status bar now shows **"Database: {name}"** (populated in `UpdateStatusBar()` from `DatabaseRegistry.GetActive().Name`) with a tooltip pointing to the manager, so the active database is always visible.
+
+**Key files:** `Utilities/DatabaseRegistry.cs` (new), `Dialogs/DatabaseManagerDialog.xaml`/`.xaml.cs` (new), `DatabaseSetup.cs`, `App.xaml.cs`, `MainWindow.xaml`/`.xaml.cs`. **Docs:** `Help/manual.html`, `Plans/Decisions.md`, `Plans/Completed_Work.md`, `Plans/Project_Status.md`.
+
+### August 18, 2026 (VP vs Vtg Report — flexible summary-sheet match + Budget/Earned Delta columns)
+
+**Enhancement to the existing VP vs Vtg Report (`Utilities/VPvsVtgReportAugmenter.cs`). Builds clean (0 errors); not yet UI-confirmed by Steve. (A separate Database Manager feature is also in the working tree from a parallel session — being documented by that session, not here.)**
+
+- **Summary-sheet lookup relaxed.** Previously required a tab named exactly `Summary` and threw "'Summary' sheet not found" otherwise. Now `ResolveSummarySheet` accepts **any tab whose name contains "summary"** (case-insensitive, tolerates extra words/spaces — `Summary Sheet`, `WK 33 Summary`, trailing space all match; first match in tab order wins), then **falls back to `Sheet1`**, and only throws if neither is present.
+- **Two new columns — `Budget Delta` and `Earned Delta`** — appended after `Vtg Budget` / `Vtg Earned`. Delta = Vantage minus Viewpoint (`Vtg Budget - Est Hours`, `Vtg Earned - JTD ERN`): **negative = Vantage under Viewpoint, positive = over**. Colored on the **same 1% band** as their source cell (red when the pair is outside tolerance, green within, orange `Not Found` for unmatched rows) so a row never shows a green source cell beside a red delta. Headers are plain ASCII ("Delta", not the glyph — per Steve's no-symbols-in-generated-files rule).
+
+- **Manual updated.** `Help/manual.html` VP vs Vtg Report section now documents all four added columns, the Delta calculation + sign convention, the shared 1% coloring, and a new note explaining the automatic summary-tab detection (any tab containing "summary", else `Sheet1`).
+
+**Key files:** `Utilities/VPvsVtgReportAugmenter.cs`, `Help/manual.html`. **Docs:** `Plans/Completed_Work.md`, `Plans/Project_Status.md`.
+
 ### August 13, 2026 (MCAA takeoff — extraction approach investigated & costed; rate-DB exporter built; producer-side flanges/valves done; docs)
 
 **Investigation session — settled how the MCAA takeoff will read connections and what it costs. No app code shipped; produced a rate-DB exporter, the shipped SQLite DB, and design docs.**

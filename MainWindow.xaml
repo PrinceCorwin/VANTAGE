@@ -1,4 +1,4 @@
-﻿<syncfusion:ChromelessWindow x:Class="VANTAGE.MainWindow"
+<syncfusion:ChromelessWindow x:Class="VANTAGE.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -179,6 +179,7 @@
                             <syncfusion:DropDownMenuItem Header="Manage Progress Log" Click="MenuManageProgressLog_Click"/>
                             <syncfusion:DropDownMenuItem Header="Manage S3 Drawings" Click="MenuManageS3Drawings_Click" ToolTip="View and delete orphaned drawings in S3"/>
                             <syncfusion:DropDownMenuItem Header="Manage Tutorials" Click="MenuManageTutorials_Click" ToolTip="Upload, edit, and delete the tutorial videos shown in the Tutorials list"/>
+                            <syncfusion:DropDownMenuItem Header="Database Manager" Click="MenuDatabaseManager_Click" ToolTip="Create, switch between, rename, and delete separate local databases per project"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
                             <syncfusion:DropDownMenuItem Header="Project Rates" Click="MenuProjectRates_Click" ToolTip="Manage per-project unit rate overrides"/>
                             <Separator Background="{DynamicResource BorderColor}" Margin="5,2"/>
@@ -522,6 +523,16 @@
                    FontSize="11"
                    VerticalAlignment="Center"
                    Margin="0,0,20,0"/>
+
+                <TextBlock Grid.Column="2"
+                   x:Name="txtCurrentDatabase"
+                   Text="Database: Primary"
+                   Foreground="{DynamicResource StatusBarForeground}"
+                   FontSize="11"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   Margin="0,0,20,0"
+                   ToolTip="The local database currently in use - change it in Admin &gt; Database Manager"/>
 
                 <TextBlock Grid.Column="3"
                    x:Name="txtTakeoffStatus"

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -89,12 +89,11 @@ namespace VANTAGE
                 // Restored to OnMainWindowClose once the real MainWindow is shown.
                 this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-                // Check if local database exists
-                string localDbPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "VANTAGE",
-                    "VANTAGE_Local.db"
-                );
+                // Check if the active local database exists. The active database is
+                // resolved from the registry manifest (seeded with "Primary" pointing
+                // at the legacy VANTAGE_Local.db for existing users), so the first-run
+                // splash still shows correctly whichever database is active.
+                string localDbPath = VANTAGE.Utilities.DatabaseRegistry.GetActiveDatabasePath();
 
                 bool isFirstRun = !File.Exists(localDbPath);
                 if (isFirstRun)
