@@ -2,6 +2,8 @@
 
 **Status:** Design of record after the 2026-08-13 investigation session. Captures what we tested, what we ruled out, the measured costs, and the recommended path. Supersedes earlier drafts that assumed an Anthropic API account.
 
+**Update 2026-08-19:** Two things in this doc have changed. **Delivery is now on-demand, not Bedrock Batch Inference** (exec wants a takeoff *now*, not ~24 h), and MCAA ships as a **separate MCAA Takeoff module**, not a rate-mode toggle. The single-pass extractor described here is now **built and bench-validated 4/5** (Opus 4.8 high effort + the connection legend + high-DPI tiles to beat Bedrock's ~1568px image downsample; on-demand ~$0.59/drawing, ~$1,170/2,000). Build steps 1–2 below are DONE. Full record: `Plans/Decisions.md` (Aug 19 block) and the legend at `Plans/MCAA-Takeoff/legendFiles/`.
+
 ---
 
 ## The core problem
@@ -32,10 +34,10 @@ Agentic per-drawing takeoff (render → crop/zoom into each node → read symbol
 - **One-shot Opus medium thinking:** ~18k input (prototype) / ~6.6k output → ~$500–730/2,000 on-demand. Production input (legend+BOM+refs) est. ~40k.
 - **Model pricing:** Opus 4.8 $5/$25 per 1M in/out (on-demand); **Bedrock Batch Inference = 50% off** (verified on AWS pricing page). Sonnet 4.6 $3/$15.
 
-## The delivery-mode decision (settled 2026-08-13)
+## The delivery-mode decision (settled 2026-08-13 — SUPERSEDED 2026-08-19 → on-demand)
 - **On-demand** = predictable, prompt turnaround, full price. Current Summit mode.
 - **Bedrock Batch Inference** = bundle all requests into one S3 file, submit one async job, results back **within ~24 h** (unpredictable exact time), **50% off**. Verified real on the AWS pricing page; works with Claude models. This is a *different mechanism* from the current pipeline, which calls Bedrock **live, one drawing at a time** (why Summit is NOT getting the discount today — "batch of drawings" in the app is orchestration of many real-time calls, not Batch Inference).
-- **Decision: batch is acceptable** — 24 h turnaround is fine for the cost cut, and it lets us run a *more powerful* single pass (high effort, full legend) at half price. **No Anthropic API account needed** — everything runs on the existing AWS/Bedrock account.
+- **Decision: batch is acceptable** — 24 h turnaround is fine for the cost cut, and it lets us run a *more powerful* single pass (high effort, full legend) at half price. **No Anthropic API account needed** — everything runs on the existing AWS/Bedrock account. **[SUPERSEDED 2026-08-19 → on-demand: exec wants immediate results, not a ~24 h batch; measured ~$0.59/drawing high-effort on-demand is accepted. Opus 4.8's default 30M TPM quota is generous for our concurrency.]**
 
 ## Cost options (per 2,000 drawings — input tokens estimated pending a measured extractor)
 
@@ -59,9 +61,9 @@ Per drawing (one request):
 Cost lever without touching timing: **prompt caching** (real-time, caches the fixed prompt+legend) — supported on Bedrock; trims input cost, no effect on turnaround.
 
 ## Build steps (next session)
-1. **Build the comprehensive connection-symbol legend** (structured + reference image), serving both weld counting and the MCAA connection-type key.
-2. **Build ONE single-pass extractor** (render + legend + BOM + drawing → JSON) and measure real tokens/accuracy on the 5 known-answer drawings. ← first concrete step.
-3. **Confirm Bedrock Batch Inference accepts the multimodal image + thinking request format** (batch has format rules — read `Plans/claude-code-aws-deployment-guide.md`).
+1. **[DONE 2026-08-19] Build the comprehensive connection-symbol legend** — 5 PNG panels at `Plans/MCAA-Takeoff/legendFiles/` (BW / field-weld / socket-or-threaded bracket / threaded bar / flanged-boltup incl. half) + the rules transcribed into the prompt as text.
+2. **[DONE 2026-08-19] Build ONE single-pass extractor** — bench harness scored **4/5 weld-only** on the 5 known-answer drawings (MEOH off by 1 on stock-length arithmetic). ~$0.59/drawing on-demand high effort, using a full-page overview + a grid of high-DPI tiles to beat the ~1568px image downsample.
+3. ~~Confirm Bedrock Batch Inference accepts the multimodal image + thinking request format~~ — **N/A (on-demand now).**
 4. **Wire the batch orchestrator** (build input file → submit job → collect S3 results) + the C# key/rate/labor side.
 5. **Validate on a batch of unseen drawings with ground truth** (Steve provides) — especially socket-weld-dense stainless — to decide whether single-pass suffices or an agentic escalation is needed for hard cases.
 

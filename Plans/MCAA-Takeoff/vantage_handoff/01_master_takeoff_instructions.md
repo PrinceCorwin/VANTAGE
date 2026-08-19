@@ -25,19 +25,28 @@ fitting ends. That method double-counts fitting-to-fitting joints and misses
 pipe-to-pipe welds. Trace the actual isometric and count each physical
 connection node once.
 
-## SCOPE — ROUND 1 (what the AI agent returns)
+## SCOPE (updated 2026-08-19 — supersedes the earlier BW/SW-only Round-1 lock)
 
-The round-1 deliverable is only: **per drawing, the count of weld connections with
-their type (BW / SW), nominal size, and material.** That is what drives the charge.
-Explicitly OUT of scope for now:
+Extract **all** physical connections per drawing, each with type, nominal size, material,
+quantity, and a field-weld flag. This supersedes the earlier "Round 1 = BW/SW only,
+bolt-ups/threaded/grooved deferred" scope. Full rule set + rationale:
+`Plans/Decisions.md` ("MCAA Extraction Rules (2026-08-19)").
 
-- **Shop vs field weld.** Do not classify or split shop/field. The field re-decides
-  weld locations and marks up the drawings, so the original shop/field designation
-  is not authoritative. Assume every weld is field for costing; a later pass
-  (possibly feeding marked-up drawings to the AI) may assign the final shop/field
-  split. Ignore the dot-vs-X/○/FFW *location* axis — read only butt-vs-socket.
-- **Bolt-ups, grooved, and threaded connections** — deferred until BW/SW counting
-  is proven against the regression drawings.
+- **Connection types:** BW, SW, THRD (threaded), GRV (grooved), FLG (flanged), BU
+  (bolt-up, incl. half bolt-ups). See the connection-symbol legend PNGs
+  (`Plans/MCAA-Takeoff/legendFiles/`).
+- **Field welds ARE identified now** (reversing the earlier "assume all field, ignore
+  the marker" note): set `field_weld = "yes"` when the weld carries an X, rays, or an
+  FW annotation in any color (incl. red markup); blank otherwise; welds (BW/SW) only.
+  Field-vs-shop stays orthogonal to butt-vs-socket. Needed for costing the field-crew scope.
+- **Half bolt-up = quantity 0.5** (a single flange at a spool/off-sheet boundary — the
+  mating side drawn dashed or absent); a full bolt-up (both flanges shown solid) = 1.0.
+  Totals sum fractionally.
+- **Weldolet = two branch-size BW** (header attachment + outlet).
+- **Count run welds only where physically drawn** — never inferred from dimension breaks.
+- **Stock-length adds are computed in code** (not by the model): BW run = 1 BW per added
+  joint; SW run = 2 SW welds + 1 coupling per added joint.
+- **Reconcile against the BOM** — account for every BOM item's weld ends before finalizing.
 
 ## CRITICAL: READ SYMBOLS, NOT WELD NUMBERS  *(governing rule)*
 
