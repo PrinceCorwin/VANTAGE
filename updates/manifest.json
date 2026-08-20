@@ -1,8 +1,8 @@
 {
-  "currentVersion": "26.3.5",
-  "releaseDate": "2026-07-28T18:50:20Z",
-  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.3.5/VANTAGE-26.3.5.zip",
-  "zipSizeBytes": 156566713,
-  "sha256": "A9EBCC5576A7C89B2EFF042D7BC431011EC88959602E86F38A478FA527F78518",
-  "releaseNotes": "Project Dashboard: filtering a visual while customizing is now a Power BI-style value checklist, plus fixes for empty 0% entries after filtering and vertical bar lists in lower rows."
+  "currentVersion": "26.3.6",
+  "releaseDate": "2026-08-20T15:58:14Z",
+  "downloadUrl": "https://github.com/PrinceCorwin/VANTAGE/releases/download/v26.3.6/VANTAGE-26.3.6.zip",
+  "zipSizeBytes": 156625518,
+  "sha256": "2CF8068069209008D284A8782EBC1DA8CCD23D272B946824CCB2EA44EB41104E",
+  "releaseNotes": "Database Manager: keep multiple local databases (one per project) and switch between them instantly; your grid layouts and filters now follow you across databases. Plus VP vs Vtg Report improvements and fixes."
 }

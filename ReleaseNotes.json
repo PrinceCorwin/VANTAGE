@@ -1,6 +1,19 @@
 {
   "releases": [
     {
+      "version": "26.3.6",
+      "date": "2026-08-20",
+      "highlights": [
+        "New — Database Manager (admins): keep more than one local database on your computer — one per project — and switch between them instantly instead of clearing and re-syncing your data. Create, rename, and delete databases; switching restarts the app and leaves the database you came from untouched; deleting warns you about any records that were never synced; and the active database name is always shown in the status bar.",
+        "New — Your grid layouts, saved filters, and column arrangements now follow you across databases. They are saved per user, so switching databases keeps all of them, and your existing layouts carry over automatically the first time you open this version. (Note: Reset User Settings now applies to all of your databases at once.)",
+        "New — Manage Tutorials (admins): admins can now upload, edit, and delete the in-app tutorial videos directly from Admin → Manage Tutorials.",
+        "Improved — The VP vs Vtg Report now finds your summary tab automatically — any tab whose name contains 'summary' (for example 'Summary Sheet' or 'WK 33 Summary'), and falls back to 'Sheet1' — instead of requiring a tab named exactly 'Summary'.",
+        "Improved — The VP vs Vtg Report adds two new columns, Budget Delta and Earned Delta, showing Vantage minus Viewpoint (negative means under, positive means over), color-coded on the same 1% tolerance band as the figures they compare.",
+        "Improved — The Schedule Report export now labels its two forecast columns to match the lookahead window you selected (3WLA, 6WLA, or 9WLA Start and Finish) instead of always showing 'ThreeWeek'.",
+        "Fix — Records created through the New ActNOs dialog during a P6 import no longer come in with zero values: Budget MHs and Client Budget are set to at least 0.001, and Quantity is set to 1."
+      ]
+    },
+    {
       "version": "26.3.5",
       "date": "2026-07-28",
       "highlights": [
