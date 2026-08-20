@@ -1886,6 +1886,7 @@
         <li>Click <strong>Create Selected</strong> to add the checked rows. Each new record is written to the snapshot you're comparing against AND to your local Activities (marked dirty so the next sync push moves them up to Azure).</li>
     </ul>
     <p>The required-metadata fields that P6 cannot supply (WorkPackage, PhaseCode, CompType, PhaseCategory, ROCStep, RespParty) are filled with the placeholder string <strong>X</strong>. The new records appear immediately in the Schedule and Progress views; you'll need to come back and fix the placeholder fields with real values when the work is properly defined. Earned hours are calculated as <code>PercentEntry / 100 × BudgetMHs</code> — the placeholder ROCStep doesn't affect that calculation, so the rows still roll up correctly until you give them real values.</p>
+    <p>Created records never come in with a zero budget or quantity: <strong>Budget MHs</strong> and <strong>Client Budget</strong> are set to at least 0.001, and <strong>Quantity</strong> is set to 1. Update these with real values once the work is defined.</p>
     <p>If you cancel the dialog without creating anything, you can re-trigger detection by importing the same P6 file again.</p>
 
     <h4>P6 Column Mapping</h4>
@@ -3944,6 +3945,7 @@
         <li><strong>Delete</strong> — Permanently remove the selected database file from this computer. You can't delete the database you're currently using — switch to another one first. If the database has records that were never synced to Azure, the confirmation warns you how many would be lost, because deleting the file discards them.</li>
     </ul>
     <p>The active database's name is always shown in the status bar at the bottom of the window (<strong>Database: {name}</strong>), so you can tell at a glance which project's data you're looking at.</p>
+    <p><strong>Your preferences follow you across databases.</strong> Grid layouts, saved filters, and column width/order/visibility are stored per user on this computer, not inside any one database. Switching databases keeps all of them, so you don't have to rebuild your layouts each time you switch projects. (One consequence: <strong>Settings &rarr; Reset User Settings</strong> resets these preferences for every database at once, not just the active one.)</p>
 
     <h3 id="admin-sync">Database Sync</h3>
     <p>All users sync their local data with the central Azure database using the <strong>SYNC</strong> button in the Progress module (see <a href="#prog-syncing">Syncing Data</a>). Key points for administrators:</p>

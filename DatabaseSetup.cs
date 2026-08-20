@@ -14,6 +14,17 @@ namespace VANTAGE
     {
         public static string DbPath { get; private set; } = null!;
 
+        // Shared user-settings database. UserSettings (grid layouts, saved filters,
+        // column persistence, theme, etc.) live here - NOT inside each project .db -
+        // so a user's preferences follow them across every database they switch
+        // between via the Database Manager. Sits alongside databases.json and the
+        // project .db files in %LocalAppData%\VANTAGE. AppSettings deliberately stay
+        // per-database because they hold per-project sync cursors (LastPulledSyncVersion).
+        public const string UserSettingsDbFileName = "VANTAGE_UserSettings.db";
+
+        public static string UserSettingsDbPath =>
+            System.IO.Path.Combine(Utilities.DatabaseRegistry.VantageFolder, UserSettingsDbFileName);
+
         public static void MirrorTablesFromAzure()
         {
             try
@@ -126,12 +137,31 @@ namespace VANTAGE
         }
 
         // progressCallback is invoked with status messages for UI updates (e.g., splash screen)
+        // Set true when the shared user-settings database file was created this run
+        // (first launch after upgrade). Phase-3 recovery reads it to decide whether to
+        // sweep existing per-database UserSettings into the new shared store.
+        public static bool UserSettingsDbWasCreated { get; private set; }
+
         public static void InitializeDatabase(Action<string>? progressCallback = null)
         {
             // Step 1: Resolve the active database path from the registry, then build
             // its schema. The active database becomes DbPath for the whole session.
             DbPath = GetOrSetDatabasePath();
             InitializeSchemaAtPath(DbPath, progressCallback);
+
+            // Step 2: Ensure the shared user-settings database exists. Preferences
+            // (layouts, filters, column state) live here, not in the project .db, so
+            // they follow the user across every database.
+            UserSettingsDbWasCreated = InitializeUserSettingsSchema();
+
+            // Step 3: First launch after this feature ships - the shared store was just
+            // created, so sweep existing UserSettings out of every registered project
+            // database into it. Recovers layouts/filters/columns saved before the switch.
+            if (UserSettingsDbWasCreated)
+            {
+                progressCallback?.Invoke("Migrating user settings...");
+                Utilities.SettingsManager.MigrateUserSettingsToSharedStore();
+            }
         }
 
         // Create the full schema (tables + migrations + built-in templates) in the
@@ -727,6 +757,46 @@ namespace VANTAGE
         public static SqliteConnection GetConnection()
         {
             return new SqliteConnection($"Data Source={DbPath}");
+        }
+
+        // Connection to the shared user-settings database (see UserSettingsDbPath).
+        // SettingsManager's UserSettings reads/writes go through here so preferences
+        // are shared across all project databases.
+        public static SqliteConnection GetUserSettingsConnection()
+        {
+            return new SqliteConnection($"Data Source={UserSettingsDbPath}");
+        }
+
+        // Create the UserSettings table in the shared user-settings database. Uses the
+        // same schema the table had inside each project .db, so redirected reads/writes
+        // are a drop-in. Returns true if the shared file had to be created (first run
+        // after upgrade) - the caller uses that to trigger the one-time recovery sweep.
+        public static bool InitializeUserSettingsSchema()
+        {
+            string path = UserSettingsDbPath;
+            bool created = !File.Exists(path);
+
+            string? directory = Path.GetDirectoryName(path);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            using var connection = new SqliteConnection($"Data Source={path}");
+            connection.Open();
+
+            var command = connection.CreateCommand();
+            command.CommandText = @"
+                CREATE TABLE IF NOT EXISTS UserSettings (
+                    UserSettingID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    SettingName TEXT NOT NULL UNIQUE,
+                    SettingValue TEXT,
+                    DataType TEXT,
+                    LastModified DATETIME DEFAULT CURRENT_TIMESTAMP
+                );";
+            command.ExecuteNonQuery();
+
+            return created;
         }
 
         private static string GetOrSetDatabasePath()

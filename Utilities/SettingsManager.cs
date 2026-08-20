@@ -119,7 +119,7 @@ namespace VANTAGE.Utilities
         {
             try
             {
-                using var connection = DatabaseSetup.GetConnection();
+                using var connection = DatabaseSetup.GetUserSettingsConnection();
                 connection.Open();
 
                 var command = connection.CreateCommand();
@@ -140,7 +140,7 @@ namespace VANTAGE.Utilities
         {
             try
             {
-                using var connection = DatabaseSetup.GetConnection();
+                using var connection = DatabaseSetup.GetUserSettingsConnection();
                 connection.Open();
 
                 var command = connection.CreateCommand();
@@ -166,7 +166,7 @@ namespace VANTAGE.Utilities
         {
             try
             {
-                using var connection = DatabaseSetup.GetConnection();
+                using var connection = DatabaseSetup.GetUserSettingsConnection();
                 connection.Open();
 
                 var command = connection.CreateCommand();
@@ -236,7 +236,7 @@ namespace VANTAGE.Utilities
 
             try
             {
-                using var connection = DatabaseSetup.GetConnection();
+                using var connection = DatabaseSetup.GetUserSettingsConnection();
                 connection.Open();
 
                 var command = connection.CreateCommand();
@@ -272,7 +272,7 @@ namespace VANTAGE.Utilities
 
             try
             {
-                using var connection = DatabaseSetup.GetConnection();
+                using var connection = DatabaseSetup.GetUserSettingsConnection();
                 connection.Open();
 
                 using var transaction = connection.BeginTransaction();
@@ -315,6 +315,194 @@ namespace VANTAGE.Utilities
             }
 
             return imported;
+        }
+
+        // === ONE-TIME MIGRATION TO SHARED USER-SETTINGS STORE ===
+        // Runs once, the first launch after the shared user-settings database is
+        // introduced. Sweeps existing UserSettings out of every registered project
+        // database into the shared store so preferences saved before the switch are
+        // not lost. The active database's settings are the baseline (copied wholesale);
+        // grid- and report-layout collections from the OTHER databases are unioned in
+        // so layouts stranded in databases the user switched away from are recovered.
+        public static void MigrateUserSettingsToSharedStore()
+        {
+            try
+            {
+                var entries = DatabaseRegistry.Load();
+                var active = DatabaseRegistry.GetActive();
+                string activePath = DatabaseRegistry.FullPath(active.FileName);
+
+                // 1. Baseline: copy the active database's UserSettings wholesale. This is
+                //    the user's canonical current state and wins on every scalar key.
+                int baseline = 0;
+                foreach (var kvp in ReadRawUserSettings(activePath))
+                {
+                    SetUserSetting(kvp.Key, kvp.Value.Value, kvp.Value.Type);
+                    baseline++;
+                }
+
+                // 2. Union grid/report layouts from the other databases so nothing saved
+                //    in a switched-away-from database is left stranded.
+                int recovered = 0;
+                foreach (var entry in entries)
+                {
+                    if (string.Equals(entry.FileName, active.FileName, StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var rows = ReadRawUserSettings(DatabaseRegistry.FullPath(entry.FileName));
+                    recovered += MergeGridLayouts(rows, entry.Name);
+                    recovered += MergeReportLayouts(rows);
+                }
+
+                AppLogger.Info(
+                    $"User-settings recovery: copied {baseline} settings from active database '{active.Name}', recovered {recovered} extra layout(s) from other databases",
+                    "SettingsManager.MigrateUserSettingsToSharedStore", App.CurrentUser?.Username ?? "System");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.MigrateUserSettingsToSharedStore");
+            }
+        }
+
+        // Read a single database's UserSettings table into a name -> (value, type) map.
+        // Tolerant: a missing file or missing table yields an empty map (logged).
+        private static Dictionary<string, (string Value, string Type)> ReadRawUserSettings(string dbPath)
+        {
+            var result = new Dictionary<string, (string, string)>(StringComparer.Ordinal);
+            try
+            {
+                if (!System.IO.File.Exists(dbPath)) return result;
+
+                using var connection = new SqliteConnection($"Data Source={dbPath}");
+                connection.Open();
+
+                var command = connection.CreateCommand();
+                command.CommandText = "SELECT SettingName, SettingValue, DataType FROM UserSettings";
+
+                using var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    var name = reader.GetString(0);
+                    var value = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
+                    var type = reader.IsDBNull(2) ? "string" : reader.GetString(2);
+                    result[name] = (value, type);
+                }
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.ReadRawUserSettings");
+            }
+            return result;
+        }
+
+        // Union the grid layouts from a source database's rows into the shared store.
+        // On name collision the source layout is kept under a "<name> (<db>)" label so
+        // nothing is overwritten. Returns the number of layouts added.
+        private static int MergeGridLayouts(Dictionary<string, (string Value, string Type)> source, string sourceDbName)
+        {
+            int added = 0;
+            try
+            {
+                if (!source.TryGetValue(LayoutIndexKey, out var idxRow) || string.IsNullOrWhiteSpace(idxRow.Value))
+                    return 0;
+
+                var sourceNames = System.Text.Json.JsonSerializer.Deserialize<List<string>>(idxRow.Value) ?? new List<string>();
+                if (sourceNames.Count == 0) return 0;
+
+                var sharedNames = GetGridLayoutNames();
+                var sharedSet = new HashSet<string>(sharedNames, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var name in sourceNames)
+                {
+                    var dataKey = $"{LayoutDataPrefix}{name}{LayoutDataSuffix}";
+                    if (!source.TryGetValue(dataKey, out var dataRow) || string.IsNullOrWhiteSpace(dataRow.Value))
+                        continue;
+
+                    // Resolve a non-colliding name so both databases' layouts survive.
+                    string finalName = name;
+                    if (sharedSet.Contains(finalName))
+                    {
+                        finalName = $"{name} ({sourceDbName})";
+                        int n = 2;
+                        while (sharedSet.Contains(finalName))
+                        {
+                            finalName = $"{name} ({sourceDbName} {n})";
+                            n++;
+                        }
+                    }
+
+                    // Keep the layout's own Name field in step with the (possibly renamed)
+                    // index entry, so the manager label and the lookup key stay aligned.
+                    string dataJson = dataRow.Value;
+                    if (!string.Equals(finalName, name, StringComparison.Ordinal))
+                    {
+                        try
+                        {
+                            var layout = System.Text.Json.JsonSerializer.Deserialize<GridLayout>(dataRow.Value);
+                            if (layout != null)
+                            {
+                                layout.Name = finalName;
+                                dataJson = System.Text.Json.JsonSerializer.Serialize(layout);
+                            }
+                        }
+                        catch { /* fall back to the raw source JSON */ }
+                    }
+
+                    SetUserSetting($"{LayoutDataPrefix}{finalName}{LayoutDataSuffix}", dataJson, "json");
+                    sharedNames.Add(finalName);
+                    sharedSet.Add(finalName);
+                    added++;
+                }
+
+                if (added > 0) SaveGridLayoutNames(sharedNames);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.MergeGridLayouts");
+            }
+            return added;
+        }
+
+        // Union the Project Dashboard report layouts from a source database's rows into
+        // the shared store. Keyed by Id (unique-generated), so existing ids win and only
+        // genuinely new layouts are added. Returns the number of layouts added.
+        private static int MergeReportLayouts(Dictionary<string, (string Value, string Type)> source)
+        {
+            int added = 0;
+            try
+            {
+                if (!source.TryGetValue(ReportLayoutIndexKey, out var idxRow) || string.IsNullOrWhiteSpace(idxRow.Value))
+                    return 0;
+
+                var sourceList = System.Text.Json.JsonSerializer.Deserialize<List<ReportLayoutRef>>(idxRow.Value) ?? new List<ReportLayoutRef>();
+                if (sourceList.Count == 0) return 0;
+
+                var sharedList = GetReportLayoutList();
+                var sharedIds = new HashSet<string>(sharedList.Select(r => r.Id), StringComparer.OrdinalIgnoreCase);
+
+                bool changed = false;
+                foreach (var refItem in sourceList)
+                {
+                    if (string.IsNullOrWhiteSpace(refItem.Id) || sharedIds.Contains(refItem.Id)) continue;
+
+                    var dataKey = $"{ReportLayoutDataPrefix}{refItem.Id}{ReportLayoutDataSuffix}";
+                    if (!source.TryGetValue(dataKey, out var dataRow) || string.IsNullOrWhiteSpace(dataRow.Value)) continue;
+
+                    SetUserSetting(dataKey, dataRow.Value, "json");
+                    sharedList.Add(refItem);
+                    sharedIds.Add(refItem.Id);
+                    changed = true;
+                    added++;
+                }
+
+                if (changed)
+                    SetUserSetting(ReportLayoutIndexKey, System.Text.Json.JsonSerializer.Serialize(sharedList), "json");
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error(ex, "SettingsManager.MergeReportLayouts");
+            }
+            return added;
         }
 
         // Grid Layout constants

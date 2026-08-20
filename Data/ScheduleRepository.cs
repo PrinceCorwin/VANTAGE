@@ -1500,7 +1500,10 @@ namespace VANTAGE.Repositories
                         UniqueID = $"i{idTimestamp}{idSequence}{idUserSuffix}",
                         SchedActNO = (c.SchedActNO ?? string.Empty).Trim(),
                         Description = TruncateDescription(c.Description),
-                        BudgetMHs = c.BudgetMHs,
+                        // Floor at 0.001 - stub rows must never carry a zero budget (P6 often
+                        // supplies 0 MHs for these). ClientBudget (0.001) and Quantity (1) are
+                        // set as constants in the insert SQL.
+                        BudgetMHs = Math.Max(c.BudgetMHs, 0.001),
                         PercentEntry = c.PercentEntry,
                         ActStart = actStart,
                         ActFin = actFin
@@ -1616,13 +1619,13 @@ namespace VANTAGE.Repositories
                 UniqueID, ActivityID, ProjectID, SchedActNO, Description,
                 WorkPackage, PhaseCode, CompType, PhaseCategory, ROCStep, RespParty,
                 AssignedTo, CreatedBy, UpdatedBy, UpdatedUtcDate,
-                BudgetMHs, Quantity, PercentEntry, ActStart, ActFin,
+                BudgetMHs, ClientBudget, Quantity, PercentEntry, ActStart, ActFin,
                 WeekEndDate, ProgDate, LocalDirty, SyncVersion
             ) VALUES (
                 @UniqueID, 0, @ProjectID, @SchedActNO, @Description,
                 @Placeholder, @Placeholder, @Placeholder, @Placeholder, @Placeholder, @Placeholder,
                 @AssignedTo, @CreatedBy, @UpdatedBy, @UpdatedUtcDate,
-                @BudgetMHs, 0.001, @PercentEntry, @ActStart, @ActFin,
+                @BudgetMHs, 0.001, 1, @PercentEntry, @ActStart, @ActFin,
                 @WeekEndDate, @ProgDate, 1, 0
             )";
 
@@ -1653,7 +1656,7 @@ namespace VANTAGE.Repositories
                 @UniqueID, @WeekEndDate, @ProjectID, @SchedActNO, @Description,
                 @Placeholder, @Placeholder, @Placeholder, @Placeholder, @Placeholder, @Placeholder,
                 @AssignedTo, @CreatedBy, @UpdatedBy, @UpdatedUtcDate,
-                @BudgetMHs, 0.001, @PercentEntry, @ActStart, @ActFin, @ProgDate
+                @BudgetMHs, 1, @PercentEntry, @ActStart, @ActFin, @ProgDate
             )";
 
         private static void BindSnapshotCommonParams(

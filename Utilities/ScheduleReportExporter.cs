@@ -58,7 +58,7 @@ namespace VANTAGE.Utilities
             "SchedActNO", "NotInP6", "NotInMS", "Description", "MS_%", "P6_%", "%_Mismatch",
             "V_Start", "V_Finish", "P6_ActualStart", "P6_ActualFinish", "Actual_Mismatch",
             "MS_BudgetMHs", "P6_BudgetMHs", "MH_Mismatch",
-            "P6_Start", "P6_Finish", "ThreeWeekStart", "ThreeWeekFinish",
+            "P6_Start", "P6_Finish", $"{lookaheadLabel}Start", $"{lookaheadLabel}Finish",
             "MissedStartReason", "MissedFinishReason", "Changed", "AssignedTo"
 };
 
